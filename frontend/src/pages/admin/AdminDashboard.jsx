@@ -39,15 +39,15 @@ export default function AdminDashboard() {
 
         setStats((prev) => ({
           ...prev,
-          teachers: teachRes.data?.pagination?.total || 0,
-          secretaries: secRes.data?.pagination?.total || 0,
-          totalUsers: allUsersRes.data?.pagination?.total || 0,
+          teachers: teachRes.data?.pagination?.total ?? teachRes.data?.data?.length ?? 0,
+          secretaries: secRes.data?.pagination?.total ?? secRes.data?.data?.length ?? 0,
+          totalUsers: allUsersRes.data?.pagination?.total ?? allUsersRes.data?.data?.length ?? 0,
         }));
 
         const fetchedUsers = allUsersRes.data?.data;
         setRecentUsers(Array.isArray(fetchedUsers) ? fetchedUsers : []);
-      } catch {
-        // keep default empty state
+      } catch (err) {
+        console.error('Dashboard stats error:', err);
       }
 
       try {

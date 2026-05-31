@@ -22,29 +22,32 @@ async function findById(id) {
 }
 
 async function findAll({ roleFilter, search, page, limit, offset }) {
-  let sql = `SELECT u.id, u.name, u.email, u.is_active, u.is_blocked,
-                    u.phone, u.created_at, r.name AS role
-             FROM users u JOIN roles r ON u.role_id = r.id WHERE 1=1`;
+  let where = 'WHERE 1=1';
   const params = [];
 
   if (roleFilter) {
-    sql += ' AND r.name = ?';
+    where += ' AND r.name = ?';
     params.push(roleFilter);
   }
   if (search) {
-    sql += ' AND (u.name LIKE ? OR u.email LIKE ?)';
+    where += ' AND (u.name LIKE ? OR u.email LIKE ?)';
     params.push(`%${search}%`, `%${search}%`);
   }
 
   const [[{ total }]] = await pool.query(
-    sql.replace('SELECT u.id, u.name, u.email, u.is_active, u.is_blocked, u.phone, u.created_at, r.name AS role', 'SELECT COUNT(*) AS total'),
+    `SELECT COUNT(*) AS total FROM users u JOIN roles r ON u.role_id = r.id ${where}`,
     params
   );
 
-  sql += ' ORDER BY u.created_at DESC LIMIT ? OFFSET ?';
-  params.push(limit, offset);
+  const [rows] = await pool.query(
+    `SELECT u.id, u.name, u.email, u.is_active, u.is_blocked,
+            u.phone, u.created_at, r.name AS role
+     FROM users u JOIN roles r ON u.role_id = r.id
+     ${where}
+     ORDER BY u.created_at DESC LIMIT ? OFFSET ?`,
+    [...params, limit, offset]
+  );
 
-  const [rows] = await pool.query(sql, params);
   return { rows, total };
 }
 

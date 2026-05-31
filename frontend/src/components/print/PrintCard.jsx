@@ -1,5 +1,8 @@
+import { useState } from 'react';
 import Badge from '../common/Badge';
 import { format } from 'date-fns';
+import { printRequestsApi } from '../../api/printRequestsApi';
+import toast from 'react-hot-toast';
 
 const statusLabels = {
   pending: 'Pending',
@@ -10,6 +13,26 @@ const statusLabels = {
 
 export default function PrintCard({ request, onStatusChange, showTeacher = false }) {
   const isUrgent = request.priority === 'urgent';
+  const [openingFile, setOpeningFile] = useState(false);
+
+  async function handleOpenFile() {
+    setOpeningFile(true);
+    try {
+      const res = await printRequestsApi.getById(request.id);
+      const files = res.data?.data?.files || [];
+      if (!files.length) {
+        toast.error('No files attached to this request.');
+        return;
+      }
+      files.forEach((f) => {
+        window.open(`http://localhost:5000/uploads/${f.stored_name}`, '_blank');
+      });
+    } catch {
+      toast.error('Failed to open file.');
+    } finally {
+      setOpeningFile(false);
+    }
+  }
 
   return (
     <div className={`card p-4 ${isUrgent ? 'ring-2 ring-red-400 bg-red-50' : ''}`}>
@@ -52,8 +75,16 @@ export default function PrintCard({ request, onStatusChange, showTeacher = false
         </p>
       )}
 
-      {onStatusChange && (
-        <div className="mt-3 pt-3 border-t border-gray-100">
+      <div className="mt-3 pt-3 border-t border-gray-100 flex flex-col gap-2">
+        <button
+          onClick={handleOpenFile}
+          disabled={openingFile}
+          className="w-full btn-ghost text-sm flex items-center justify-center gap-2 py-1.5"
+        >
+          🖨️ {openingFile ? 'Opening...' : 'Open File for Printing'}
+        </button>
+
+        {onStatusChange && (
           <select
             value={request.status}
             onChange={(e) => onStatusChange(request.id, e.target.value)}
@@ -64,8 +95,8 @@ export default function PrintCard({ request, onStatusChange, showTeacher = false
             <option value="printed">Printed</option>
             <option value="completed">Completed</option>
           </select>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

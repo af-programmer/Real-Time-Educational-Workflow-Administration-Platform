@@ -22,9 +22,9 @@ export function NotificationProvider({ children }) {
     }).catch(() => {});
 
     // Connect Socket.io
-    socketRef.current = io('/notifications', {
+    socketRef.current = io('http://localhost:5000/notifications', {
       auth: { userId: user.id, role: user.role },
-      transports: ['websocket'],
+      transports: ['websocket', 'polling'],
     });
 
     socketRef.current.on('notification', (notification) => {

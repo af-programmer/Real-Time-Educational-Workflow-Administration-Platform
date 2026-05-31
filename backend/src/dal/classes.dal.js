@@ -44,7 +44,7 @@ async function update(id, fields) {
 
 async function getStudentsByClass(classId) {
   const [rows] = await pool.query(
-    'SELECT id, name, student_number FROM students WHERE class_id = ? AND is_active = TRUE ORDER BY name ASC',
+    'SELECT id, name, student_number, parent_phone, parent_email FROM students WHERE class_id = ? AND is_active = TRUE ORDER BY name ASC',
     [classId]
   );
   return rows;
