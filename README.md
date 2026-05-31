@@ -1,0 +1,90 @@
+להפעלה מחדש בפעם הבאה:
+
+
+# Terminal 1 – Backend
+cd backend && npm run dev
+
+# Terminal 2 – Frontend  
+cd frontend && npm run dev
+
+
+
+# EduFlow — School Management & Print Automation Platform
+
+A production-ready full-stack web application built with React, Node.js + Express, and MySQL.
+
+## Quick Start
+
+### 1. Database Setup
+```bash
+# Create MySQL database and run schema
+mysql -u root -p < backend/database/schema.sql
+mysql -u root -p eduflow < backend/database/seed.sql
+```
+
+### 2. Backend
+```bash
+cd backend
+npm install
+# Edit .env with your MySQL credentials
+npm run dev
+```
+
+### 3. Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open http://localhost:5173
+
+## Demo Accounts (Password: `Password123!`)
+| Role      | Email                    |
+|-----------|--------------------------|
+| Admin     | admin@eduflow.com        |
+| Secretary | secretary@eduflow.com    |
+| Teacher   | teacher1@eduflow.com     |
+| Teacher   | teacher2@eduflow.com     |
+
+## Architecture
+
+```
+Client → Rate Limiter → CORS/Helmet → Auth Middleware (JWT)
+      → Role Guard → Validate Middleware (Joi)
+      → Route → Controller → Service → DAL → MySQL
+```
+
+## Tech Stack
+
+**Backend:** Node.js 20, Express 4, MySQL 8, JWT, bcryptjs, Joi, Multer, PDFKit, Socket.io, Helmet, express-rate-limit
+
+**Frontend:** React 18, Vite, React Router v6, Zustand, Axios, Tailwind CSS, React Hook Form + Zod, Socket.io-client, React Hot Toast
+
+## Features
+
+- **Teacher:** Submit print requests (PDF/images), grade management per class/subject, messaging
+- **Secretary:** Print queue with filters, urgent request highlights, cover page PDF generation, merge requests, teacher profiles
+- **Admin:** Full user CRUD, class/subject assignment, broadcast messaging, system announcements
+- **Real-time:** Socket.io notifications for new/urgent requests and messages
+- **Security:** JWT, bcrypt, role-based guards, Joi validation, SQL injection protection via parameterized queries, rate limiting, file type validation
+
+## API Endpoints
+
+| Method | Endpoint | Auth |
+|--------|----------|------|
+| POST | /api/auth/login | Public |
+| GET | /api/auth/me | All |
+| GET | /api/users | Admin |
+| POST | /api/users | Admin |
+| GET | /api/print-requests | Secretary/Admin |
+| GET | /api/print-requests/mine | Teacher |
+| POST | /api/print-requests | Teacher |
+| PATCH | /api/print-requests/:id/status | Secretary/Admin |
+| GET | /api/print-requests/:id/cover | Secretary/Admin |
+| POST | /api/print-requests/merge | Secretary/Admin |
+| GET | /api/grades/my-classes | Teacher |
+| POST | /api/grades | Teacher |
+| GET | /api/messages | All |
+| POST | /api/messages/broadcast | Admin |
+| GET | /api/notifications | All |
