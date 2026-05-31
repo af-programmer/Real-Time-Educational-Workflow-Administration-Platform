@@ -54,34 +54,34 @@ async function findById(id) {
 }
 
 async function findAll({ teacherId, priority, status, dateFrom, dateTo, page, limit, offset }) {
-  let sql = `
-    SELECT pr.id, pr.priority, pr.status, pr.lesson_date, pr.lesson_time,
-           pr.total_copies, pr.notes, pr.created_at,
-           u.name AS teacher_name, u.id AS teacher_id,
-           s.name AS subject_name
-    FROM print_requests pr
-    JOIN users u ON u.id = pr.teacher_id
-    JOIN subjects s ON s.id = pr.subject_id
-    WHERE 1=1
-  `;
+  let where = 'WHERE 1=1';
   const params = [];
 
-  if (teacherId) { sql += ' AND pr.teacher_id = ?'; params.push(teacherId); }
-  if (priority) { sql += ' AND pr.priority = ?'; params.push(priority); }
-  if (status) { sql += ' AND pr.status = ?'; params.push(status); }
-  if (dateFrom) { sql += ' AND pr.lesson_date >= ?'; params.push(dateFrom); }
-  if (dateTo) { sql += ' AND pr.lesson_date <= ?'; params.push(dateTo); }
+  if (teacherId) { where += ' AND pr.teacher_id = ?'; params.push(teacherId); }
+  if (priority) { where += ' AND pr.priority = ?'; params.push(priority); }
+  if (status) { where += ' AND pr.status = ?'; params.push(status); }
+  if (dateFrom) { where += ' AND pr.lesson_date >= ?'; params.push(dateFrom); }
+  if (dateTo) { where += ' AND pr.lesson_date <= ?'; params.push(dateTo); }
 
-  const countSql = sql.replace(
-    /SELECT pr\.id.*FROM print_requests/,
-    'SELECT COUNT(*) AS total FROM print_requests'
+  const [[{ total }]] = await pool.query(
+    `SELECT COUNT(*) AS total FROM print_requests pr ${where}`,
+    params
   );
-  const [[{ total }]] = await pool.query(countSql, params);
 
-  sql += ' ORDER BY FIELD(pr.priority,"urgent","important","normal"), pr.created_at DESC LIMIT ? OFFSET ?';
-  params.push(limit, offset);
+  const [rows] = await pool.query(
+    `SELECT pr.id, pr.priority, pr.status, pr.lesson_date, pr.lesson_time,
+            pr.total_copies, pr.notes, pr.created_at,
+            u.name AS teacher_name, u.id AS teacher_id,
+            s.name AS subject_name
+     FROM print_requests pr
+     JOIN users u ON u.id = pr.teacher_id
+     JOIN subjects s ON s.id = pr.subject_id
+     ${where}
+     ORDER BY FIELD(pr.priority,"urgent","important","normal"), pr.created_at DESC
+     LIMIT ? OFFSET ?`,
+    [...params, limit, offset]
+  );
 
-  const [rows] = await pool.query(sql, params);
   return { rows, total };
 }
 
