@@ -2,10 +2,10 @@
 
 
 # Terminal 1 – Backend
-cd backend && npm run dev
+cd server && npm run dev
 
 # Terminal 2 – Frontend  
-cd frontend && npm run dev
+cd client && npm run dev
 
 
 
@@ -18,13 +18,13 @@ A production-ready full-stack web application built with React, Node.js + Expres
 ### 1. Database Setup
 ```bash
 # Create MySQL database and run schema
-mysql -u root -p < backend/database/schema.sql
-mysql -u root -p eduflow < backend/database/seed.sql
+mysql -u root -p < server/database/schema.sql
+mysql -u root -p eduflow < server/database/seed.sql
 ```
 
 ### 2. Backend
 ```bash
-cd backend
+cd server
 npm install
 # Edit .env with your MySQL credentials
 npm run dev
@@ -32,7 +32,7 @@ npm run dev
 
 ### 3. Frontend
 ```bash
-cd frontend
+cd client
 npm install
 npm run dev
 ```
