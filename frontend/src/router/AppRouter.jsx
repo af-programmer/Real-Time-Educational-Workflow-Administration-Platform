@@ -3,15 +3,17 @@ import ProtectedRoute from './ProtectedRoute';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import useAuthStore from '../store/authStore';
 
-// Pages
 import Login from '../pages/Login';
 import TeacherDashboard from '../pages/teacher/TeacherDashboard';
 import MyPrintRequests from '../pages/teacher/MyPrintRequests';
 import NewPrintRequest from '../pages/teacher/NewPrintRequest';
 import MyGrades from '../pages/teacher/MyGrades';
 import MyMessages from '../pages/teacher/MyMessages';
+import TeacherLibrary from '../pages/teacher/TeacherLibrary';
 import SecretaryDashboard from '../pages/secretary/SecretaryDashboard';
 import PrintCenter from '../pages/secretary/PrintCenter';
+import PrintHistory from '../pages/secretary/PrintHistory';
+import SecretaryClasses from '../pages/secretary/SecretaryClasses';
 import TeachersList from '../pages/secretary/TeachersList';
 import TeacherProfile from '../pages/secretary/TeacherProfile';
 import SecretaryMessages from '../pages/secretary/SecretaryMessages';
@@ -34,29 +36,29 @@ export default function AppRouter() {
       <Route path="/login" element={<Login />} />
       <Route path="/" element={<RootRedirect />} />
 
-      {/* Teacher Routes */}
       <Route element={<ProtectedRoute allowedRoles={['teacher']} />}>
         <Route element={<DashboardLayout />}>
           <Route path="/teacher" element={<TeacherDashboard />} />
           <Route path="/teacher/print-requests" element={<MyPrintRequests />} />
           <Route path="/teacher/new-print-request" element={<NewPrintRequest />} />
+          <Route path="/teacher/library" element={<TeacherLibrary />} />
           <Route path="/teacher/grades" element={<MyGrades />} />
           <Route path="/teacher/messages" element={<MyMessages />} />
         </Route>
       </Route>
 
-      {/* Secretary Routes */}
       <Route element={<ProtectedRoute allowedRoles={['secretary']} />}>
         <Route element={<DashboardLayout />}>
           <Route path="/secretary" element={<SecretaryDashboard />} />
           <Route path="/secretary/print-center" element={<PrintCenter />} />
+          <Route path="/secretary/print-history" element={<PrintHistory />} />
+          <Route path="/secretary/classes" element={<SecretaryClasses />} />
           <Route path="/secretary/teachers" element={<TeachersList />} />
           <Route path="/secretary/teachers/:id" element={<TeacherProfile />} />
           <Route path="/secretary/messages" element={<SecretaryMessages />} />
         </Route>
       </Route>
 
-      {/* Admin Routes */}
       <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
         <Route element={<DashboardLayout />}>
           <Route path="/admin" element={<AdminDashboard />} />
@@ -67,7 +69,6 @@ export default function AppRouter() {
         </Route>
       </Route>
 
-      {/* 404 */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

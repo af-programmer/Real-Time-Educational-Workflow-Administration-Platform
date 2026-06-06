@@ -8,10 +8,13 @@ function getPageTitle(pathname) {
     '/teacher': 'Dashboard',
     '/teacher/print-requests': 'My Print Requests',
     '/teacher/new-print-request': 'New Print Request',
+    '/teacher/library': 'My Library',
     '/teacher/grades': 'My Grades',
     '/teacher/messages': 'Messages',
     '/secretary': 'Dashboard',
     '/secretary/print-center': 'Print Center',
+    '/secretary/print-history': 'Print History',
+    '/secretary/classes': 'Classes & Students',
     '/secretary/teachers': 'Teachers',
     '/secretary/messages': 'Messages',
     '/admin': 'Dashboard',
@@ -30,15 +33,9 @@ export default function DashboardLayout() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Sidebar
-        mobileOpen={mobileOpen}
-        onClose={() => setMobileOpen(false)}
-      />
+      <Sidebar mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
       <div className="lg:pl-64 flex flex-col min-h-screen">
-        <Topbar
-          onMenuClick={() => setMobileOpen(true)}
-          title={title}
-        />
+        <Topbar onMenuClick={() => setMobileOpen(true)} title={title} />
         <main className="flex-1 p-4 sm:p-6">
           <Outlet />
         </main>

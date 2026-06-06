@@ -115,4 +115,37 @@ async function createMerged({ teacher_id, subject_id, priority, lesson_date, les
   return result.insertId;
 }
 
-module.exports = { create, addClasses, addFile, findById, findAll, findByTeacher, updateStatus, createMerged };
+async function remove(id) {
+  const [result] = await pool.query('DELETE FROM print_requests WHERE id = ?', [id]);
+  return result.affectedRows > 0;
+}
+
+async function findHistory({ teacherId, priority, dateFrom, dateTo, search, page, limit, offset }) {
+  let where = "WHERE pr.status = 'completed'";
+  const params = [];
+  if (teacherId) { where += ' AND pr.teacher_id = ?'; params.push(teacherId); }
+  if (priority) { where += ' AND pr.priority = ?'; params.push(priority); }
+  if (dateFrom) { where += ' AND pr.lesson_date >= ?'; params.push(dateFrom); }
+  if (dateTo) { where += ' AND pr.lesson_date <= ?'; params.push(dateTo); }
+  if (search) { where += ' AND (u.name LIKE ? OR s.name LIKE ?)'; params.push(`%${search}%`, `%${search}%`); }
+
+  const [[{ total }]] = await pool.query(
+    `SELECT COUNT(*) AS total FROM print_requests pr
+     JOIN users u ON u.id = pr.teacher_id
+     JOIN subjects s ON s.id = pr.subject_id
+     ${where}`, params
+  );
+  const [rows] = await pool.query(
+    `SELECT pr.id, pr.priority, pr.status, pr.lesson_date, pr.total_copies, pr.notes, pr.created_at, pr.updated_at,
+            u.name AS teacher_name, s.name AS subject_name
+     FROM print_requests pr
+     JOIN users u ON u.id = pr.teacher_id
+     JOIN subjects s ON s.id = pr.subject_id
+     ${where}
+     ORDER BY pr.updated_at DESC LIMIT ? OFFSET ?`,
+    [...params, limit, offset]
+  );
+  return { rows, total };
+}
+
+module.exports = { create, addClasses, addFile, findById, findAll, findByTeacher, updateStatus, createMerged, remove, findHistory };

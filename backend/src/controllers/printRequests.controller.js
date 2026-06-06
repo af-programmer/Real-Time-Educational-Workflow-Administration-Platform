@@ -45,4 +45,15 @@ const merge = asyncWrapper(async (req, res) => {
   res.status(201).json({ success: true, data: merged });
 });
 
-module.exports = { create, getMine, getAll, updateStatus, getById, getCover, merge };
+const remove = asyncWrapper(async (req, res) => {
+  await printRequestsService.deleteRequest(req.params.id, req.user.id, req.user.role);
+  res.json({ success: true, message: 'Print request deleted.' });
+});
+
+const getHistory = asyncWrapper(async (req, res) => {
+  const { priority, dateFrom, dateTo, search, page, limit } = req.query;
+  const result = await printRequestsService.getHistory({ priority, dateFrom, dateTo, search, page, limit });
+  res.json({ success: true, ...result });
+});
+
+module.exports = { create, getMine, getAll, updateStatus, getById, getCover, merge, remove, getHistory };

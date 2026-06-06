@@ -20,6 +20,18 @@ router.get('/me', requireRoles('teacher'), asyncWrapper(async (req, res) => {
   res.json({ success: true, data: profile });
 }));
 
+// Teacher's own assigned classes
+router.get('/me/classes', requireRoles('teacher'), asyncWrapper(async (req, res) => {
+  const classes = await usersDAL.getTeacherClasses(req.user.id);
+  res.json({ success: true, data: classes });
+}));
+
+// Teacher's own assigned subjects
+router.get('/me/subjects', requireRoles('teacher'), asyncWrapper(async (req, res) => {
+  const subjects = await usersDAL.getTeacherSubjects(req.user.id);
+  res.json({ success: true, data: subjects });
+}));
+
 router.get('/:id/profile', requireRoles('secretary', 'admin'), asyncWrapper(async (req, res) => {
   const profile = await usersService.getTeacherProfile(req.params.id);
   res.json({ success: true, data: profile });

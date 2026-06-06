@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAllPrintRequests } from '../../hooks/usePrintRequests';
+import { printRequestsApi } from '../../api/printRequestsApi';
 import PrintQueue from '../../components/print/PrintQueue';
+import toast from 'react-hot-toast';
 
 export default function PrintCenter() {
   const [searchParams] = useSearchParams();
@@ -16,6 +18,17 @@ export default function PrintCenter() {
   const { data, pagination, loading, refetch, updateStatus } = useAllPrintRequests({ ...filters, page });
 
   const urgentCount = data.filter((r) => r.priority === 'urgent' && r.status === 'pending').length;
+
+  async function handleDelete(id) {
+    if (!confirm('Delete this print request?')) return;
+    try {
+      await printRequestsApi.delete(id);
+      toast.success('Deleted.');
+      refetch();
+    } catch {
+      toast.error('Failed to delete.');
+    }
+  }
 
   return (
     <div className="space-y-5">
@@ -97,6 +110,7 @@ export default function PrintCenter() {
         onPageChange={setPage}
         onStatusChange={updateStatus}
         onRefresh={refetch}
+        onDelete={handleDelete}
       />
     </div>
   );

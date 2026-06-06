@@ -44,10 +44,46 @@ async function update(id, fields) {
 
 async function getStudentsByClass(classId) {
   const [rows] = await pool.query(
-    'SELECT id, name, student_number, parent_phone, parent_email FROM students WHERE class_id = ? AND is_active = TRUE ORDER BY name ASC',
+    'SELECT id, name, student_number, parent_phone, parent_email, date_of_birth FROM students WHERE class_id = ? AND is_active = TRUE ORDER BY name ASC',
     [classId]
   );
   return rows;
 }
 
-module.exports = { findAll, findById, findByIds, create, update, getStudentsByClass };
+async function getAllStudents() {
+  const [rows] = await pool.query(
+    `SELECT s.*, c.name AS class_name FROM students s
+     JOIN classes c ON c.id = s.class_id
+     WHERE s.is_active = TRUE ORDER BY c.name ASC, s.name ASC`
+  );
+  return rows;
+}
+
+async function findStudentById(id) {
+  const [rows] = await pool.query(
+    `SELECT s.*, c.name AS class_name FROM students s
+     JOIN classes c ON c.id = s.class_id
+     WHERE s.id = ? LIMIT 1`, [id]
+  );
+  return rows[0] || null;
+}
+
+async function createStudent({ name, class_id, student_number, date_of_birth, parent_email, parent_phone }) {
+  const [result] = await pool.query(
+    `INSERT INTO students (name, class_id, student_number, date_of_birth, parent_email, parent_phone)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    [name, class_id, student_number || null, date_of_birth || null, parent_email || null, parent_phone || null]
+  );
+  return result.insertId;
+}
+
+async function updateStudent(id, fields) {
+  const allowed = ['name', 'class_id', 'student_number', 'date_of_birth', 'parent_email', 'parent_phone'];
+  const updates = Object.keys(fields).filter((k) => allowed.includes(k)).map((k) => `${k} = ?`);
+  if (!updates.length) return false;
+  const values = Object.keys(fields).filter((k) => allowed.includes(k)).map((k) => fields[k]);
+  await pool.query(`UPDATE students SET ${updates.join(', ')} WHERE id = ?`, [...values, id]);
+  return true;
+}
+
+module.exports = { findAll, findById, findByIds, create, update, getStudentsByClass, getAllStudents, findStudentById, createStudent, updateStudent };

@@ -119,6 +119,20 @@ async function mergeRequests(requestIds, notes) {
   return printRequestsDAL.findById(mergedId);
 }
 
+async function deleteRequest(requestId, userId, userRole) {
+  const request = await printRequestsDAL.findById(requestId);
+  if (!request) throw new AppError('Print request not found.', 404);
+  if (userRole === 'teacher' && request.teacher_id !== userId)
+    throw new AppError('Access denied.', 403);
+  await printRequestsDAL.remove(requestId);
+}
+
+async function getHistory({ priority, dateFrom, dateTo, search, page = 1, limit = 20 }) {
+  const { offset, limit: lim, page: p } = paginate(null, page, limit);
+  const { rows, total } = await printRequestsDAL.findHistory({ priority, dateFrom, dateTo, search, page: p, limit: lim, offset });
+  return paginateResponse(rows, total, p, lim);
+}
+
 module.exports = {
-  createPrintRequest, getMyRequests, getAllRequests, updateStatus, getRequestById, mergeRequests,
+  createPrintRequest, getMyRequests, getAllRequests, updateStatus, getRequestById, mergeRequests, deleteRequest, getHistory,
 };

@@ -16,6 +16,8 @@ const printRequestsRoutes = require('./routes/printRequests.routes');
 const messagesRoutes = require('./routes/messages.routes');
 const notificationsRoutes = require('./routes/notifications.routes');
 
+const libraryRoutes = require('./routes/library.routes');
+
 const app = express();
 
 // Security
@@ -48,6 +50,7 @@ app.use('/api/classes', classesRoutes);
 app.use('/api/subjects', subjectsRoutes);
 app.use('/api/grades', gradesRoutes);
 app.use('/api/print-requests', printRequestsRoutes);
+app.use('/api/library', libraryRoutes);
 app.use('/api/messages', messagesRoutes);
 app.use('/api/notifications', notificationsRoutes);
 

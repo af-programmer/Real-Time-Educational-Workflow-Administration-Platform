@@ -11,7 +11,7 @@ const statusLabels = {
   completed: 'Completed',
 };
 
-export default function PrintCard({ request, onStatusChange, showTeacher = false }) {
+export default function PrintCard({ request, onStatusChange, onDelete, showTeacher = false }) {
   const isUrgent = request.priority === 'urgent';
   const [openingFile, setOpeningFile] = useState(false);
 
@@ -20,18 +20,17 @@ export default function PrintCard({ request, onStatusChange, showTeacher = false
     try {
       const res = await printRequestsApi.getById(request.id);
       const files = res.data?.data?.files || [];
-      if (!files.length) {
-        toast.error('No files attached to this request.');
-        return;
-      }
-      files.forEach((f) => {
-        window.open(`http://localhost:5000/uploads/${f.stored_name}`, '_blank');
-      });
+      if (!files.length) { toast.error('No files attached.'); return; }
+      files.forEach((f) => window.open(`http://localhost:5000/uploads/${f.stored_name}`, '_blank'));
     } catch {
       toast.error('Failed to open file.');
     } finally {
       setOpeningFile(false);
     }
+  }
+
+  function handleCover() {
+    window.open(`http://localhost:5000/api/print-requests/${request.id}/cover`, '_blank');
   }
 
   return (
@@ -42,9 +41,7 @@ export default function PrintCard({ request, onStatusChange, showTeacher = false
             <Badge label={request.priority} variant={request.priority} pulse={isUrgent} />
             <Badge label={statusLabels[request.status]} variant={request.status} />
           </div>
-          {showTeacher && (
-            <p className="mt-1.5 font-semibold text-gray-900">{request.teacher_name}</p>
-          )}
+          {showTeacher && <p className="mt-1.5 font-semibold text-gray-900">{request.teacher_name}</p>}
           <p className="mt-1 text-sm text-gray-600">{request.subject_name}</p>
         </div>
         <div className="text-right flex-shrink-0">
@@ -54,47 +51,45 @@ export default function PrintCard({ request, onStatusChange, showTeacher = false
       </div>
 
       <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-gray-500">
-        <div>
-          <span className="font-medium">Date:</span>{' '}
-          {request.lesson_date
-            ? format(new Date(request.lesson_date), 'dd MMM yyyy')
-            : '—'}
+        <div><span className="font-medium">Date:</span>{' '}
+          {request.lesson_date ? format(new Date(request.lesson_date), 'dd MMM yyyy') : '—'}
         </div>
-        <div>
-          <span className="font-medium">Time:</span> {request.lesson_time || '—'}
-        </div>
-        <div>
-          <span className="font-medium">Submitted:</span>{' '}
+        <div><span className="font-medium">Time:</span> {request.lesson_time || '—'}</div>
+        <div><span className="font-medium">Submitted:</span>{' '}
           {format(new Date(request.created_at), 'dd MMM, HH:mm')}
         </div>
       </div>
 
       {request.notes && (
-        <p className="mt-2 text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-2 line-clamp-2">
-          {request.notes}
-        </p>
+        <p className="mt-2 text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-2 line-clamp-2">{request.notes}</p>
       )}
 
       <div className="mt-3 pt-3 border-t border-gray-100 flex flex-col gap-2">
-        <button
-          onClick={handleOpenFile}
-          disabled={openingFile}
-          className="w-full btn-ghost text-sm flex items-center justify-center gap-2 py-1.5"
-        >
-          🖨️ {openingFile ? 'Opening...' : 'Open File for Printing'}
-        </button>
+        <div className="flex gap-2">
+          <button onClick={handleOpenFile} disabled={openingFile}
+            className="flex-1 btn-ghost text-xs py-1.5">
+            🖨️ {openingFile ? 'Opening...' : 'Open File'}
+          </button>
+          <button onClick={handleCover} className="flex-1 btn-ghost text-xs py-1.5">
+            📄 Cover Page
+          </button>
+        </div>
 
         {onStatusChange && (
-          <select
-            value={request.status}
-            onChange={(e) => onStatusChange(request.id, e.target.value)}
-            className="input text-sm py-1.5"
-          >
+          <select value={request.status} onChange={(e) => onStatusChange(request.id, e.target.value)}
+            className="input text-sm py-1.5">
             <option value="pending">Pending</option>
             <option value="in_progress">In Progress</option>
             <option value="printed">Printed</option>
             <option value="completed">Completed</option>
           </select>
+        )}
+
+        {onDelete && (
+          <button onClick={() => onDelete(request.id)}
+            className="text-xs text-red-500 hover:text-red-700 text-center py-1">
+            🗑️ Delete
+          </button>
         )}
       </div>
     </div>
