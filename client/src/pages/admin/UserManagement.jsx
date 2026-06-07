@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { usersApi, classesApi, subjectsApi } from '../../api/usersApi';
 import Table from '../../components/common/Table';
 import Badge from '../../components/common/Badge';
@@ -11,10 +12,15 @@ import toast from 'react-hot-toast';
 import clsx from 'clsx';
 
 export default function UserManagement() {
+  const [searchParams] = useSearchParams();
   const [users, setUsers] = useState([]);
   const [pagination, setPagination] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState({ role: '', search: '', page: 1 });
+  const [filters, setFilters] = useState({ role: searchParams.get('role') || '', search: '', page: 1 });
+
+  useEffect(() => {
+    setFilters({ role: searchParams.get('role') || '', search: '', page: 1 });
+  }, [searchParams]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(null);
   const [classes, setClasses] = useState([]);
