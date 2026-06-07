@@ -80,10 +80,16 @@ export default function UserManagement() {
     }
   };
 
-  const openAssign = (user) => {
+  const openAssign = async (user) => {
     setShowAssignModal(user);
     setSelectedClasses([]);
     setSelectedSubjects([]);
+    try {
+      const r = await usersApi.getProfile(user.id);
+      const profile = r.data.data;
+      setSelectedClasses((profile.classes || []).map((c) => c.id));
+      setSelectedSubjects((profile.subjects || []).map((s) => s.id));
+    } catch {}
   };
 
   const saveAssign = async () => {
