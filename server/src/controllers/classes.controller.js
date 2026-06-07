@@ -38,4 +38,11 @@ const updateStudent = asyncWrapper(async (req, res) => {
   res.json({ success: true, data: updated });
 });
 
-module.exports = { getAll, getById, getStudents, getStudent, createStudent, updateStudent };
+const deleteStudent = asyncWrapper(async (req, res) => {
+  const student = await classesDAL.findStudentById(req.params.studentId);
+  if (!student) return res.status(404).json({ success: false, message: 'Student not found.' });
+  await classesDAL.deleteStudent(req.params.studentId);
+  res.json({ success: true });
+});
+
+module.exports = { getAll, getById, getStudents, getStudent, createStudent, updateStudent, deleteStudent };

@@ -14,5 +14,6 @@ router.get('/:id/students', requireRoles('secretary', 'admin'), classesControlle
 router.post('/students', requireRoles('secretary', 'admin'), classesController.createStudent);
 router.get('/students/:studentId', requireRoles('secretary', 'admin'), classesController.getStudent);
 router.put('/students/:studentId', requireRoles('secretary', 'admin'), classesController.updateStudent);
+router.delete('/students/:studentId', requireRoles('secretary', 'admin'), classesController.deleteStudent);
 
 module.exports = router;

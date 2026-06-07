@@ -21,6 +21,9 @@ export const teachersApi = {
 export const classesApi = {
   getAll: () => axiosInstance.get('/classes'),
   getById: (id) => axiosInstance.get(`/classes/${id}`),
+  createStudent: (data) => axiosInstance.post('/classes/students', data),
+  updateStudent: (id, data) => axiosInstance.put(`/classes/students/${id}`, data),
+  deleteStudent: (id) => axiosInstance.delete(`/classes/students/${id}`),
 };
 
 export const subjectsApi = {
