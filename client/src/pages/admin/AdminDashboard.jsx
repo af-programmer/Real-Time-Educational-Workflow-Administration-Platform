@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { usersApi } from '../../api/usersApi';
-import { printRequestsApi } from '../../api/printRequestsApi';
 import useNotificationStore from '../../store/notificationStore';
 import Spinner from '../../components/common/Spinner';
 
@@ -20,8 +19,7 @@ function StatCard({ label, value, icon, color, to }) {
 
 export default function AdminDashboard() {
   const { unreadCount } = useNotificationStore();
-  const [stats, setStats] = useState({ teachers: 0, secretaries: 0, totalUsers: 0, printRequests: 0 });
-  const [recentUsers, setRecentUsers] = useState([]);
+  const [stats, setStats] = useState({ teachers: 0, secretaries: 0, totalUsers: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -32,31 +30,18 @@ export default function AdminDashboard() {
         const [teachRes, secRes, allUsersRes] = await Promise.all([
           usersApi.getAll({ role: 'teacher', limit: 1 }),
           usersApi.getAll({ role: 'secretary', limit: 1 }),
-          usersApi.getAll({ limit: 5 }),
+          usersApi.getAll({ limit: 1 }),
         ]);
 
         if (!mounted) return;
 
-        setStats((prev) => ({
-          ...prev,
+        setStats({
           teachers: teachRes.data?.pagination?.total ?? teachRes.data?.data?.length ?? 0,
           secretaries: secRes.data?.pagination?.total ?? secRes.data?.data?.length ?? 0,
           totalUsers: allUsersRes.data?.pagination?.total ?? allUsersRes.data?.data?.length ?? 0,
-        }));
-
-        const fetchedUsers = allUsersRes.data?.data;
-        setRecentUsers(Array.isArray(fetchedUsers) ? fetchedUsers : []);
+        });
       } catch (err) {
         console.error('Dashboard stats error:', err);
-      }
-
-      try {
-        const printRes = await printRequestsApi.getAll({ limit: 100 });
-        if (mounted) {
-          setStats((prev) => ({ ...prev, printRequests: printRes.data?.pagination?.total || 0 }));
-        }
-      } catch {
-        // print requests count stays 0
       }
 
       if (mounted) setLoading(false);
@@ -81,7 +66,7 @@ export default function AdminDashboard() {
         <StatCard label="Total Users" value={stats.totalUsers} icon="👥" color="bg-blue-100" to="/admin/users" />
         <StatCard label="Teachers" value={stats.teachers} icon="👩🏫" color="bg-teal-100" to="/admin/users?role=teacher" />
         <StatCard label="Secretaries" value={stats.secretaries} icon="💼" color="bg-pink-100" to="/admin/users?role=secretary" />
-        <StatCard label="Print Requests" value={stats.printRequests} icon="🖨️" color="bg-purple-100" />
+        <StatCard label="Print History" icon="🖨️" color="bg-purple-100" to="/admin/print-history" />
       </div>
 
       {/* Quick Actions */}
@@ -101,40 +86,6 @@ export default function AdminDashboard() {
           <p className="font-semibold text-gray-900">Announcements</p>
           <p className="text-sm text-gray-500 mt-1">Send system-wide messages</p>
         </Link>
-      </div>
-
-      {/* Recent Users */}
-      <div className="card overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-          <h3 className="font-semibold text-gray-900">Recent Users</h3>
-          <Link to="/admin/users" className="text-sm text-primary-600 hover:text-primary-700">View all →</Link>
-        </div>
-
-        {recentUsers.length === 0 ? (
-          <p className="px-5 py-8 text-center text-gray-400 text-sm">No users found.</p>
-        ) : (
-          <div className="divide-y divide-gray-50">
-            {recentUsers.map((u) => (
-              <div key={u.id} className="flex items-center justify-between px-5 py-3">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-600 font-semibold text-sm">
-                    {u.name?.[0]?.toUpperCase()}
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">{u.name}</p>
-                    <p className="text-xs text-gray-500">{u.email}</p>
-                  </div>
-                </div>
-                <span className={`text-xs rounded-full px-2 py-0.5 font-medium ${
-                  u.role === 'admin' ? 'bg-indigo-100 text-indigo-700' :
-                  u.role === 'teacher' ? 'bg-teal-100 text-teal-700' :
-                  'bg-pink-100 text-pink-700'}`}>
-                  {u.role}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
     </div>
   );
