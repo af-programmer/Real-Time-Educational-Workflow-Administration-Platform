@@ -61,10 +61,10 @@ export default function AdminMessages() {
   return (
     <div className="space-y-4">
       <div className="flex gap-3 justify-end">
-        <Button variant="secondary" onClick={() => { setBroadcastMode(true); setShowModal(true); }}>
+        <Button variant="secondary" onClick={() => { setBroadcastMode(true); reset({ recipient_role: 'all' }); setShowModal(true); }}>
           📢 Broadcast
         </Button>
-        <Button onClick={() => { setBroadcastMode(false); setShowModal(true); }}>✉️ New Message</Button>
+        <Button onClick={() => { setBroadcastMode(false); reset({}); setShowModal(true); }}>✉️ New Message</Button>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-5">
@@ -118,7 +118,7 @@ export default function AdminMessages() {
           {broadcastMode ? (
             <div>
               <label className="label">Send To *</label>
-              <select {...register('recipient_role', { required: true })} className="input">
+              <select {...register('recipient_role', { required: true })} defaultValue="all" className="input">
                 <option value="all">All Staff</option>
                 <option value="all_teachers">All Teachers</option>
                 <option value="all_secretaries">All Secretaries</option>

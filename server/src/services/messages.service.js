@@ -26,18 +26,6 @@ async function sendMessage(senderId, { recipient_id, recipient_role, subject, bo
     is_broadcast: false,
   });
 
-  // Create notification
-  const notifPayload = {
-    type: 'message',
-    title: 'New Message',
-    content: subject || body.substring(0, 80),
-    entity_id: messageId,
-    entity_type: 'message',
-  };
-  if (recipient_id) notifPayload.user_id = recipient_id;
-  else notifPayload.role_target = recipient_role;
-  await notificationsDAL.create(notifPayload);
-
   return messageId;
 }
 

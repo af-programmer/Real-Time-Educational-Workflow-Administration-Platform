@@ -19,6 +19,15 @@ const useNotificationStore = create((set) => ({
       unreadCount: 0,
     })),
 
+  markOneRead: (id) =>
+    set((state) => {
+      const wasUnread = state.notifications.find((n) => n.id === id && !n.is_read);
+      return {
+        notifications: state.notifications.map((n) => n.id === id ? { ...n, is_read: true } : n),
+        unreadCount: wasUnread ? Math.max(0, state.unreadCount - 1) : state.unreadCount,
+      };
+    }),
+
   clearUnread: () => set({ unreadCount: 0 }),
 }));
 

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import useNotificationStore from '../../store/notificationStore';
 import { useNotificationActions } from '../../hooks/useNotifications';
+import { notificationsApi } from '../../api/notificationsApi';
 import { format } from 'date-fns';
 import clsx from 'clsx';
 
@@ -16,8 +17,15 @@ const typeIcons = {
 
 export default function NotificationBell() {
   const [open, setOpen] = useState(false);
-  const { notifications, unreadCount } = useNotificationStore();
+  const { notifications, unreadCount, markOneRead } = useNotificationStore();
   const { markAll } = useNotificationActions();
+
+  async function handleClick(n) {
+    if (!n.is_read) {
+      markOneRead(n.id);
+      notificationsApi.markOneRead(n.id).catch(() => {});
+    }
+  }
 
   return (
     <div className="relative">
@@ -60,8 +68,9 @@ export default function NotificationBell() {
                 notifications.slice(0, 20).map((n) => (
                   <div
                     key={n.id}
+                    onClick={() => handleClick(n)}
                     className={clsx(
-                      'flex gap-3 px-4 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors',
+                      'flex gap-3 px-4 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer',
                       !n.is_read && 'bg-blue-50'
                     )}
                   >

@@ -15,7 +15,8 @@ async function findInbox(userId, role) {
      FROM messages m
      JOIN users u ON u.id = m.sender_id
      JOIN roles ur ON ur.id = u.role_id
-     WHERE (m.recipient_id = ?
+     WHERE m.is_broadcast = FALSE
+       AND (m.recipient_id = ?
         OR m.recipient_role = 'all'
         OR m.recipient_role = ?
         OR (m.recipient_role = 'all_teachers' AND ? = 'teacher')

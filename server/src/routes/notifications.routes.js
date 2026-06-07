@@ -8,6 +8,7 @@ router.use(authMiddleware);
 
 router.get('/', notificationsController.getAll);
 router.patch('/read-all', notificationsController.markAllRead);
+router.patch('/:id/read', notificationsController.markOneRead);
 router.post('/announcement', requireRoles('admin'), notificationsController.createAnnouncement);
 
 module.exports = router;

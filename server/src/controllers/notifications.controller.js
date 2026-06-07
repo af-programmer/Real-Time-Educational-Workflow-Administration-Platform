@@ -9,7 +9,12 @@ const getAll = asyncWrapper(async (req, res) => {
 
 const markAllRead = asyncWrapper(async (req, res) => {
   await notificationsService.markAllRead(req.user.id, req.user.role);
-  res.json({ success: true, message: 'All notifications marked as read.' });
+  res.json({ success: true });
+});
+
+const markOneRead = asyncWrapper(async (req, res) => {
+  await notificationsService.markOneRead(req.params.id, req.user.id);
+  res.json({ success: true });
 });
 
 const createAnnouncement = asyncWrapper(async (req, res) => {
@@ -18,4 +23,4 @@ const createAnnouncement = asyncWrapper(async (req, res) => {
   res.status(201).json({ success: true, data: { id } });
 });
 
-module.exports = { getAll, markAllRead, createAnnouncement };
+module.exports = { getAll, markAllRead, markOneRead, createAnnouncement };

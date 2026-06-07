@@ -8,6 +8,10 @@ async function markAllRead(userId, role) {
   await notificationsDAL.markAllRead(userId, role);
 }
 
+async function markOneRead(notificationId, userId) {
+  await notificationsDAL.markOneRead(notificationId, userId);
+}
+
 async function getUnreadCount(userId, role) {
   return notificationsDAL.getUnreadCount(userId, role);
 }
