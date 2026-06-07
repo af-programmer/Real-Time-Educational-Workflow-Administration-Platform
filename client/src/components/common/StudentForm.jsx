@@ -6,7 +6,6 @@ export default function StudentForm({ classId, student, classes, onSave, onCance
   const [form, setForm] = useState({
     name: student?.name || '',
     class_id: student?.class_id || classId || '',
-    student_number: student?.student_number || '',
     parent_phone: student?.parent_phone || '',
     parent_email: student?.parent_email || '',
     date_of_birth: student?.date_of_birth ? student.date_of_birth.split('T')[0] : '',
@@ -19,12 +18,15 @@ export default function StudentForm({ classId, student, classes, onSave, onCance
     e.preventDefault();
     if (!form.name.trim()) { toast.error('Name is required.'); return; }
     setSaving(true);
+    const payload = Object.fromEntries(
+      Object.entries(form).map(([k, v]) => [k, v === '' ? null : v])
+    );
     try {
       if (student) {
-        await classesStudentsApi.updateStudent(student.id, form);
+        await classesStudentsApi.updateStudent(student.id, payload);
         toast.success('Student updated.');
       } else {
-        await classesStudentsApi.createStudent(form);
+        await classesStudentsApi.createStudent(payload);
         toast.success('Student added.');
       }
       onSave();
@@ -46,10 +48,6 @@ export default function StudentForm({ classId, student, classes, onSave, onCance
             <option value="">Select class...</option>
             {classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
-        </div>
-        <div>
-          <label className="label">Student Number</label>
-          <input className="input" value={form.student_number} onChange={set('student_number')} />
         </div>
         <div>
           <label className="label">Date of Birth</label>

@@ -71,9 +71,55 @@ function StudentFormModal({ classId, student, onSave, onClose }) {
   );
 }
 
-function StudentsModal({ cls, onClose }) {
+function TransferModal({ student, classes, currentClassId, onTransferred, onClose }) {
+  const [targetClassId, setTargetClassId] = useState('');
+  const [saving, setSaving] = useState(false);
+  const options = classes.filter((c) => c.id !== currentClassId);
+
+  async function handleTransfer() {
+    if (!targetClassId) return toast.error('Please select a class');
+    setSaving(true);
+    try {
+      await classesApi.updateStudent(student.id, { class_id: targetClassId });
+      toast.success(`${student.name} transferred successfully`);
+      onTransferred();
+    } catch {
+      toast.error('Failed to transfer student');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
+        <h2 className="text-lg font-bold text-gray-900 mb-1">Transfer Student</h2>
+        <p className="text-sm text-gray-500 mb-4">{student.name}</p>
+        <select
+          value={targetClassId}
+          onChange={(e) => setTargetClassId(e.target.value)}
+          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-primary-300"
+        >
+          <option value="">Select target class…</option>
+          {options.map((c) => (
+            <option key={c.id} value={c.id}>{c.name} — {c.grade_level}</option>
+          ))}
+        </select>
+        <div className="flex justify-end gap-3">
+          <button onClick={onClose} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900">Cancel</button>
+          <button onClick={handleTransfer} disabled={saving} className="btn-primary px-4 py-2 text-sm">
+            {saving ? 'Transferring…' : 'Transfer'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StudentsModal({ cls, classes, onClose }) {
   const [students, setStudents] = useState(cls.students || []);
-  const [editTarget, setEditTarget] = useState(null); // student object or null
+  const [editTarget, setEditTarget] = useState(null);
+  const [transferTarget, setTransferTarget] = useState(null);
   const [showAdd, setShowAdd] = useState(false);
 
   async function refresh() {
@@ -98,6 +144,11 @@ function StudentsModal({ cls, onClose }) {
     toast.success('Student saved');
     setShowAdd(false);
     setEditTarget(null);
+    refresh();
+  }
+
+  function handleTransferred() {
+    setTransferTarget(null);
     refresh();
   }
 
@@ -146,6 +197,12 @@ function StudentsModal({ cls, onClose }) {
                           Edit
                         </button>
                         <button
+                          onClick={() => setTransferTarget(s)}
+                          className="text-xs px-2 py-1 rounded bg-blue-50 hover:bg-blue-100 text-blue-600"
+                        >
+                          Transfer
+                        </button>
+                        <button
                           onClick={() => handleDelete(s)}
                           className="text-xs px-2 py-1 rounded bg-red-50 hover:bg-red-100 text-red-600"
                         >
@@ -167,6 +224,16 @@ function StudentsModal({ cls, onClose }) {
           student={editTarget || null}
           onSave={handleSaved}
           onClose={() => { setShowAdd(false); setEditTarget(null); }}
+        />
+      )}
+
+      {transferTarget && (
+        <TransferModal
+          student={transferTarget}
+          classes={classes}
+          currentClassId={cls.id}
+          onTransferred={handleTransferred}
+          onClose={() => setTransferTarget(null)}
         />
       )}
     </>
@@ -235,7 +302,7 @@ export default function ClassManagement() {
         </div>
       )}
 
-      {selected && <StudentsModal cls={selected} onClose={() => setSelected(null)} />}
+      {selected && <StudentsModal cls={selected} classes={classes} onClose={() => setSelected(null)} />}
     </div>
   );
 }
