@@ -15,7 +15,7 @@ async function getUserById(id) {
   return user;
 }
 
-async function createUser({ name, email, password, role, phone }) {
+async function createUser({ name, email, password, role, phone, phone2 }) {
   const existing = await usersDAL.findByEmail(email);
   if (existing) throw new AppError('A user with this email already exists.', 409);
 
@@ -23,7 +23,8 @@ async function createUser({ name, email, password, role, phone }) {
   if (!roleId) throw new AppError('Invalid role.', 400);
 
   const password_hash = await bcrypt.hash(password, 12);
-  const id = await usersDAL.create({ name, email, password_hash, role_id: roleId, phone });
+  const id = await usersDAL.create({ name, email, role_id: roleId, phone, phone2 });
+  await usersDAL.createCredential(id, password_hash);
   return usersDAL.findById(id);
 }
 
@@ -41,11 +42,11 @@ async function deleteUser(id) {
   if (!deleted) throw new AppError('Failed to delete user.', 500);
 }
 
-async function toggleBlock(id, block) {
+async function toggleSuspend(id, suspend) {
   const user = await usersDAL.findById(id);
   if (!user) throw new AppError('User not found.', 404);
-  await usersDAL.setBlocked(id, block);
-  return { id, is_blocked: block };
+  await usersDAL.setSuspended(id, suspend);
+  return { id, is_suspended: suspend };
 }
 
 async function assignClasses(teacherId, classIds) {
@@ -65,12 +66,12 @@ async function assignSubjects(teacherId, subjectIds) {
 async function getTeacherProfile(teacherId) {
   const user = await usersDAL.findById(teacherId);
   if (!user) throw new AppError('Teacher not found.', 404);
-  const classes = await usersDAL.getTeacherClasses(teacherId);
+  const classes  = await usersDAL.getTeacherClasses(teacherId);
   const subjects = await usersDAL.getTeacherSubjects(teacherId);
   return { ...user, classes, subjects };
 }
 
 module.exports = {
   getAllUsers, getUserById, createUser, updateUser, deleteUser,
-  toggleBlock, assignClasses, assignSubjects, getTeacherProfile,
+  toggleSuspend, assignClasses, assignSubjects, getTeacherProfile,
 };

@@ -14,7 +14,7 @@ router.get('/:id', usersController.getById);
 router.get('/:id/profile', usersController.getProfile);
 router.put('/:id', validate(updateUserSchema), usersController.update);
 router.delete('/:id', usersController.remove);
-router.patch('/:id/block', usersController.block);
+router.patch('/:id/suspend', usersController.suspend);
 router.post('/:id/assign-classes', validate(assignClassesSchema), usersController.assignClasses);
 router.post('/:id/assign-subjects', validate(assignSubjectsSchema), usersController.assignSubjects);
 

@@ -6,8 +6,8 @@ const AppError = require('../utils/AppError');
 async function login(email, password) {
   const user = await usersDAL.findByEmail(email);
   if (!user) throw new AppError('Invalid email or password.', 401);
-  if (user.is_blocked) throw new AppError('Your account has been blocked. Contact an administrator.', 403);
-  if (!user.is_active) throw new AppError('Your account is inactive. Contact an administrator.', 403);
+  if (user.is_suspended) throw new AppError('Your account has been suspended. Contact an administrator.', 403);
+  if (!user.is_active)   throw new AppError('Your account is inactive. Contact an administrator.', 403);
 
   const passwordMatch = await bcrypt.compare(password, user.password_hash);
   if (!passwordMatch) throw new AppError('Invalid email or password.', 401);

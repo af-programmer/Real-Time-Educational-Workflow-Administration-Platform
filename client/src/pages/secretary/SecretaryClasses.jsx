@@ -44,8 +44,19 @@ export default function SecretaryClasses() {
       <style>body{font-family:Arial;padding:20px}table{width:100%;border-collapse:collapse}
       th,td{border:1px solid #ccc;padding:8px;text-align:left}th{background:#f3f4f6}</style></head>
       <body><h2>Class ${selectedClass.name} — Student Roster</h2>
-      <table><thead><tr><th>#</th><th>Name</th><th>Student #</th><th>Parent Phone</th><th>Parent Email</th></tr></thead>
-      <tbody>${students.map((s, i) => `<tr><td>${i+1}</td><td>${s.name}</td><td>${s.student_number||'—'}</td><td>${s.parent_phone||'—'}</td><td>${s.parent_email||'—'}</td></tr>`).join('')}
+      <table><thead><tr>
+        <th>#</th><th>Name</th><th>Student #</th>
+        <th>Father's Phone</th><th>Mother's Phone</th><th>Home Phone</th><th>Parent Email</th>
+      </tr></thead>
+      <tbody>${students.map((s, i) => `<tr>
+        <td>${i + 1}</td>
+        <td>${s.name}</td>
+        <td>${s.student_number || '—'}</td>
+        <td>${s.phone_father || '—'}</td>
+        <td>${s.phone_mother || '—'}</td>
+        <td>${s.phone_home   || '—'}</td>
+        <td>${s.parent_email || '—'}</td>
+      </tr>`).join('')}
       </tbody></table></body></html>`);
     win.document.close();
     win.print();
@@ -55,6 +66,7 @@ export default function SecretaryClasses() {
 
   return (
     <div className="flex gap-5">
+      {/* Class list */}
       <div className="w-56 flex-shrink-0 space-y-2">
         {classes.map((cls) => (
           <button key={cls.id} onClick={() => loadStudents(cls)}
@@ -65,6 +77,7 @@ export default function SecretaryClasses() {
         ))}
       </div>
 
+      {/* Students panel */}
       <div className="flex-1 space-y-4">
         {!selectedClass ? (
           <div className="card p-12 text-center text-gray-400">
@@ -94,9 +107,11 @@ export default function SecretaryClasses() {
               <div className="card overflow-hidden">
                 <table className="w-full text-sm">
                   <thead className="bg-gray-50">
-                    <tr>{['#', 'Name', 'Student #', 'Parent Phone', 'Parent Email', ''].map((h) => (
-                      <th key={h} className="text-left px-4 py-3 text-gray-500 font-medium">{h}</th>
-                    ))}</tr>
+                    <tr>
+                      {['#', 'Name', 'Student #', "Father's Phone", "Mother's Phone", 'Home Phone', 'Email', ''].map((h) => (
+                        <th key={h} className="text-left px-4 py-3 text-gray-500 font-medium">{h}</th>
+                      ))}
+                    </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-50">
                     {students.map((s, i) => (
@@ -104,8 +119,10 @@ export default function SecretaryClasses() {
                         <td className="px-4 py-3 text-gray-400">{i + 1}</td>
                         <td className="px-4 py-3 font-medium text-gray-900">{s.name}</td>
                         <td className="px-4 py-3 text-gray-600">{s.student_number || '—'}</td>
-                        <td className="px-4 py-3 text-gray-600">{s.parent_phone || '—'}</td>
-                        <td className="px-4 py-3 text-gray-600">{s.parent_email || '—'}</td>
+                        <td className="px-4 py-3 text-gray-600">{s.phone_father  || '—'}</td>
+                        <td className="px-4 py-3 text-gray-600">{s.phone_mother  || '—'}</td>
+                        <td className="px-4 py-3 text-gray-600">{s.phone_home    || '—'}</td>
+                        <td className="px-4 py-3 text-gray-600">{s.parent_email  || '—'}</td>
                         <td className="px-4 py-3">
                           <button onClick={() => { setEditStudent(s); setShowForm(false); }}
                             className="text-primary-600 hover:text-primary-800 text-xs">Edit</button>

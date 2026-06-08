@@ -1,10 +1,11 @@
 const { pool } = require('../config/db');
 
-async function create({ user_id, role_target, type, title, content, entity_id, entity_type }) {
+async function create({ user_id, role_target, type, title, content, data }) {
   const [result] = await pool.query(
-    `INSERT INTO notifications (user_id, role_target, type, title, content, entity_id, entity_type)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    [user_id || null, role_target || null, type, title, content, entity_id || null, entity_type || null]
+    `INSERT INTO notifications (user_id, role_target, type, title, content, data)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    [user_id || null, role_target || null, type, title, content || null,
+     data ? (typeof data === 'string' ? data : JSON.stringify(data)) : null]
   );
   return result.insertId;
 }
@@ -12,7 +13,7 @@ async function create({ user_id, role_target, type, title, content, entity_id, e
 async function findByUser(userId, role) {
   const [rows] = await pool.query(
     `SELECT n.*,
-       (nr.user_id IS NOT NULL) AS is_read
+       COALESCE(nr.user_id IS NOT NULL, n.is_read) AS is_read
      FROM notifications n
      LEFT JOIN notification_reads nr ON nr.notification_id = n.id AND nr.user_id = ?
      WHERE n.user_id = ?
@@ -33,9 +34,13 @@ async function markAllRead(userId, role) {
   );
   if (!rows.length) return;
   const values = rows.map((r) => [userId, r.id]);
+  await pool.query(`INSERT IGNORE INTO notification_reads (user_id, notification_id) VALUES ?`, [values]);
+}
+
+async function markOneRead(notificationId, userId) {
   await pool.query(
-    `INSERT IGNORE INTO notification_reads (user_id, notification_id) VALUES ?`,
-    [values]
+    `INSERT IGNORE INTO notification_reads (user_id, notification_id) VALUES (?, ?)`,
+    [userId, notificationId]
   );
 }
 
@@ -48,13 +53,6 @@ async function getUnreadCount(userId, role) {
     [userId, userId, role]
   );
   return count;
-}
-
-async function markOneRead(notificationId, userId) {
-  await pool.query(
-    `INSERT IGNORE INTO notification_reads (user_id, notification_id) VALUES (?, ?)`,
-    [userId, notificationId]
-  );
 }
 
 module.exports = { create, findByUser, markAllRead, markOneRead, getUnreadCount };

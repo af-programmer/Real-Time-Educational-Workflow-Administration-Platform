@@ -4,11 +4,13 @@ import toast from 'react-hot-toast';
 
 export default function StudentForm({ classId, student, classes, onSave, onCancel }) {
   const [form, setForm] = useState({
-    name: student?.name || '',
-    class_id: student?.class_id || classId || '',
-    parent_phone: student?.parent_phone || '',
-    parent_email: student?.parent_email || '',
+    name:          student?.name          || '',
+    class_id:      student?.class_id      || classId || '',
     date_of_birth: student?.date_of_birth ? student.date_of_birth.split('T')[0] : '',
+    phone_father:  student?.phone_father  || '',
+    phone_mother:  student?.phone_mother  || '',
+    phone_home:    student?.phone_home    || '',
+    parent_email:  student?.parent_email  || '',
   });
   const [saving, setSaving] = useState(false);
 
@@ -17,6 +19,10 @@ export default function StudentForm({ classId, student, classes, onSave, onCance
   async function handleSubmit(e) {
     e.preventDefault();
     if (!form.name.trim()) { toast.error('Name is required.'); return; }
+    if (!form.phone_father && !form.phone_mother && !form.phone_home) {
+      toast.error('At least one parent/home phone is required.');
+      return;
+    }
     setSaving(true);
     const payload = Object.fromEntries(
       Object.entries(form).map(([k, v]) => [k, v === '' ? null : v])
@@ -54,12 +60,20 @@ export default function StudentForm({ classId, student, classes, onSave, onCance
           <input type="date" className="input" value={form.date_of_birth} onChange={set('date_of_birth')} />
         </div>
         <div>
-          <label className="label">Parent Phone</label>
-          <input className="input" value={form.parent_phone} onChange={set('parent_phone')} />
-        </div>
-        <div>
           <label className="label">Parent Email</label>
           <input type="email" className="input" value={form.parent_email} onChange={set('parent_email')} />
+        </div>
+        <div>
+          <label className="label">Father's Phone <span className="text-gray-400 font-normal">(at least one required)</span></label>
+          <input type="tel" className="input" value={form.phone_father} onChange={set('phone_father')} placeholder="05x-xxxxxxx" />
+        </div>
+        <div>
+          <label className="label">Mother's Phone</label>
+          <input type="tel" className="input" value={form.phone_mother} onChange={set('phone_mother')} placeholder="05x-xxxxxxx" />
+        </div>
+        <div>
+          <label className="label">Home Phone</label>
+          <input type="tel" className="input" value={form.phone_home} onChange={set('phone_home')} placeholder="0x-xxxxxxx" />
         </div>
       </div>
       <div className="flex gap-2 pt-2">

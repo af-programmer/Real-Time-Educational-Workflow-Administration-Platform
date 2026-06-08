@@ -7,7 +7,7 @@ export const usersApi = {
   create: (data) => axiosInstance.post('/users', data),
   update: (id, data) => axiosInstance.put(`/users/${id}`, data),
   delete: (id) => axiosInstance.delete(`/users/${id}`),
-  block: (id, block) => axiosInstance.patch(`/users/${id}/block`, { block }),
+  suspend: (id, suspend) => axiosInstance.patch(`/users/${id}/suspend`, { suspend }),
   assignClasses: (id, classIds) => axiosInstance.post(`/users/${id}/assign-classes`, { classIds }),
   assignSubjects: (id, subjectIds) => axiosInstance.post(`/users/${id}/assign-subjects`, { subjectIds }),
 };

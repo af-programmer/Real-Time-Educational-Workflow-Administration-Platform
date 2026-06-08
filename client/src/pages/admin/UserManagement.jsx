@@ -65,10 +65,10 @@ export default function UserManagement() {
     }
   };
 
-  const toggleBlock = async (user) => {
+  const toggleSuspend = async (user) => {
     try {
-      await usersApi.block(user.id, !user.is_blocked);
-      toast.success(user.is_blocked ? 'User unblocked.' : 'User blocked.');
+      await usersApi.suspend(user.id, !user.is_suspended);
+      toast.success(user.is_suspended ? 'User unsuspended.' : 'User suspended.');
       load();
     } catch {
       toast.error('Failed to update user.');
@@ -128,7 +128,7 @@ export default function UserManagement() {
       key: 'is_active', header: 'Status',
       render: (_, row) => (
         <div className="flex gap-1">
-          {row.is_blocked && <Badge label="Blocked" variant="urgent" />}
+          {row.is_suspended && <Badge label="Suspended" variant="urgent" />}
           {!row.is_active ? <Badge label="Inactive" variant="pending" /> : <Badge label="Active" variant="completed" />}
         </div>
       ),
@@ -147,9 +147,9 @@ export default function UserManagement() {
               Assign
             </button>
           )}
-          <button onClick={() => toggleBlock(row)}
-            className={clsx('text-xs font-medium', row.is_blocked ? 'text-green-600' : 'text-yellow-600')}>
-            {row.is_blocked ? 'Unblock' : 'Block'}
+          <button onClick={() => toggleSuspend(row)}
+            className={clsx('text-xs font-medium', row.is_suspended ? 'text-green-600' : 'text-yellow-600')}>
+            {row.is_suspended ? 'Unsuspend' : 'Suspend'}
           </button>
           <button onClick={() => deleteUser(row.id)}
             className="text-xs text-red-600 hover:text-red-700 font-medium">

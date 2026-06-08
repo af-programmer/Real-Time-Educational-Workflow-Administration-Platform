@@ -1,36 +1,32 @@
 const { pool } = require('../config/db');
+const { buildUpdateClause } = require('../utils/buildUpdateClause');
 
-async function create({ student_id, subject_id, teacher_id, grade, max_grade, date, exam_type, notes }) {
+async function create({ student_id, subject_id, teacher_id, exam_type_id, grade, date, notes }) {
   const [result] = await pool.query(
-    `INSERT INTO grades (student_id, subject_id, teacher_id, grade, max_grade, date, exam_type, notes)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    [student_id, subject_id, teacher_id, grade, max_grade || 100, date, exam_type || 'test', notes || null]
+    `INSERT INTO grades (student_id, subject_id, teacher_id, exam_type_id, grade, date, notes)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [student_id, subject_id, teacher_id, exam_type_id, grade, date, notes || null]
   );
   return result.insertId;
 }
 
 async function update(id, fields) {
-  const allowed = ['grade', 'max_grade', 'date', 'exam_type', 'notes'];
-  const updates = Object.keys(fields)
-    .filter((k) => allowed.includes(k) && fields[k] !== undefined)
-    .map((k) => `${k} = ?`);
-  if (!updates.length) return false;
-  const values = Object.keys(fields)
-    .filter((k) => allowed.includes(k) && fields[k] !== undefined)
-    .map((k) => fields[k]);
-  await pool.query(`UPDATE grades SET ${updates.join(', ')} WHERE id = ?`, [...values, id]);
+  const { clause, values, hasFields } = buildUpdateClause(fields, ['grade', 'date', 'exam_type_id', 'notes']);
+  if (!hasFields) return false;
+  await pool.query(`UPDATE grades SET ${clause} WHERE id = ?`, [...values, id]);
   return true;
 }
 
 async function findById(id) {
   const [rows] = await pool.query(
     `SELECT g.*, s.name AS student_name, sub.name AS subject_name,
-            u.name AS teacher_name, cl.name AS class_name
+            u.name AS teacher_name, cl.name AS class_name, et.code AS exam_type, et.label AS exam_type_label
      FROM grades g
-     JOIN students s ON s.id = g.student_id
+     JOIN students s   ON s.id  = g.student_id
      JOIN subjects sub ON sub.id = g.subject_id
-     JOIN users u ON u.id = g.teacher_id
-     JOIN classes cl ON cl.id = s.class_id
+     JOIN users u      ON u.id  = g.teacher_id
+     JOIN classes cl   ON cl.id = s.class_id
+     JOIN exam_types et ON et.id = g.exam_type_id
      WHERE g.id = ? LIMIT 1`,
     [id]
   );
@@ -40,18 +36,17 @@ async function findById(id) {
 async function findByTeacher(teacherId, { classId, subjectId } = {}) {
   let sql = `
     SELECT g.*, s.name AS student_name, sub.name AS subject_name,
-           cl.name AS class_name, cl.id AS class_id
+           cl.name AS class_name, cl.id AS class_id, et.code AS exam_type
     FROM grades g
-    JOIN students s ON s.id = g.student_id
-    JOIN subjects sub ON sub.id = g.subject_id
-    JOIN classes cl ON cl.id = s.class_id
+    JOIN students s    ON s.id  = g.student_id
+    JOIN subjects sub  ON sub.id = g.subject_id
+    JOIN classes cl    ON cl.id = s.class_id
+    JOIN exam_types et ON et.id = g.exam_type_id
     WHERE g.teacher_id = ?
   `;
   const params = [teacherId];
-
-  if (classId) { sql += ' AND cl.id = ?'; params.push(classId); }
+  if (classId)   { sql += ' AND cl.id = ?';       params.push(classId); }
   if (subjectId) { sql += ' AND g.subject_id = ?'; params.push(subjectId); }
-
   sql += ' ORDER BY g.date DESC, g.created_at DESC';
   const [rows] = await pool.query(sql, params);
   return rows;
@@ -59,10 +54,11 @@ async function findByTeacher(teacherId, { classId, subjectId } = {}) {
 
 async function findByStudent(studentId) {
   const [rows] = await pool.query(
-    `SELECT g.*, sub.name AS subject_name, u.name AS teacher_name
+    `SELECT g.*, sub.name AS subject_name, u.name AS teacher_name, et.code AS exam_type
      FROM grades g
-     JOIN subjects sub ON sub.id = g.subject_id
-     JOIN users u ON u.id = g.teacher_id
+     JOIN subjects sub  ON sub.id = g.subject_id
+     JOIN users u       ON u.id  = g.teacher_id
+     JOIN exam_types et ON et.id = g.exam_type_id
      WHERE g.student_id = ?
      ORDER BY g.date DESC`,
     [studentId]
@@ -78,4 +74,9 @@ async function verifyTeacherOwnership(gradeId, teacherId) {
   return rows.length > 0;
 }
 
-module.exports = { create, update, findById, findByTeacher, findByStudent, verifyTeacherOwnership };
+async function getExamTypes() {
+  const [rows] = await pool.query('SELECT id, code, label FROM exam_types ORDER BY label');
+  return rows;
+}
+
+module.exports = { create, update, findById, findByTeacher, findByStudent, verifyTeacherOwnership, getExamTypes };

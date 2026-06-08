@@ -1,9 +1,12 @@
 const { pool } = require('../config/db');
+const { buildUpdateClause } = require('../utils/buildUpdateClause');
 
 async function findByEmail(email) {
   const [rows] = await pool.query(
-    `SELECT u.*, r.name AS role FROM users u
+    `SELECT u.*, uc.password_hash, r.name AS role
+     FROM users u
      JOIN roles r ON u.role_id = r.id
+     JOIN user_credentials uc ON uc.user_id = u.id
      WHERE u.email = ? LIMIT 1`,
     [email]
   );
@@ -12,8 +15,8 @@ async function findByEmail(email) {
 
 async function findById(id) {
   const [rows] = await pool.query(
-    `SELECT u.id, u.name, u.email, u.role_id, u.is_active, u.is_blocked,
-            u.phone, u.avatar_url, u.created_at, u.updated_at, r.name AS role
+    `SELECT u.id, u.name, u.email, u.role_id, u.is_active, u.is_suspended,
+            u.phone, u.phone2, u.avatar_url, u.created_at, u.updated_at, r.name AS role
      FROM users u JOIN roles r ON u.role_id = r.id
      WHERE u.id = ? LIMIT 1`,
     [id]
@@ -25,10 +28,7 @@ async function findAll({ roleFilter, search, page, limit, offset }) {
   let where = 'WHERE 1=1';
   const params = [];
 
-  if (roleFilter) {
-    where += ' AND r.name = ?';
-    params.push(roleFilter);
-  }
+  if (roleFilter) { where += ' AND r.name = ?'; params.push(roleFilter); }
   if (search) {
     where += ' AND (u.name LIKE ? OR u.email LIKE ?)';
     params.push(`%${search}%`, `%${search}%`);
@@ -40,8 +40,8 @@ async function findAll({ roleFilter, search, page, limit, offset }) {
   );
 
   const [rows] = await pool.query(
-    `SELECT u.id, u.name, u.email, u.is_active, u.is_blocked,
-            u.phone, u.created_at, r.name AS role
+    `SELECT u.id, u.name, u.email, u.is_active, u.is_suspended,
+            u.phone, u.phone2, u.created_at, r.name AS role
      FROM users u JOIN roles r ON u.role_id = r.id
      ${where}
      ORDER BY u.created_at DESC LIMIT ? OFFSET ?`,
@@ -51,36 +51,40 @@ async function findAll({ roleFilter, search, page, limit, offset }) {
   return { rows, total };
 }
 
-async function create({ name, email, password_hash, role_id, phone }) {
+async function create({ name, email, role_id, phone, phone2 }) {
   const [result] = await pool.query(
-    `INSERT INTO users (name, email, password_hash, role_id, phone) VALUES (?, ?, ?, ?, ?)`,
-    [name, email, password_hash, role_id, phone || null]
+    `INSERT INTO users (name, email, role_id, phone, phone2) VALUES (?, ?, ?, ?, ?)`,
+    [name, email, role_id, phone || null, phone2 || null]
   );
   return result.insertId;
 }
 
+async function createCredential(userId, password_hash) {
+  await pool.query(
+    `INSERT INTO user_credentials (user_id, password_hash) VALUES (?, ?)
+     ON DUPLICATE KEY UPDATE password_hash = VALUES(password_hash)`,
+    [userId, password_hash]
+  );
+}
+
 async function update(id, fields) {
-  const allowed = ['name', 'email', 'phone', 'is_active', 'avatar_url'];
-  const updates = Object.keys(fields)
-    .filter((k) => allowed.includes(k) && fields[k] !== undefined)
-    .map((k) => `${k} = ?`);
-
-  if (!updates.length) return false;
-
-  const values = Object.keys(fields)
-    .filter((k) => allowed.includes(k) && fields[k] !== undefined)
-    .map((k) => fields[k]);
-
-  await pool.query(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`, [...values, id]);
+  const { clause, values, hasFields } = buildUpdateClause(
+    fields, ['name', 'email', 'phone', 'phone2', 'is_active', 'avatar_url']
+  );
+  if (!hasFields) return false;
+  await pool.query(`UPDATE users SET ${clause} WHERE id = ?`, [...values, id]);
   return true;
 }
 
-async function updatePassword(id, password_hash) {
-  await pool.query('UPDATE users SET password_hash = ? WHERE id = ?', [password_hash, id]);
+async function updatePassword(userId, password_hash) {
+  await pool.query(
+    `UPDATE user_credentials SET password_hash = ? WHERE user_id = ?`,
+    [password_hash, userId]
+  );
 }
 
-async function setBlocked(id, is_blocked) {
-  await pool.query('UPDATE users SET is_blocked = ? WHERE id = ?', [is_blocked ? 1 : 0, id]);
+async function setSuspended(id, is_suspended) {
+  await pool.query('UPDATE users SET is_suspended = ? WHERE id = ?', [is_suspended ? 1 : 0, id]);
 }
 
 async function remove(id) {
@@ -109,9 +113,10 @@ async function assignSubjects(teacherId, subjectIds) {
 
 async function getTeacherClasses(teacherId) {
   const [rows] = await pool.query(
-    `SELECT c.id, c.name, c.student_count, c.grade_level
+    `SELECT c.id, c.name, c.student_count, gl.label AS grade_level
      FROM classes c
      JOIN teacher_classes tc ON tc.class_id = c.id
+     JOIN grade_levels gl ON gl.id = c.grade_level_id
      WHERE tc.teacher_id = ? AND c.is_active = TRUE`,
     [teacherId]
   );
@@ -130,7 +135,7 @@ async function getTeacherSubjects(teacherId) {
 }
 
 module.exports = {
-  findByEmail, findById, findAll, create, update, updatePassword,
-  setBlocked, remove, getRoleId, assignClasses, assignSubjects,
-  getTeacherClasses, getTeacherSubjects,
+  findByEmail, findById, findAll, create, createCredential, update,
+  updatePassword, setSuspended, remove, getRoleId,
+  assignClasses, assignSubjects, getTeacherClasses, getTeacherSubjects,
 };

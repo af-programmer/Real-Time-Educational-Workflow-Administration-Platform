@@ -1,16 +1,15 @@
 const { pool } = require('../config/db');
 
-async function create({ teacher_id, subject_id, priority, lesson_date, lesson_time, total_copies, notes }) {
+async function create({ teacher_id, subject_id, priority_id, status_id, lesson_date, lesson_time, total_copies, notes }) {
   const [result] = await pool.query(
-    `INSERT INTO print_requests (teacher_id, subject_id, priority, lesson_date, lesson_time, total_copies, notes)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    [teacher_id, subject_id, priority, lesson_date, lesson_time || null, total_copies, notes || null]
+    `INSERT INTO print_requests (teacher_id, subject_id, priority_id, status_id, lesson_date, lesson_time, total_copies, notes)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [teacher_id, subject_id, priority_id, status_id, lesson_date, lesson_time || null, total_copies, notes || null]
   );
   return result.insertId;
 }
 
 async function addClasses(printRequestId, classes) {
-  // classes: [{class_id, copies_count}]
   if (!classes.length) return;
   const values = classes.map(({ class_id, copies_count }) => [printRequestId, class_id, copies_count]);
   await pool.query('INSERT INTO print_request_classes (print_request_id, class_id, copies_count) VALUES ?', [values]);
@@ -27,10 +26,13 @@ async function addFile({ print_request_id, original_name, stored_name, file_path
 
 async function findById(id) {
   const [rows] = await pool.query(
-    `SELECT pr.*, u.name AS teacher_name, s.name AS subject_name
+    `SELECT pr.*, u.name AS teacher_name, s.name AS subject_name,
+            pp.code AS priority, ps.code AS status
      FROM print_requests pr
-     JOIN users u ON u.id = pr.teacher_id
-     JOIN subjects s ON s.id = pr.subject_id
+     JOIN users u            ON u.id  = pr.teacher_id
+     JOIN subjects s         ON s.id  = pr.subject_id
+     JOIN print_priorities pp ON pp.id = pr.priority_id
+     JOIN print_statuses ps   ON ps.id = pr.status_id
      WHERE pr.id = ? LIMIT 1`,
     [id]
   );
@@ -44,12 +46,9 @@ async function findById(id) {
      WHERE prc.print_request_id = ?`,
     [id]
   );
-  const [files] = await pool.query(
-    'SELECT * FROM print_files WHERE print_request_id = ?',
-    [id]
-  );
+  const [files] = await pool.query('SELECT * FROM print_files WHERE print_request_id = ?', [id]);
   request.classes = classes;
-  request.files = files;
+  request.files   = files;
   return request;
 }
 
@@ -57,27 +56,32 @@ async function findAll({ teacherId, priority, status, dateFrom, dateTo, page, li
   let where = 'WHERE 1=1';
   const params = [];
 
-  if (teacherId) { where += ' AND pr.teacher_id = ?'; params.push(teacherId); }
-  if (priority) { where += ' AND pr.priority = ?'; params.push(priority); }
-  if (status) { where += ' AND pr.status = ?'; params.push(status); }
-  if (dateFrom) { where += ' AND pr.lesson_date >= ?'; params.push(dateFrom); }
-  if (dateTo) { where += ' AND pr.lesson_date <= ?'; params.push(dateTo); }
+  if (teacherId) { where += ' AND pr.teacher_id = ?';  params.push(teacherId); }
+  if (priority)  { where += ' AND pp.code = ?';         params.push(priority); }
+  if (status)    { where += ' AND ps.code = ?';         params.push(status); }
+  if (dateFrom)  { where += ' AND pr.lesson_date >= ?'; params.push(dateFrom); }
+  if (dateTo)    { where += ' AND pr.lesson_date <= ?'; params.push(dateTo); }
 
   const [[{ total }]] = await pool.query(
-    `SELECT COUNT(*) AS total FROM print_requests pr ${where}`,
+    `SELECT COUNT(*) AS total
+     FROM print_requests pr
+     JOIN print_priorities pp ON pp.id = pr.priority_id
+     JOIN print_statuses ps   ON ps.id = pr.status_id
+     ${where}`,
     params
   );
 
   const [rows] = await pool.query(
-    `SELECT pr.id, pr.priority, pr.status, pr.lesson_date, pr.lesson_time,
-            pr.total_copies, pr.notes, pr.created_at,
-            u.name AS teacher_name, u.id AS teacher_id,
-            s.name AS subject_name
+    `SELECT pr.id, pr.lesson_date, pr.lesson_time, pr.total_copies, pr.notes, pr.created_at,
+            u.name AS teacher_name, u.id AS teacher_id, s.name AS subject_name,
+            pp.code AS priority, ps.code AS status
      FROM print_requests pr
-     JOIN users u ON u.id = pr.teacher_id
-     JOIN subjects s ON s.id = pr.subject_id
+     JOIN users u             ON u.id  = pr.teacher_id
+     JOIN subjects s          ON s.id  = pr.subject_id
+     JOIN print_priorities pp ON pp.id = pr.priority_id
+     JOIN print_statuses ps   ON ps.id = pr.status_id
      ${where}
-     ORDER BY FIELD(pr.priority,"urgent","important","normal"), pr.created_at DESC
+     ORDER BY pp.sort_order ASC, pr.created_at DESC
      LIMIT ? OFFSET ?`,
     [...params, limit, offset]
   );
@@ -87,9 +91,11 @@ async function findAll({ teacherId, priority, status, dateFrom, dateTo, page, li
 
 async function findByTeacher(teacherId, { page, limit, offset } = {}) {
   const [rows] = await pool.query(
-    `SELECT pr.*, s.name AS subject_name
+    `SELECT pr.*, s.name AS subject_name, pp.code AS priority, ps.code AS status
      FROM print_requests pr
-     JOIN subjects s ON s.id = pr.subject_id
+     JOIN subjects s          ON s.id  = pr.subject_id
+     JOIN print_priorities pp ON pp.id = pr.priority_id
+     JOIN print_statuses ps   ON ps.id = pr.status_id
      WHERE pr.teacher_id = ?
      ORDER BY pr.created_at DESC
      LIMIT ? OFFSET ?`,
@@ -102,17 +108,11 @@ async function findByTeacher(teacherId, { page, limit, offset } = {}) {
   return { rows, total };
 }
 
-async function updateStatus(id, status) {
-  await pool.query('UPDATE print_requests SET status = ? WHERE id = ?', [status, id]);
-}
-
-async function createMerged({ teacher_id, subject_id, priority, lesson_date, lesson_time, total_copies, notes, merged_from }) {
-  const [result] = await pool.query(
-    `INSERT INTO print_requests (teacher_id, subject_id, priority, lesson_date, lesson_time, total_copies, notes, is_merged, merged_from)
-     VALUES (?, ?, ?, ?, ?, ?, ?, TRUE, ?)`,
-    [teacher_id, subject_id, priority, lesson_date, lesson_time || null, total_copies, notes || null, JSON.stringify(merged_from)]
+async function updateStatus(id, statusCode) {
+  await pool.query(
+    `UPDATE print_requests SET status_id = (SELECT id FROM print_statuses WHERE code = ? LIMIT 1) WHERE id = ?`,
+    [statusCode, id]
   );
-  return result.insertId;
 }
 
 async function remove(id) {
@@ -120,27 +120,30 @@ async function remove(id) {
   return result.affectedRows > 0;
 }
 
-async function findHistory({ teacherId, priority, dateFrom, dateTo, search, page, limit, offset }) {
-  let where = "WHERE pr.status = 'completed'";
+async function findHistory({ priority, dateFrom, dateTo, search, page, limit, offset }) {
+  let where = "WHERE ps.code = 'completed'";
   const params = [];
-  if (teacherId) { where += ' AND pr.teacher_id = ?'; params.push(teacherId); }
-  if (priority) { where += ' AND pr.priority = ?'; params.push(priority); }
+  if (priority) { where += ' AND pp.code = ?'; params.push(priority); }
   if (dateFrom) { where += ' AND pr.lesson_date >= ?'; params.push(dateFrom); }
-  if (dateTo) { where += ' AND pr.lesson_date <= ?'; params.push(dateTo); }
-  if (search) { where += ' AND (u.name LIKE ? OR s.name LIKE ?)'; params.push(`%${search}%`, `%${search}%`); }
+  if (dateTo)   { where += ' AND pr.lesson_date <= ?'; params.push(dateTo); }
+  if (search)   { where += ' AND (u.name LIKE ? OR s.name LIKE ?)'; params.push(`%${search}%`, `%${search}%`); }
 
   const [[{ total }]] = await pool.query(
     `SELECT COUNT(*) AS total FROM print_requests pr
-     JOIN users u ON u.id = pr.teacher_id
-     JOIN subjects s ON s.id = pr.subject_id
+     JOIN users u             ON u.id  = pr.teacher_id
+     JOIN subjects s          ON s.id  = pr.subject_id
+     JOIN print_priorities pp ON pp.id = pr.priority_id
+     JOIN print_statuses ps   ON ps.id = pr.status_id
      ${where}`, params
   );
   const [rows] = await pool.query(
-    `SELECT pr.id, pr.priority, pr.status, pr.lesson_date, pr.total_copies, pr.notes, pr.created_at, pr.updated_at,
-            u.name AS teacher_name, s.name AS subject_name
+    `SELECT pr.id, pr.lesson_date, pr.total_copies, pr.notes, pr.created_at, pr.updated_at,
+            u.name AS teacher_name, s.name AS subject_name, pp.code AS priority, ps.code AS status
      FROM print_requests pr
-     JOIN users u ON u.id = pr.teacher_id
-     JOIN subjects s ON s.id = pr.subject_id
+     JOIN users u             ON u.id  = pr.teacher_id
+     JOIN subjects s          ON s.id  = pr.subject_id
+     JOIN print_priorities pp ON pp.id = pr.priority_id
+     JOIN print_statuses ps   ON ps.id = pr.status_id
      ${where}
      ORDER BY pr.updated_at DESC LIMIT ? OFFSET ?`,
     [...params, limit, offset]
@@ -148,4 +151,17 @@ async function findHistory({ teacherId, priority, dateFrom, dateTo, search, page
   return { rows, total };
 }
 
-module.exports = { create, addClasses, addFile, findById, findAll, findByTeacher, updateStatus, createMerged, remove, findHistory };
+async function getPriorityId(code) {
+  const [rows] = await pool.query('SELECT id FROM print_priorities WHERE code = ? LIMIT 1', [code]);
+  return rows[0]?.id || null;
+}
+
+async function getDefaultStatusId() {
+  const [rows] = await pool.query("SELECT id FROM print_statuses WHERE code = 'pending' LIMIT 1");
+  return rows[0]?.id || null;
+}
+
+module.exports = {
+  create, addClasses, addFile, findById, findAll, findByTeacher,
+  updateStatus, remove, findHistory, getPriorityId, getDefaultStatusId,
+};

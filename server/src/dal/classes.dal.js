@@ -1,14 +1,24 @@
 const { pool } = require('../config/db');
+const { buildUpdateClause } = require('../utils/buildUpdateClause');
 
 async function findAll() {
   const [rows] = await pool.query(
-    'SELECT * FROM classes WHERE is_active = TRUE ORDER BY name ASC'
+    `SELECT c.*, gl.code AS grade_level_code, gl.label AS grade_level
+     FROM classes c
+     JOIN grade_levels gl ON gl.id = c.grade_level_id
+     WHERE c.is_active = TRUE ORDER BY c.name ASC`
   );
   return rows;
 }
 
 async function findById(id) {
-  const [rows] = await pool.query('SELECT * FROM classes WHERE id = ? LIMIT 1', [id]);
+  const [rows] = await pool.query(
+    `SELECT c.*, gl.code AS grade_level_code, gl.label AS grade_level
+     FROM classes c
+     JOIN grade_levels gl ON gl.id = c.grade_level_id
+     WHERE c.id = ? LIMIT 1`,
+    [id]
+  );
   return rows[0] || null;
 }
 
@@ -21,30 +31,28 @@ async function findByIds(ids) {
   return rows;
 }
 
-async function create({ name, student_count, grade_level, academic_year }) {
+async function create({ name, student_count, grade_level_id, academic_year }) {
   const [result] = await pool.query(
-    'INSERT INTO classes (name, student_count, grade_level, academic_year) VALUES (?, ?, ?, ?)',
-    [name, student_count, grade_level, academic_year]
+    'INSERT INTO classes (name, student_count, grade_level_id, academic_year) VALUES (?, ?, ?, ?)',
+    [name, student_count, grade_level_id, academic_year]
   );
   return result.insertId;
 }
 
 async function update(id, fields) {
-  const allowed = ['name', 'student_count', 'grade_level', 'academic_year', 'is_active'];
-  const updates = Object.keys(fields)
-    .filter((k) => allowed.includes(k))
-    .map((k) => `${k} = ?`);
-  if (!updates.length) return false;
-  const values = Object.keys(fields)
-    .filter((k) => allowed.includes(k))
-    .map((k) => fields[k]);
-  await pool.query(`UPDATE classes SET ${updates.join(', ')} WHERE id = ?`, [...values, id]);
+  const { clause, values, hasFields } = buildUpdateClause(
+    fields, ['name', 'student_count', 'grade_level_id', 'academic_year', 'is_active']
+  );
+  if (!hasFields) return false;
+  await pool.query(`UPDATE classes SET ${clause} WHERE id = ?`, [...values, id]);
   return true;
 }
 
 async function getStudentsByClass(classId) {
   const [rows] = await pool.query(
-    'SELECT id, name, student_number, parent_phone, parent_email, date_of_birth FROM students WHERE class_id = ? AND is_active = TRUE ORDER BY name ASC',
+    `SELECT id, name, student_number, phone_father, phone_mother, phone_home,
+            parent_email, date_of_birth
+     FROM students WHERE class_id = ? AND is_active = TRUE ORDER BY name ASC`,
     [classId]
   );
   return rows;
@@ -63,7 +71,8 @@ async function findStudentById(id) {
   const [rows] = await pool.query(
     `SELECT s.*, c.name AS class_name FROM students s
      JOIN classes c ON c.id = s.class_id
-     WHERE s.id = ? LIMIT 1`, [id]
+     WHERE s.id = ? LIMIT 1`,
+    [id]
   );
   return rows[0] || null;
 }
@@ -75,24 +84,25 @@ async function getNextStudentNumber() {
   return String((rows[0].max_num || 0) + 1);
 }
 
-async function createStudent({ name, class_id, date_of_birth, parent_email, parent_phone }) {
+async function createStudent({ name, class_id, date_of_birth, parent_email, phone_father, phone_mother, phone_home }) {
   const student_number = await getNextStudentNumber();
   const [result] = await pool.query(
-    `INSERT INTO students (name, class_id, student_number, date_of_birth, parent_email, parent_phone)
-     VALUES (?, ?, ?, ?, ?, ?)`,
-    [name, class_id, student_number, date_of_birth || null, parent_email || null, parent_phone || null]
+    `INSERT INTO students (name, class_id, student_number, date_of_birth, parent_email, phone_father, phone_mother, phone_home)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [name, class_id, student_number, date_of_birth || null, parent_email || null,
+     phone_father || null, phone_mother || null, phone_home || null]
   );
   return result.insertId;
 }
 
 async function updateStudent(id, fields) {
-  const allowed = ['name', 'class_id', 'student_number', 'date_of_birth', 'parent_email', 'parent_phone'];
+  const allowed = ['name', 'class_id', 'student_number', 'date_of_birth',
+                   'parent_email', 'phone_father', 'phone_mother', 'phone_home'];
   const keys = Object.keys(fields).filter((k) => allowed.includes(k));
   if (!keys.length) return false;
-  const updates = keys.map((k) => `${k} = ?`);
-  // convert empty strings to null for optional/unique fields
+  const clause = keys.map((k) => `${k} = ?`).join(', ');
   const values = keys.map((k) => (fields[k] === '' ? null : fields[k]));
-  await pool.query(`UPDATE students SET ${updates.join(', ')} WHERE id = ?`, [...values, id]);
+  await pool.query(`UPDATE students SET ${clause} WHERE id = ?`, [...values, id]);
   return true;
 }
 
@@ -101,4 +111,8 @@ async function deleteStudent(id) {
   return true;
 }
 
-module.exports = { findAll, findById, findByIds, create, update, getStudentsByClass, getAllStudents, findStudentById, createStudent, updateStudent, deleteStudent };
+module.exports = {
+  findAll, findById, findByIds, create, update,
+  getStudentsByClass, getAllStudents, findStudentById,
+  createStudent, updateStudent, deleteStudent,
+};

@@ -32,9 +32,9 @@ const remove = asyncWrapper(async (req, res) => {
   res.json({ success: true, message: 'User deleted successfully.' });
 });
 
-const block = asyncWrapper(async (req, res) => {
-  const { block: shouldBlock } = req.body;
-  const result = await usersService.toggleBlock(req.params.id, shouldBlock !== false);
+const suspend = asyncWrapper(async (req, res) => {
+  const { suspend: shouldSuspend } = req.body;
+  const result = await usersService.toggleSuspend(req.params.id, shouldSuspend !== false);
   res.json({ success: true, data: result });
 });
 
@@ -48,4 +48,4 @@ const assignSubjects = asyncWrapper(async (req, res) => {
   res.json({ success: true, message: 'Subjects assigned successfully.' });
 });
 
-module.exports = { getAll, getById, getProfile, create, update, remove, block, assignClasses, assignSubjects };
+module.exports = { getAll, getById, getProfile, create, update, remove, suspend, assignClasses, assignSubjects };

@@ -4,3 +4,4 @@ frontend/node_modules/
 .env
 dist/
 build/
+server/logs/
