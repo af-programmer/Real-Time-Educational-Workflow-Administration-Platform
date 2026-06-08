@@ -1,21 +1,13 @@
--- EduFlow Database Schema
--- MySQL 8.0+
-
 CREATE DATABASE IF NOT EXISTS eduflow CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE eduflow;
 
--- ============================================================
--- ROLES
--- ============================================================
 CREATE TABLE IF NOT EXISTS roles (
   id INT PRIMARY KEY AUTO_INCREMENT,
   name ENUM('admin', 'secretary', 'teacher') NOT NULL UNIQUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- ============================================================
--- USERS
--- ============================================================
+
 CREATE TABLE IF NOT EXISTS users (
   id INT PRIMARY KEY AUTO_INCREMENT,
   name VARCHAR(100) NOT NULL,
@@ -31,9 +23,6 @@ CREATE TABLE IF NOT EXISTS users (
   FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE RESTRICT
 );
 
--- ============================================================
--- SUBJECTS
--- ============================================================
 CREATE TABLE IF NOT EXISTS subjects (
   id INT PRIMARY KEY AUTO_INCREMENT,
   name VARCHAR(100) NOT NULL UNIQUE,
@@ -42,9 +31,6 @@ CREATE TABLE IF NOT EXISTS subjects (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- ============================================================
--- CLASSES
--- ============================================================
 CREATE TABLE IF NOT EXISTS classes (
   id INT PRIMARY KEY AUTO_INCREMENT,
   name VARCHAR(50) NOT NULL UNIQUE,
@@ -56,9 +42,6 @@ CREATE TABLE IF NOT EXISTS classes (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- ============================================================
--- STUDENTS
--- ============================================================
 CREATE TABLE IF NOT EXISTS students (
   id INT PRIMARY KEY AUTO_INCREMENT,
   name VARCHAR(100) NOT NULL,
@@ -73,9 +56,6 @@ CREATE TABLE IF NOT EXISTS students (
   FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE RESTRICT
 );
 
--- ============================================================
--- TEACHER → CLASSES (Many-to-Many)
--- ============================================================
 CREATE TABLE IF NOT EXISTS teacher_classes (
   id INT PRIMARY KEY AUTO_INCREMENT,
   teacher_id INT NOT NULL,
@@ -86,9 +66,6 @@ CREATE TABLE IF NOT EXISTS teacher_classes (
   FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE
 );
 
--- ============================================================
--- TEACHER → SUBJECTS (Many-to-Many)
--- ============================================================
 CREATE TABLE IF NOT EXISTS teacher_subjects (
   id INT PRIMARY KEY AUTO_INCREMENT,
   teacher_id INT NOT NULL,
@@ -99,9 +76,6 @@ CREATE TABLE IF NOT EXISTS teacher_subjects (
   FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE
 );
 
--- ============================================================
--- PRINT REQUESTS
--- ============================================================
 CREATE TABLE IF NOT EXISTS print_requests (
   id INT PRIMARY KEY AUTO_INCREMENT,
   teacher_id INT NOT NULL,
@@ -120,9 +94,6 @@ CREATE TABLE IF NOT EXISTS print_requests (
   FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE RESTRICT
 );
 
--- ============================================================
--- PRINT REQUEST → CLASSES (Many-to-Many with copies)
--- ============================================================
 CREATE TABLE IF NOT EXISTS print_request_classes (
   id INT PRIMARY KEY AUTO_INCREMENT,
   print_request_id INT NOT NULL,
