@@ -28,9 +28,12 @@ export function NotificationProvider({ children }) {
     });
 
     socketRef.current.on('notification', (notification) => {
-      addNotification(notification);
+      // 'message' type = broadcast/direct message → toast only, not notification center
+      if (notification.type !== 'message') {
+        addNotification(notification);
+      }
       toast(notification.title, {
-        icon: notification.type === 'urgent_request' ? '🚨' : '🔔',
+        icon: notification.type === 'urgent_request' ? '🚨' : notification.type === 'message' ? '✉️' : '🔔',
         duration: 4000,
       });
     });

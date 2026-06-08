@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useMyClasses } from '../../hooks/useGrades';
 import { gradesApi } from '../../api/gradesApi';
-import { subjectsApi } from '../../api/usersApi';
 import { useEffect } from 'react';
 import GradeTable from '../../components/grades/GradeTable';
 import GradeEntry from '../../components/grades/GradeEntry';
@@ -18,7 +17,7 @@ export default function MyGrades() {
   const [filters, setFilters] = useState({ classId: '', subjectId: '' });
 
   useEffect(() => {
-    subjectsApi.getAll().then((r) => setSubjects(r.data.data || [])).catch(() => {});
+    gradesApi.getMySubjects().then((r) => setSubjects(r.data.data || [])).catch(() => {});
   }, []);
 
   useEffect(() => {

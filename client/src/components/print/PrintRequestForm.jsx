@@ -5,7 +5,7 @@ import { z } from 'zod';
 import Button from '../common/Button';
 import { teacherApi, libraryApi, printRequestsApi } from '../../api/printRequestsApi';
 import toast from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const schema = z.object({
   subject_id: z.string().min(1, 'Subject is required'),
@@ -81,12 +81,13 @@ function FileSection({ files, setFiles, libraryFiles, selectedLibraryFile, setSe
 
 export default function PrintRequestForm() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [subjects, setSubjects] = useState([]);
   const [classes, setClasses] = useState([]);
   const [selectedClasses, setSelectedClasses] = useState([]);
   const [files, setFiles] = useState([]);
   const [libraryFiles, setLibraryFiles] = useState([]);
-  const [selectedLibraryFile, setSelectedLibraryFile] = useState(null);
+  const [selectedLibraryFile, setSelectedLibraryFile] = useState(location.state?.libraryFile || null);
   const [submitting, setSubmitting] = useState(false);
   const totalCopies = selectedClasses.reduce((sum, cls) => sum + cls.student_count, 0);
 

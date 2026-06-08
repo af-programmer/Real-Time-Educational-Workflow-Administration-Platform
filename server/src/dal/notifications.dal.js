@@ -26,7 +26,6 @@ async function findByUser(userId, role) {
 }
 
 async function markAllRead(userId, role) {
-  // get all notification ids relevant to this user
   const [rows] = await pool.query(
     `SELECT id FROM notifications
      WHERE user_id = ? OR role_target = 'all' OR role_target = ?`,

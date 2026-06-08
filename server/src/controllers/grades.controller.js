@@ -6,6 +6,11 @@ const getMyClasses = asyncWrapper(async (req, res) => {
   res.json({ success: true, data });
 });
 
+const getMySubjects = asyncWrapper(async (req, res) => {
+  const data = await gradesService.getMySubjects(req.user.id);
+  res.json({ success: true, data });
+});
+
 const createGrade = asyncWrapper(async (req, res) => {
   const grade = await gradesService.createGrade(req.user.id, req.body);
   res.status(201).json({ success: true, data: grade });
@@ -27,4 +32,4 @@ const getStudentGrades = asyncWrapper(async (req, res) => {
   res.json({ success: true, data });
 });
 
-module.exports = { getMyClasses, createGrade, updateGrade, getMyGrades, getStudentGrades };
+module.exports = { getMyClasses, getMySubjects, createGrade, updateGrade, getMyGrades, getStudentGrades };

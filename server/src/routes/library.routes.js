@@ -36,7 +36,10 @@ router.get('/:id/download', asyncWrapper(async (req, res) => {
   const file = await libraryDAL.findById(req.params.id);
   if (!file) throw new AppError('File not found.', 404);
   if (file.teacher_id !== req.user.id) throw new AppError('Access denied.', 403);
-  res.download(path.join(UPLOAD_DIR, file.stored_name), file.original_name);
+  const filePath = path.join(UPLOAD_DIR, file.stored_name);
+  const encoded = encodeURIComponent(file.original_name);
+  res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encoded}`);
+  res.sendFile(filePath);
 }));
 
 module.exports = router;

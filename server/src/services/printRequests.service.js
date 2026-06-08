@@ -1,12 +1,15 @@
 const printRequestsDAL = require('../dal/printRequests.dal');
 const classesDAL = require('../dal/classes.dal');
 const notificationsDAL = require('../dal/notifications.dal');
+const libraryDAL = require('../dal/library.dal');
 const { calculateTotalCopies } = require('../utils/calculateCopies');
 const { paginate, paginateResponse } = require('../utils/paginate');
 const AppError = require('../utils/AppError');
 const path = require('path');
 
-async function createPrintRequest(teacherId, { subject_id, priority, lesson_date, lesson_time, class_ids, notes }, files) {
+async function createPrintRequest(teacherId, { subject_id, priority, lesson_date, lesson_time, class_ids, notes, library_file_id }, files) {
+  if (!files?.length && !library_file_id) throw new AppError('No files attached.', 400);
+
   const classes = await classesDAL.findByIds(class_ids);
   if (classes.length !== class_ids.length) throw new AppError('One or more classes not found.', 400);
 
@@ -19,6 +22,7 @@ async function createPrintRequest(teacherId, { subject_id, priority, lesson_date
   const classData = classes.map((c) => ({ class_id: c.id, copies_count: c.student_count }));
   await printRequestsDAL.addClasses(requestId, classData);
 
+  // Attach uploaded files
   if (files && files.length) {
     for (const file of files) {
       await printRequestsDAL.addFile({
@@ -30,6 +34,21 @@ async function createPrintRequest(teacherId, { subject_id, priority, lesson_date
         mime_type: file.mimetype,
       });
     }
+  }
+
+  // Attach library file if provided
+  if (library_file_id) {
+    const libFile = await libraryDAL.findById(parseInt(library_file_id));
+    if (!libFile) throw new AppError('Library file not found.', 404);
+    if (libFile.teacher_id !== teacherId) throw new AppError('Access denied to library file.', 403);
+    await printRequestsDAL.addFile({
+      print_request_id: requestId,
+      original_name: libFile.original_name,
+      stored_name: libFile.stored_name,
+      file_path: libFile.stored_name,
+      file_size: libFile.file_size,
+      mime_type: libFile.mime_type,
+    });
   }
 
   // Notify secretary for urgent requests

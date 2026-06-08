@@ -14,7 +14,13 @@ async function getMyClasses(teacherId) {
   return result;
 }
 
+async function getMySubjects(teacherId) {
+  return usersDAL.getTeacherSubjects(teacherId);
+}
+
 async function createGrade(teacherId, { student_id, subject_id, grade, max_grade, date, exam_type, notes }) {
+  // Normalize date to YYYY-MM-DD (strip time if ISO string)
+  const dateOnly = date ? date.toString().slice(0, 10) : date;
   // Verify teacher is assigned this subject
   const subjects = await usersDAL.getTeacherSubjects(teacherId);
   const hasSubject = subjects.some((s) => s.id === parseInt(subject_id));
@@ -32,7 +38,7 @@ async function createGrade(teacherId, { student_id, subject_id, grade, max_grade
 
   const gradeId = await gradesDAL.create({
     student_id, subject_id, teacher_id: teacherId,
-    grade, max_grade, date, exam_type, notes,
+    grade, max_grade, date: dateOnly, exam_type, notes,
   });
   return gradesDAL.findById(gradeId);
 }
@@ -62,4 +68,4 @@ async function getStudentGrades(studentId, requestingUser) {
   return gradesDAL.findByStudent(studentId);
 }
 
-module.exports = { getMyClasses, createGrade, updateGrade, getGradesByTeacher, getStudentGrades };
+module.exports = { getMyClasses, getMySubjects, createGrade, updateGrade, getGradesByTeacher, getStudentGrades };

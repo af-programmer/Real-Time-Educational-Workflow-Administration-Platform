@@ -5,4 +5,5 @@ export const messagesApi = {
   send: (data) => axiosInstance.post('/messages', data),
   broadcast: (data) => axiosInstance.post('/messages/broadcast', data),
   markRead: (id) => axiosInstance.patch(`/messages/${id}/read`),
+  delete: (id) => axiosInstance.delete(`/messages/${id}`),
 };

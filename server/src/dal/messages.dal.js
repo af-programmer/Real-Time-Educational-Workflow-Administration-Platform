@@ -11,18 +11,23 @@ async function create({ sender_id, recipient_id, recipient_role, subject, body, 
 
 async function findInbox(userId, role) {
   const [rows] = await pool.query(
-    `SELECT m.*, u.name AS sender_name, u.email AS sender_email, ur.name AS sender_role
+    `SELECT m.*,
+       u.name AS sender_name, u.email AS sender_email, ur.name AS sender_role,
+       (mr.user_id IS NOT NULL) AS is_read
      FROM messages m
      JOIN users u ON u.id = m.sender_id
      JOIN roles ur ON ur.id = u.role_id
-     WHERE m.is_broadcast = FALSE
+     LEFT JOIN message_reads mr ON mr.message_id = m.id AND mr.user_id = ?
+     LEFT JOIN message_deletes md ON md.message_id = m.id AND md.user_id = ?
+     WHERE md.user_id IS NULL
+       AND m.sender_id != ?
        AND (m.recipient_id = ?
         OR m.recipient_role = 'all'
         OR m.recipient_role = ?
         OR (m.recipient_role = 'all_teachers' AND ? = 'teacher')
         OR (m.recipient_role = 'all_secretaries' AND ? = 'secretary'))
      ORDER BY m.created_at DESC`,
-    [userId, role, role, role]
+    [userId, userId, userId, userId, role, role, role]
   );
   return rows;
 }
@@ -41,23 +46,34 @@ async function findSent(senderId) {
 
 async function markRead(messageId, userId) {
   await pool.query(
-    'UPDATE messages SET is_read = TRUE WHERE id = ? AND recipient_id = ?',
-    [messageId, userId]
+    `INSERT IGNORE INTO message_reads (user_id, message_id) VALUES (?, ?)`,
+    [userId, messageId]
+  );
+}
+
+async function deleteForUser(messageId, userId) {
+  await pool.query(
+    `INSERT IGNORE INTO message_deletes (user_id, message_id) VALUES (?, ?)`,
+    [userId, messageId]
   );
 }
 
 async function getUnreadCount(userId, role) {
   const [[{ count }]] = await pool.query(
-    `SELECT COUNT(*) AS count FROM messages
-     WHERE is_read = FALSE
-       AND (recipient_id = ?
-        OR recipient_role = 'all'
-        OR recipient_role = ?
-        OR (recipient_role = 'all_teachers' AND ? = 'teacher')
-        OR (recipient_role = 'all_secretaries' AND ? = 'secretary'))`,
-    [userId, role, role, role]
+    `SELECT COUNT(*) AS count FROM messages m
+     LEFT JOIN message_reads mr ON mr.message_id = m.id AND mr.user_id = ?
+     LEFT JOIN message_deletes md ON md.message_id = m.id AND md.user_id = ?
+     WHERE mr.user_id IS NULL
+       AND md.user_id IS NULL
+       AND m.sender_id != ?
+       AND (m.recipient_id = ?
+        OR m.recipient_role = 'all'
+        OR m.recipient_role = ?
+        OR (m.recipient_role = 'all_teachers' AND ? = 'teacher')
+        OR (m.recipient_role = 'all_secretaries' AND ? = 'secretary'))`,
+    [userId, userId, userId, userId, role, role, role]
   );
   return count;
 }
 
-module.exports = { create, findInbox, findSent, markRead, getUnreadCount };
+module.exports = { create, findInbox, findSent, markRead, deleteForUser, getUnreadCount };

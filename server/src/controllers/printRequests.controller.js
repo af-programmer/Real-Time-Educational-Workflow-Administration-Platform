@@ -4,9 +4,12 @@ const asyncWrapper = require('../utils/asyncWrapper');
 
 const create = asyncWrapper(async (req, res) => {
   const files = req.files || (req.file ? [req.file] : []);
-  // class_ids comes as JSON string in FormData
   if (typeof req.body.class_ids === 'string') {
     req.body.class_ids = JSON.parse(req.body.class_ids);
+  }
+  // lesson_date: normalize to YYYY-MM-DD
+  if (req.body.lesson_date) {
+    req.body.lesson_date = req.body.lesson_date.toString().slice(0, 10);
   }
   const request = await printRequestsService.createPrintRequest(req.user.id, req.body, files);
   res.status(201).json({ success: true, data: request });

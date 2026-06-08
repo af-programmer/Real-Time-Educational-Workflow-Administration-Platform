@@ -5,9 +5,10 @@ import Button from '../common/Button';
 import { useGradeActions } from '../../hooks/useGrades';
 
 const schema = z.object({
+  class_id: z.string().optional(),
   student_id: z.string().min(1, 'Student required'),
   subject_id: z.string().min(1, 'Subject required'),
-  grade: z.coerce.number().min(0).max(100),
+  grade: z.coerce.number().min(0).max(200),
   max_grade: z.coerce.number().min(1).max(200).default(100),
   date: z.string().min(1, 'Date required'),
   exam_type: z.string().default('test'),

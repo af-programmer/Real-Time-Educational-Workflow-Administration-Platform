@@ -1,11 +1,28 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { libraryApi } from '../../api/printRequestsApi';
+import axiosInstance from '../../api/axiosInstance';
 import { teachersApi } from '../../api/usersApi';
 import { UploadModal, EditModal } from '../../components/common/LibraryModals';
 import Spinner from '../../components/common/Spinner';
 import toast from 'react-hot-toast';
 
+async function downloadFile(id, filename) {
+  try {
+    const res = await axiosInstance.get(`/library/${id}/download`, { responseType: 'blob' });
+    const url = URL.createObjectURL(res.data);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch {
+    toast.error('Download failed.');
+  }
+}
+
 export default function TeacherLibrary() {
+  const navigate = useNavigate();
   const [grouped, setGrouped] = useState({});
   const [subjects, setSubjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -58,11 +75,27 @@ export default function TeacherLibrary() {
                   {f.description && <p className="text-xs text-gray-500">{f.description}</p>}
                   <p className="text-xs text-gray-400">{(f.file_size / 1024).toFixed(1)} KB</p>
                 </div>
-                <div className="flex gap-2 flex-shrink-0">
-                  <a href={libraryApi.getDownloadUrl(f.id)} target="_blank" rel="noreferrer"
-                    className="text-xs text-primary-600 hover:text-primary-800">⬇️ Download</a>
-                  <button onClick={() => setEditFile(f)} className="text-xs text-gray-500 hover:text-gray-700">✏️ Edit</button>
-                  <button onClick={() => handleDelete(f.id)} className="text-xs text-red-500 hover:text-red-700">🗑️</button>
+                <div className="flex gap-2 flex-shrink-0 items-center">
+                  <button
+                    onClick={() => navigate('/teacher/new-print-request', { state: { libraryFile: f } })}
+                    title="Print this file"
+                    className="text-lg hover:scale-110 transition-transform"
+                  >🖨️</button>
+                  <button
+                    onClick={() => downloadFile(f.id, f.original_name)}
+                    title="Download"
+                    className="text-lg hover:scale-110 transition-transform"
+                  >⬇️</button>
+                  <button
+                    onClick={() => setEditFile(f)}
+                    title="Edit"
+                    className="text-lg hover:scale-110 transition-transform"
+                  >✏️</button>
+                  <button
+                    onClick={() => handleDelete(f.id)}
+                    title="Delete"
+                    className="text-lg hover:scale-110 transition-transform text-red-400 hover:text-red-600"
+                  >🗑️</button>
                 </div>
               </div>
             ))}

@@ -25,4 +25,4 @@ async function createAnnouncement(title, content, targetRole = 'all') {
   });
 }
 
-module.exports = { getNotifications, markAllRead, getUnreadCount, createAnnouncement };
+module.exports = { getNotifications, markAllRead, markOneRead, getUnreadCount, createAnnouncement };

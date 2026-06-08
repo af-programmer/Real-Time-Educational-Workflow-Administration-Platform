@@ -218,6 +218,42 @@ CREATE TABLE IF NOT EXISTS notifications (
 );
 
 -- ============================================================
+-- MESSAGE READS (per-user read tracking for broadcast messages)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS message_reads (
+  user_id INT NOT NULL,
+  message_id INT NOT NULL,
+  read_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (user_id, message_id),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (message_id) REFERENCES messages(id) ON DELETE CASCADE
+);
+
+-- ============================================================
+-- MESSAGE DELETES (soft delete per user)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS message_deletes (
+  user_id INT NOT NULL,
+  message_id INT NOT NULL,
+  deleted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (user_id, message_id),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (message_id) REFERENCES messages(id) ON DELETE CASCADE
+);
+
+-- ============================================================
+-- NOTIFICATION READS (tracks per-user read status for role/broadcast notifications)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS notification_reads (
+  user_id INT NOT NULL,
+  notification_id INT NOT NULL,
+  read_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (user_id, notification_id),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (notification_id) REFERENCES notifications(id) ON DELETE CASCADE
+);
+
+-- ============================================================
 -- AUDIT LOGS
 -- ============================================================
 CREATE TABLE IF NOT EXISTS audit_logs (
