@@ -12,6 +12,7 @@ export const printRequestsApi = {
   updateStatus: (id, status) =>
     axiosInstance.patch(`/print-requests/${id}/status`, { status }),
   getCoverUrl: (id) => `/api/print-requests/${id}/cover`,
+  getCover: (id) => axiosInstance.get(`/print-requests/${id}/cover`, { responseType: 'arraybuffer' }),
   delete: (id) => axiosInstance.delete(`/print-requests/${id}`),
 };
 

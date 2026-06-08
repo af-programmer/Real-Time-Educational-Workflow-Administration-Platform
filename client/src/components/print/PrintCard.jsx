@@ -11,7 +11,7 @@ const statusLabels = {
   completed: 'Completed',
 };
 
-export default function PrintCard({ request, onStatusChange, onDelete, showTeacher = false }) {
+export default function PrintCard({ request, onStatusChange, onDelete, showTeacher = false, showCover = false }) {
   const isUrgent = request.priority === 'urgent';
   const [openingFile, setOpeningFile] = useState(false);
 
@@ -29,8 +29,23 @@ export default function PrintCard({ request, onStatusChange, onDelete, showTeach
     }
   }
 
-  function handleCover() {
-    window.open(`http://localhost:5000/api/print-requests/${request.id}/cover`, '_blank');
+  const [openingCover, setOpeningCover] = useState(false);
+
+  async function handleCover() {
+    setOpeningCover(true);
+    try {
+      const res = await printRequestsApi.getCover(request.id);
+      const url = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+      const a = document.createElement('a');
+      a.href = url;
+      a.target = '_blank';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+    } catch {
+      toast.error('Failed to generate cover page.');
+    } finally {
+      setOpeningCover(false);
+    }
   }
 
   return (
@@ -70,9 +85,11 @@ export default function PrintCard({ request, onStatusChange, onDelete, showTeach
             className="flex-1 btn-ghost text-xs py-1.5">
             🖨️ {openingFile ? 'Opening...' : 'Open File'}
           </button>
-          <button onClick={handleCover} className="flex-1 btn-ghost text-xs py-1.5">
-            📄 Cover Page
-          </button>
+          {showCover && (
+            <button onClick={handleCover} disabled={openingCover} className="flex-1 btn-ghost text-xs py-1.5">
+              📄 {openingCover ? 'Generating...' : 'Cover Page'}
+            </button>
+          )}
         </div>
 
         {onStatusChange && (

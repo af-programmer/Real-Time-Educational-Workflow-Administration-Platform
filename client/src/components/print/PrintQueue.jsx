@@ -15,6 +15,7 @@ export default function PrintQueue({ requests, pagination, loading, onPageChange
             key={req.id}
             request={req}
             showTeacher
+            showCover
             onStatusChange={onStatusChange}
             onDelete={onDelete}
           />
