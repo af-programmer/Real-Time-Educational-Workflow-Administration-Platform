@@ -215,6 +215,7 @@ CREATE TABLE IF NOT EXISTS grades (
   teacher_id   INT NOT NULL,
   exam_type_id INT NOT NULL,
   grade        DECIMAL(5,2) NOT NULL,
+  max_grade    DECIMAL(5,2) NOT NULL DEFAULT 100,
   date         DATE NOT NULL,
   notes        TEXT DEFAULT NULL,
   created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

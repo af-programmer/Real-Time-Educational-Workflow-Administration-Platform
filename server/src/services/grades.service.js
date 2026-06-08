@@ -31,7 +31,7 @@ async function getExamTypes() {
   return gradesDAL.getExamTypes();
 }
 
-async function createGrade(teacherId, { student_id, subject_id, exam_type_id, grade, date, notes }) {
+async function createGrade(teacherId, { student_id, subject_id, exam_type_id, grade, max_grade, date, notes }) {
   const dateOnly = date ? date.toString().slice(0, 10) : date;
 
   const subjects = await usersDAL.getTeacherSubjects(teacherId);
@@ -42,7 +42,7 @@ async function createGrade(teacherId, { student_id, subject_id, exam_type_id, gr
 
   const gradeId = await gradesDAL.create({
     student_id, subject_id, teacher_id: teacherId,
-    exam_type_id, grade, date: dateOnly, notes,
+    exam_type_id, grade, max_grade, date: dateOnly, notes,
   });
   return gradesDAL.findById(gradeId);
 }

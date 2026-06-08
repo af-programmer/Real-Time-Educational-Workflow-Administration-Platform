@@ -10,6 +10,7 @@ router.use(authMiddleware);
 
 router.get('/my-classes', requireRoles('teacher'), gradesController.getMyClasses);
 router.get('/my-subjects', requireRoles('teacher'), gradesController.getMySubjects);
+router.get('/exam-types', requireRoles('teacher'), gradesController.getExamTypes);
 router.get('/mine', requireRoles('teacher'), gradesController.getMyGrades);
 router.post('/', requireRoles('teacher'), validate(createGradeSchema), gradesController.createGrade);
 router.put('/:id', requireRoles('teacher'), validate(updateGradeSchema), gradesController.updateGrade);

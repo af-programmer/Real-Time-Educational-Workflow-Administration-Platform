@@ -9,6 +9,7 @@ const navItems = {
     { to: '/teacher/print-requests', label: 'Print Requests', icon: '🖨️' },
     { to: '/teacher/new-print-request', label: 'New Request', icon: '➕' },
     { to: '/teacher/library', label: 'My Library', icon: '📚' },
+    { to: '/teacher/classes', label: 'My Classes', icon: '🏫' },
     { to: '/teacher/grades', label: 'My Grades', icon: '📊' },
     { to: '/teacher/messages', label: 'Messages', icon: '✉️' },
   ],

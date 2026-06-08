@@ -32,4 +32,9 @@ const getStudentGrades = asyncWrapper(async (req, res) => {
   res.json({ success: true, data });
 });
 
-module.exports = { getMyClasses, getMySubjects, createGrade, updateGrade, getMyGrades, getStudentGrades };
+const getExamTypes = asyncWrapper(async (req, res) => {
+  const data = await gradesService.getExamTypes();
+  res.json({ success: true, data });
+});
+
+module.exports = { getMyClasses, getMySubjects, getExamTypes, createGrade, updateGrade, getMyGrades, getStudentGrades };

@@ -1,3 +1,4 @@
+
 -- EduFlow Seed Data
 USE eduflow;
 
@@ -147,3 +148,4 @@ INSERT INTO students (name, class_id, student_number, phone_father) VALUES
   ('Iris Thomas',    @a1_id, 'S009', '050-9999999'),
   ('Jack Jackson',   @a1_id, 'S010', '050-1010101')
 ON DUPLICATE KEY UPDATE name = VALUES(name);
+

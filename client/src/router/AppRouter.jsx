@@ -8,6 +8,7 @@ import TeacherDashboard from '../pages/teacher/TeacherDashboard';
 import MyPrintRequests from '../pages/teacher/MyPrintRequests';
 import NewPrintRequest from '../pages/teacher/NewPrintRequest';
 import MyGrades from '../pages/teacher/MyGrades';
+import MyClasses from '../pages/teacher/MyClasses';
 import MyMessages from '../pages/teacher/MyMessages';
 import TeacherLibrary from '../pages/teacher/TeacherLibrary';
 import SecretaryDashboard from '../pages/secretary/SecretaryDashboard';
@@ -43,6 +44,7 @@ export default function AppRouter() {
           <Route path="/teacher/new-print-request" element={<NewPrintRequest />} />
           <Route path="/teacher/library" element={<TeacherLibrary />} />
           <Route path="/teacher/grades" element={<MyGrades />} />
+          <Route path="/teacher/classes" element={<MyClasses />} />
           <Route path="/teacher/messages" element={<MyMessages />} />
         </Route>
       </Route>

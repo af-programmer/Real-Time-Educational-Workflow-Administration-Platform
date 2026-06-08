@@ -59,7 +59,7 @@ export default function TeacherDashboard() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="My Classes" value={profile?.classes?.length || 0} icon="🏫" color="bg-blue-100" to="/teacher/grades" />
+        <StatCard label="My Classes" value={profile?.classes?.length || 0} icon="🏫" color="bg-blue-100" to="/teacher/classes" />
         <StatCard label="Print Requests" value={recentRequests.length} icon="🖨️" color="bg-purple-100" to="/teacher/print-requests" />
         <StatCard label="Unread Messages" value={unreadMessages} icon="✉️" color="bg-pink-100" to="/teacher/messages" />
         <StatCard label="Notifications" value={unreadCount} icon="🔔" color="bg-yellow-100" />

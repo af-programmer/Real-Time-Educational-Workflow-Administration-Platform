@@ -1,17 +1,18 @@
 const { pool } = require('../config/db');
 const { buildUpdateClause } = require('../utils/buildUpdateClause');
 
-async function create({ student_id, subject_id, teacher_id, exam_type_id, grade, date, notes }) {
+async function create({ student_id, subject_id, teacher_id, exam_type_id, grade, max_grade, date, notes }) {
   const [result] = await pool.query(
-    `INSERT INTO grades (student_id, subject_id, teacher_id, exam_type_id, grade, date, notes)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    [student_id, subject_id, teacher_id, exam_type_id, grade, date, notes || null]
+    `INSERT INTO grades (student_id, subject_id, teacher_id, exam_type_id, grade, max_grade, date, notes)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [student_id, subject_id, teacher_id, exam_type_id, grade, max_grade || 100, date, notes || null]
   );
   return result.insertId;
 }
 
 async function update(id, fields) {
-  const { clause, values, hasFields } = buildUpdateClause(fields, ['grade', 'date', 'exam_type_id', 'notes']);
+  if (fields.date) fields.date = fields.date.toString().slice(0, 10);
+  const { clause, values, hasFields } = buildUpdateClause(fields, ['grade', 'max_grade', 'date', 'exam_type_id', 'notes']);
   if (!hasFields) return false;
   await pool.query(`UPDATE grades SET ${clause} WHERE id = ?`, [...values, id]);
   return true;
