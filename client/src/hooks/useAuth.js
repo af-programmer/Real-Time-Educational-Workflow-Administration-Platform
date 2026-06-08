@@ -15,15 +15,19 @@ export function useAuthActions() {
       const { data } = await authApi.login({ email, password });
       setAuth(data.user, data.token);
       toast.success(`Welcome back, ${data.user.name}!`);
-
-      const roleRoutes = {
-        admin: '/admin',
-        secretary: '/secretary',
-        teacher: '/teacher',
-      };
+      const roleRoutes = { admin: '/admin', secretary: '/secretary', teacher: '/teacher' };
       navigate(roleRoutes[data.user.role] || '/');
+      return null;
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Login failed.');
+      const status = err.response?.status;
+      const msg = err.response?.data?.message;
+      let errorMsg;
+      if (status === 401) errorMsg = 'Incorrect email or password.';
+      else if (status === 403) errorMsg = msg || 'Account suspended or inactive. Contact an administrator.';
+      else if (status === 429) errorMsg = 'Too many login attempts. Please wait a moment and try again.';
+      else errorMsg = msg || 'Login failed. Please try again.';
+      toast.error(errorMsg);
+      return errorMsg;
     } finally {
       setLoading(false);
     }

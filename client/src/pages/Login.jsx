@@ -1,6 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useState } from 'react';
 import { useAuthActions } from '../hooks/useAuth';
 import Button from '../components/common/Button';
 
@@ -11,9 +12,16 @@ const schema = z.object({
 
 export default function Login() {
   const { login, loading } = useAuthActions();
+  const [loginError, setLoginError] = useState('');
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(schema),
   });
+
+  const onSubmit = async (d) => {
+    setLoginError('');
+    const error = await login(d.email, d.password);
+    if (error) setLoginError(error);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-800 via-primary-900 to-indigo-900 flex items-center justify-center p-4">
@@ -31,7 +39,13 @@ export default function Login() {
         <div className="bg-white rounded-2xl shadow-2xl p-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-6">Sign in to your account</h2>
 
-          <form onSubmit={handleSubmit((d) => login(d.email, d.password))} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            {loginError && (
+              <div className="flex items-start gap-2 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
+                <span className="text-lg leading-none">⚠️</span>
+                <span>{loginError}</span>
+              </div>
+            )}
             <div>
               <label className="label">Email Address</label>
               <input

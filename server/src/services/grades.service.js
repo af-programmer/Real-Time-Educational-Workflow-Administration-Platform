@@ -61,6 +61,9 @@ async function getGradesByTeacher(teacherId, filters) {
 async function getStudentGrades(studentId, requestingUser) {
   if (requestingUser.role === 'teacher') {
     await assertStudentInTeacherClasses(requestingUser.id, studentId);
+    const subjects = await usersDAL.getTeacherSubjects(requestingUser.id);
+    const subjectIds = subjects.map((s) => s.id);
+    return gradesDAL.findByStudent(studentId, subjectIds);
   }
   return gradesDAL.findByStudent(studentId);
 }

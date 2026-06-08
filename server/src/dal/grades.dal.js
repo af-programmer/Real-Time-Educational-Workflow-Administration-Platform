@@ -53,17 +53,21 @@ async function findByTeacher(teacherId, { classId, subjectId } = {}) {
   return rows;
 }
 
-async function findByStudent(studentId) {
-  const [rows] = await pool.query(
-    `SELECT g.*, sub.name AS subject_name, u.name AS teacher_name, et.code AS exam_type
+async function findByStudent(studentId, teacherSubjectIds = null) {
+  let sql = `
+    SELECT g.*, sub.name AS subject_name, u.name AS teacher_name, et.code AS exam_type
      FROM grades g
      JOIN subjects sub  ON sub.id = g.subject_id
      JOIN users u       ON u.id  = g.teacher_id
      JOIN exam_types et ON et.id = g.exam_type_id
-     WHERE g.student_id = ?
-     ORDER BY g.date DESC`,
-    [studentId]
-  );
+     WHERE g.student_id = ?`;
+  const params = [studentId];
+  if (teacherSubjectIds && teacherSubjectIds.length) {
+    sql += ` AND g.subject_id IN (${teacherSubjectIds.map(() => '?').join(',')})`;
+    params.push(...teacherSubjectIds);
+  }
+  sql += ' ORDER BY g.date DESC';
+  const [rows] = await pool.query(sql, params);
   return rows;
 }
 
