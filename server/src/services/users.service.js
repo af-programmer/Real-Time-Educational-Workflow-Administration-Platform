@@ -15,16 +15,21 @@ async function getUserById(id) {
   return user;
 }
 
-async function createUser({ name, email, password, role, phone, phone2 }) {
+async function createUser({ name, email, password, role, phone, phone2, is_homeroom, homeroom_class_ids }) {
   const existing = await usersDAL.findByEmail(email);
   if (existing) throw new AppError('A user with this email already exists.', 409);
 
   const roleId = await usersDAL.getRoleId(role);
   if (!roleId) throw new AppError('Invalid role.', 400);
 
+  if (is_homeroom && role !== 'teacher')
+    throw new AppError('Only teachers can be homeroom teachers.', 400);
+
   const password_hash = await bcrypt.hash(password, 12);
-  const id = await usersDAL.create({ name, email, role_id: roleId, phone, phone2 });
+  const id = await usersDAL.create({ name, email, role_id: roleId, phone, phone2, is_homeroom: !!is_homeroom });
   await usersDAL.createCredential(id, password_hash);
+  if (is_homeroom && homeroom_class_ids?.length)
+    await usersDAL.assignHomeroomClasses(id, homeroom_class_ids);
   return usersDAL.findById(id);
 }
 
@@ -68,10 +73,20 @@ async function getTeacherProfile(teacherId) {
   if (!user) throw new AppError('Teacher not found.', 404);
   const classes  = await usersDAL.getTeacherClasses(teacherId);
   const subjects = await usersDAL.getTeacherSubjects(teacherId);
-  return { ...user, classes, subjects };
+  const homeroomClasses = await usersDAL.getHomeroomClasses(teacherId);
+  return { ...user, classes, subjects, homeroomClasses };
+}
+
+async function assignHomeroomClasses(teacherId, classIds) {
+  const user = await usersDAL.findById(teacherId);
+  if (!user) throw new AppError('User not found.', 404);
+  if (user.role !== 'teacher') throw new AppError('Only teachers can be homeroom teachers.', 400);
+  await usersDAL.assignHomeroomClasses(teacherId, classIds);
+  // update is_homeroom flag
+  await usersDAL.update(teacherId, { is_homeroom: classIds.length > 0 });
 }
 
 module.exports = {
   getAllUsers, getUserById, createUser, updateUser, deleteUser,
-  toggleSuspend, assignClasses, assignSubjects, getTeacherProfile,
+  toggleSuspend, assignClasses, assignSubjects, assignHomeroomClasses, getTeacherProfile,
 };

@@ -27,9 +27,13 @@ export default function UserManagement() {
   const [subjects, setSubjects] = useState([]);
   const [selectedClasses, setSelectedClasses] = useState([]);
   const [selectedSubjects, setSelectedSubjects] = useState([]);
+  const [selectedHomeroomClasses, setSelectedHomeroomClasses] = useState([]);
   const [submitting, setSubmitting] = useState(false);
+  const [watchedRole, setWatchedRole] = useState('');
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm();
+  const { register, handleSubmit, reset, watch, formState: { errors } } = useForm();
+  const selectedRole = watch('role', '');
+  const isHomeroom = watch('is_homeroom', false);
 
   const load = () => {
     setLoading(true);
@@ -53,7 +57,17 @@ export default function UserManagement() {
   const createUser = async (data) => {
     setSubmitting(true);
     try {
-      await usersApi.create(data);
+      const payload = {
+        ...data,
+        is_homeroom: data.is_homeroom === true || data.is_homeroom === 'true',
+        homeroom_class_ids: data.is_homeroom
+          ? (Array.isArray(data.homeroom_class_ids)
+              ? data.homeroom_class_ids.map(Number)
+              : data.homeroom_class_ids ? [Number(data.homeroom_class_ids)] : [])
+          : [],
+      };
+      delete payload.homeroom_class_id;
+      await usersApi.create(payload);
       toast.success('User created!');
       setShowCreateModal(false);
       reset();
@@ -90,11 +104,13 @@ export default function UserManagement() {
     setShowAssignModal(user);
     setSelectedClasses([]);
     setSelectedSubjects([]);
+    setSelectedHomeroomClasses([]);
     try {
       const r = await usersApi.getProfile(user.id);
       const profile = r.data.data;
       setSelectedClasses((profile.classes || []).map((c) => c.id));
       setSelectedSubjects((profile.subjects || []).map((s) => s.id));
+      setSelectedHomeroomClasses((profile.homeroomClasses || []).map((c) => c.id));
     } catch {}
   };
 
@@ -102,12 +118,11 @@ export default function UserManagement() {
     if (!showAssignModal) return;
     setSubmitting(true);
     try {
-      if (selectedClasses.length) {
+      if (selectedClasses.length)
         await usersApi.assignClasses(showAssignModal.id, selectedClasses);
-      }
-      if (selectedSubjects.length) {
+      if (selectedSubjects.length)
         await usersApi.assignSubjects(showAssignModal.id, selectedSubjects);
-      }
+      await usersApi.assignHomeroomClasses(showAssignModal.id, selectedHomeroomClasses);
       toast.success('Assignments saved!');
       setShowAssignModal(null);
     } catch {
@@ -220,6 +235,32 @@ export default function UserManagement() {
               <option value="admin">Admin</option>
             </select>
           </div>
+          {selectedRole === 'teacher' && (
+            <div className="space-y-3 p-3 bg-gray-50 rounded-lg">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" {...register('is_homeroom')} className="rounded border-gray-300 text-primary-600" />
+                <span className="text-sm font-medium text-gray-700">Homeroom Teacher (מחנכת)</span>
+              </label>
+              {isHomeroom && (
+                <div>
+                  <label className="label">Homeroom Classes *</label>
+                  <div className="grid grid-cols-2 gap-2 mt-1">
+                    {classes.map((c) => (
+                      <label key={c.id} className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          value={c.id}
+                          {...register('homeroom_class_ids')}
+                          className="rounded border-gray-300 text-primary-600"
+                        />
+                        <span className="text-sm text-gray-700">{c.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
           <div>
             <label className="label">Phone</label>
             <input {...register('phone')} type="tel" className="input" placeholder="+1 555..." />
@@ -270,6 +311,26 @@ export default function UserManagement() {
               ))}
             </div>
           </div>
+          {showAssignModal?.role === 'teacher' && (
+            <div>
+              <p className="label mb-2">Homeroom Classes (כיתות חינוך)</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {classes.map((c) => (
+                  <label key={c.id} className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={selectedHomeroomClasses.includes(c.id)}
+                      onChange={(e) => setSelectedHomeroomClasses((prev) =>
+                        e.target.checked ? [...prev, c.id] : prev.filter((x) => x !== c.id)
+                      )}
+                      className="rounded border-gray-300 text-primary-600"
+                    />
+                    <span className="text-sm text-gray-700">{c.name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
           <div className="flex gap-3 justify-end">
             <Button variant="secondary" onClick={() => setShowAssignModal(null)}>Cancel</Button>
             <Button onClick={saveAssign} loading={submitting}>Save Assignments</Button>

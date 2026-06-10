@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { usersApi } from '../../api/usersApi';
 import useNotificationStore from '../../store/notificationStore';
 import Spinner from '../../components/common/Spinner';
+import DailyQuote from '../../components/common/DailyQuote';
 
 function StatCard({ label, value, icon, color, to }) {
   const inner = (
@@ -55,6 +56,8 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-6">
+      <DailyQuote role="admin" />
+
       {/* Banner */}
       <div className="card p-6 bg-gradient-to-r from-indigo-600 to-indigo-900 text-white">
         <h2 className="text-2xl font-bold">Admin Dashboard ⚙️</h2>

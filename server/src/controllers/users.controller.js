@@ -48,4 +48,9 @@ const assignSubjects = asyncWrapper(async (req, res) => {
   res.json({ success: true, message: 'Subjects assigned successfully.' });
 });
 
-module.exports = { getAll, getById, getProfile, create, update, remove, suspend, assignClasses, assignSubjects };
+const assignHomeroomClasses = asyncWrapper(async (req, res) => {
+  await usersService.assignHomeroomClasses(req.params.id, req.body.classIds || []);
+  res.json({ success: true, message: 'Homeroom classes assigned successfully.' });
+});
+
+module.exports = { getAll, getById, getProfile, create, update, remove, suspend, assignClasses, assignSubjects, assignHomeroomClasses };

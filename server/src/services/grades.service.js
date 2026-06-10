@@ -60,10 +60,28 @@ async function getGradesByTeacher(teacherId, filters) {
 
 async function getStudentGrades(studentId, requestingUser) {
   if (requestingUser.role === 'teacher') {
-    await assertStudentInTeacherClasses(requestingUser.id, studentId);
+    const [taughtClasses, homeroomClasses] = await Promise.all([
+      usersDAL.getTeacherClasses(requestingUser.id),
+      usersDAL.getHomeroomClasses(requestingUser.id),
+    ]);
+    const allClassIds = [...new Set([
+      ...taughtClasses.map((c) => c.id),
+      ...homeroomClasses.map((c) => c.id),
+    ])];
+    const [rows] = await pool.query(
+      'SELECT class_id FROM students WHERE id = ? AND class_id IN (?) AND is_active = TRUE',
+      [studentId, allClassIds.length ? allClassIds : [0]]
+    );
+    if (!rows.length) throw new AppError('Student not found in your classes.', 403);
+
+    // If student is in a homeroom class → show all subjects
+    const studentClassId = rows[0].class_id;
+    if (homeroomClasses.some((c) => c.id === studentClassId)) {
+      return gradesDAL.findByStudent(studentId);
+    }
+    // Otherwise show only subjects this teacher teaches
     const subjects = await usersDAL.getTeacherSubjects(requestingUser.id);
-    const subjectIds = subjects.map((s) => s.id);
-    return gradesDAL.findByStudent(studentId, subjectIds);
+    return gradesDAL.findByStudent(studentId, subjects.map((s) => s.id));
   }
   return gradesDAL.findByStudent(studentId);
 }

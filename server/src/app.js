@@ -18,6 +18,7 @@ const printRequestsRoutes = require('./routes/printRequests.routes');
 const libraryRoutes       = require('./routes/library.routes');
 const messagesRoutes      = require('./routes/messages.routes');
 const notificationsRoutes = require('./routes/notifications.routes');
+const quotesRoutes        = require('./routes/quotes.routes');
 
 const app = express();
 
@@ -51,6 +52,7 @@ app.use('/api/print-requests', printRequestsRoutes);
 app.use('/api/library',        libraryRoutes);
 app.use('/api/messages',       messagesRoutes);
 app.use('/api/notifications',  notificationsRoutes);
+app.use('/api/quotes',         quotesRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ success: false, message: `Route ${req.method} ${req.path} not found.` });

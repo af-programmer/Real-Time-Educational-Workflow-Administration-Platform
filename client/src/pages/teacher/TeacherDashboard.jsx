@@ -7,6 +7,7 @@ import { messagesApi } from '../../api/messagesApi';
 import { teachersApi } from '../../api/usersApi';
 import Spinner from '../../components/common/Spinner';
 import Badge from '../../components/common/Badge';
+import DailyQuote from '../../components/common/DailyQuote';
 import { format } from 'date-fns';
 
 function StatCard({ label, value, icon, color, to }) {
@@ -48,6 +49,8 @@ export default function TeacherDashboard() {
 
   return (
     <div className="space-y-6">
+      <DailyQuote role="teacher" />
+
       {/* Welcome */}
       <div className="card p-6 bg-gradient-to-r from-primary-600 to-primary-800 text-white">
         <h2 className="text-2xl font-bold">Good day, {user?.name}! 👋</h2>

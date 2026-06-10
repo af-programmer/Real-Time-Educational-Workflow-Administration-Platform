@@ -20,6 +20,21 @@ router.get('/secretaries', requireRoles('teacher'), asyncWrapper(async (req, res
   res.json({ success: true, ...result });
 }));
 
+// Homeroom teacher: get all teachers assigned to their homeroom classes
+router.get('/my-homeroom-teachers', requireRoles('teacher'), asyncWrapper(async (req, res) => {
+  if (!req.user.is_homeroom)
+    return res.status(403).json({ success: false, message: 'Not a homeroom teacher.' });
+  const homeroomClasses = await usersDAL.getHomeroomClasses(req.user.id);
+  if (!homeroomClasses.length)
+    return res.json({ success: true, data: [] });
+  const teacherSets = await Promise.all(
+    homeroomClasses.map((c) => usersDAL.getTeachersByClass(c.id))
+  );
+  const seen = new Set([req.user.id]);
+  const teachers = teacherSets.flat().filter((t) => !seen.has(t.id) && seen.add(t.id));
+  res.json({ success: true, data: teachers });
+}));
+
 // Secretary can get list of admins (for messaging)
 router.get('/admins', requireRoles('secretary'), asyncWrapper(async (req, res) => {
   const result = await usersService.getAllUsers({ role: 'admin', limit: 100 });

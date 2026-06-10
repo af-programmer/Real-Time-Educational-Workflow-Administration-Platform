@@ -12,7 +12,10 @@ async function login(email, password) {
   const passwordMatch = await bcrypt.compare(password, user.password_hash);
   if (!passwordMatch) throw new AppError('Invalid email or password.', 401);
 
-  const token = signToken({ id: user.id, email: user.email, role: user.role, name: user.name });
+  const token = signToken({
+    id: user.id, email: user.email, role: user.role, name: user.name,
+    is_homeroom: user.is_homeroom || false,
+  });
 
   return {
     token,
@@ -22,6 +25,7 @@ async function login(email, password) {
       email: user.email,
       role: user.role,
       avatar_url: user.avatar_url,
+      is_homeroom: user.is_homeroom || false,
     },
   };
 }

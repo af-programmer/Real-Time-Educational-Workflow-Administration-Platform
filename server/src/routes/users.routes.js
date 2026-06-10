@@ -17,5 +17,6 @@ router.delete('/:id', usersController.remove);
 router.patch('/:id/suspend', usersController.suspend);
 router.post('/:id/assign-classes', validate(assignClassesSchema), usersController.assignClasses);
 router.post('/:id/assign-subjects', validate(assignSubjectsSchema), usersController.assignSubjects);
+router.post('/:id/assign-homeroom-classes', usersController.assignHomeroomClasses);
 
 module.exports = router;

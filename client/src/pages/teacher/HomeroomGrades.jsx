@@ -3,7 +3,7 @@ import axiosInstance from '../../api/axiosInstance';
 import ClassesStudents from '../../components/common/ClassesStudents';
 import Spinner from '../../components/common/Spinner';
 
-export default function MyClasses() {
+export default function HomeroomGrades() {
   const [classIds, setClassIds] = useState(null);
 
   useEffect(() => {

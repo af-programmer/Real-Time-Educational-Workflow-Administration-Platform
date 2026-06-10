@@ -6,6 +6,7 @@ import { messagesApi } from '../../api/messagesApi';
 import useNotificationStore from '../../store/notificationStore';
 import Badge from '../../components/common/Badge';
 import Spinner from '../../components/common/Spinner';
+import DailyQuote from '../../components/common/DailyQuote';
 import { format } from 'date-fns';
 
 function StatCard({ label, value, icon, color, to, alert }) {
@@ -53,6 +54,8 @@ export default function SecretaryDashboard() {
 
   return (
     <div className="space-y-6">
+      <DailyQuote role="secretary" />
+
       {/* Welcome Banner */}
       <div className="card p-6 bg-gradient-to-r from-pink-600 to-pink-800 text-white">
         <h2 className="text-2xl font-bold">Secretary Dashboard 📋</h2>

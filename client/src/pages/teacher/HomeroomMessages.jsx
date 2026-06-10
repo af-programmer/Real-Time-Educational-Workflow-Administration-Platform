@@ -6,28 +6,22 @@ import Button from '../../components/common/Button';
 import MessageInbox from '../../components/common/MessageInbox';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
-import useAuthStore from '../../store/authStore';
 
-export default function MyMessages() {
-  const { user } = useAuthStore();
+export default function HomeroomMessages() {
   const [showModal, setShowModal] = useState(false);
   const [sending, setSending] = useState(false);
   const [recipients, setRecipients] = useState([]);
   const { register, handleSubmit, reset } = useForm();
 
   useEffect(() => {
-    const requests = [
+    // Load secretaries + teachers in homeroom class
+    Promise.all([
       teachersApi.getSecretaries().then((r) => (r.data.data || []).map((u) => ({ ...u, _group: 'Secretary' }))),
-    ];
-    if (user?.is_homeroom) {
-      requests.push(
-        teachersApi.getMyHomeroomTeachers().then((r) => (r.data.data || []).map((u) => ({ ...u, _group: 'Teacher (my class)' })))
-      );
-    }
-    Promise.all(requests)
-      .then((groups) => setRecipients(groups.flat()))
+      teachersApi.getMyHomeroomTeachers().then((r) => (r.data.data || []).map((u) => ({ ...u, _group: 'Teacher (my class)' }))),
+    ])
+      .then(([secs, teachers]) => setRecipients([...secs, ...teachers]))
       .catch(() => {});
-  }, [user?.is_homeroom]);
+  }, []);
 
   const sendMessage = async (data) => {
     setSending(true);
@@ -58,7 +52,7 @@ export default function MyMessages() {
             <select {...register('recipient_id', { required: true })} className="input">
               <option value="">Select recipient...</option>
               {recipients.map((r) => (
-                <option key={r.id} value={r.id}>{r.name}{r._group ? ` — ${r._group}` : ''}</option>
+                <option key={r.id} value={r.id}>{r.name} — {r._group}</option>
               ))}
             </select>
           </div>

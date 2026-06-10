@@ -9,7 +9,6 @@ const navItems = {
     { to: '/teacher/print-requests', label: 'Print Requests', icon: '🖨️' },
     { to: '/teacher/new-print-request', label: 'New Request', icon: '➕' },
     { to: '/teacher/library', label: 'My Library', icon: '📚' },
-    { to: '/teacher/classes', label: 'My Classes', icon: '🏫' },
     { to: '/teacher/grades', label: 'My Grades', icon: '📊' },
     { to: '/teacher/messages', label: 'Messages', icon: '✉️' },
   ],
@@ -34,7 +33,20 @@ const navItems = {
 export default function Sidebar({ mobileOpen, onClose }) {
   const { user } = useAuthStore();
   const { logout } = useAuthActions();
-  const items = navItems[user?.role] || [];
+
+  const baseTeacherItems = [
+    { to: '/teacher', label: 'Dashboard', icon: '🏠', end: true },
+    { to: '/teacher/print-requests', label: 'Print Requests', icon: '🖨️' },
+    { to: '/teacher/new-print-request', label: 'New Request', icon: '➕' },
+    { to: '/teacher/library', label: 'My Library', icon: '📚' },
+    { to: '/teacher/grades', label: 'My Grades', icon: '📊' },
+    { to: '/teacher/messages', label: 'Messages', icon: '✉️' },
+  ];
+  const teacherItems = user?.is_homeroom
+    ? [...baseTeacherItems.slice(0, 4), { to: '/teacher/classes', label: 'My Classes', icon: '🏫' }, ...baseTeacherItems.slice(4)]
+    : baseTeacherItems;
+
+  const items = user?.role === 'teacher' ? teacherItems : (navItems[user?.role] || []);
 
   const roleColors = {
     admin: 'from-indigo-800 to-indigo-900',

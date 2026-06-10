@@ -10,6 +10,7 @@ export const usersApi = {
   suspend: (id, suspend) => axiosInstance.patch(`/users/${id}/suspend`, { suspend }),
   assignClasses: (id, classIds) => axiosInstance.post(`/users/${id}/assign-classes`, { classIds }),
   assignSubjects: (id, subjectIds) => axiosInstance.post(`/users/${id}/assign-subjects`, { subjectIds }),
+  assignHomeroomClasses: (id, classIds) => axiosInstance.post(`/users/${id}/assign-homeroom-classes`, { classIds }),
 };
 
 export const teachersApi = {
@@ -18,6 +19,7 @@ export const teachersApi = {
   getProfile: (id) => axiosInstance.get(`/teachers/${id}/profile`),
   getSecretaries: () => axiosInstance.get('/teachers/secretaries'),
   getAdmins: () => axiosInstance.get('/teachers/admins'),
+  getMyHomeroomTeachers: () => axiosInstance.get('/teachers/my-homeroom-teachers'),
 };
 
 export const classesApi = {

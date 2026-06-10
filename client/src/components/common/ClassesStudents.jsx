@@ -5,7 +5,7 @@ import StudentGradesModal from './StudentGradesModal';
 import Spinner from './Spinner';
 import toast from 'react-hot-toast';
 
-export default function ClassesStudents() {
+export default function ClassesStudents({ filterClassIds = null, readOnly = false }) {
   const [classes, setClasses] = useState([]);
   const [selectedClass, setSelectedClass] = useState(null);
   const [students, setStudents] = useState([]);
@@ -18,7 +18,12 @@ export default function ClassesStudents() {
 
   useEffect(() => {
     classesStudentsApi.getAllClasses()
-      .then((r) => setClasses(r.data.data || []))
+      .then((r) => {
+        const all = r.data.data || [];
+        setClasses(
+          filterClassIds ? all.filter((c) => filterClassIds.includes(c.id)) : all
+        );
+      })
       .catch(() => {})
       .finally(() => setLoadingClasses(false));
   }, []);
@@ -111,12 +116,14 @@ export default function ClassesStudents() {
               />
               <div className="flex gap-2 shrink-0">
                 <button onClick={printRoster} className="btn-ghost text-sm">🖨️ Print Roster</button>
-                <button onClick={() => { setShowForm(true); setEditStudent(null); }}
-                  className="btn-primary text-sm px-4 py-2">+ Add Student</button>
+                {!readOnly && (
+                  <button onClick={() => { setShowForm(true); setEditStudent(null); }}
+                    className="btn-primary text-sm px-4 py-2">+ Add Student</button>
+                )}
               </div>
             </div>
 
-            {(showForm || editStudent) && (
+            {!readOnly && (showForm || editStudent) && (
               <div className="card p-5">
                 <h4 className="font-semibold text-gray-900 mb-4">{editStudent ? 'Edit Student' : 'Add New Student'}</h4>
                 <StudentForm classId={selectedClass.id} student={editStudent} classes={classes}
@@ -129,7 +136,7 @@ export default function ClassesStudents() {
                 <table className="w-full text-sm">
                   <thead className="bg-gray-50">
                     <tr>
-                      {['#', 'Name', 'ID Number', 'Student #', "Father's Phone", "Mother's Phone", 'Home Phone', 'Email', ''].map((h) => (
+                      {['#', 'Name', 'ID Number', 'Student #', "Father's Phone", "Mother's Phone", 'Home Phone', 'Email', ...(readOnly ? [] : [''])].map((h) => (
                         <th key={h} className="text-left px-4 py-3 text-gray-500 font-medium">{h}</th>
                       ))}
                     </tr>
@@ -152,10 +159,12 @@ export default function ClassesStudents() {
                         <td className="px-4 py-3 text-gray-600">{s.phone_mother  || '—'}</td>
                         <td className="px-4 py-3 text-gray-600">{s.phone_home    || '—'}</td>
                         <td className="px-4 py-3 text-gray-600">{s.parent_email  || '—'}</td>
-                        <td className="px-4 py-3">
-                          <button onClick={() => { setEditStudent(s); setShowForm(false); }}
-                            className="text-primary-600 hover:text-primary-800 text-xs">Edit</button>
-                        </td>
+                        {!readOnly && (
+                          <td className="px-4 py-3">
+                            <button onClick={() => { setEditStudent(s); setShowForm(false); }}
+                              className="text-primary-600 hover:text-primary-800 text-xs">Edit</button>
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>
