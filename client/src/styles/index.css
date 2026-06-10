@@ -1,0 +1,21 @@
+/* ─────────────────────────────────────────────────────────
+   EduFlow — centralized stylesheet entry point
+   Import order:
+     1. variables  (CSS custom properties / design tokens)
+     2. global     (Tailwind directives + base layer)
+     3. layout     (structural overrides, if any)
+     4. utilities  (scrollbar, etc.)
+     5. components (reusable component classes)
+   ───────────────────────────────────────────────────────── */
+
+@import './variables.css';
+@import './global.css';
+@import './layout.css';
+@import './utilities/scrollbar.css';
+@import './components/form.css';
+@import './components/card.css';
+@import './components/button.css';
+@import './components/badge.css';
+@import './components/modal.css';
+@import './components/spinner.css';
+@import './components/sidebar.css';

@@ -5,7 +5,8 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
 import AppRouter from './router/AppRouter';
-import './index.css';
+import './styles/index.css';
+import { toastOptions } from './styles/toast.config';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -13,20 +14,7 @@ createRoot(document.getElementById('root')).render(
       <AuthProvider>
         <NotificationProvider>
           <AppRouter />
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              duration: 4000,
-              style: {
-                borderRadius: '12px',
-                background: '#1f2937',
-                color: '#f9fafb',
-                fontSize: '14px',
-              },
-              success: { iconTheme: { primary: '#10b981', secondary: '#fff' } },
-              error: { iconTheme: { primary: '#ef4444', secondary: '#fff' } },
-            }}
-          />
+          <Toaster position="top-right" toastOptions={toastOptions} />
         </NotificationProvider>
       </AuthProvider>
     </BrowserRouter>
