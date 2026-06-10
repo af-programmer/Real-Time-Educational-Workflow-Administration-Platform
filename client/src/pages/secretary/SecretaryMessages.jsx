@@ -12,6 +12,7 @@ export default function SecretaryMessages() {
   const [sending, setSending] = useState(false);
   const [attachment, setAttachment] = useState(null);
   const [recipients, setRecipients] = useState([]);
+  const [inboxKey, setInboxKey] = useState(0);
   const { register, handleSubmit, reset } = useForm();
 
   useEffect(() => {
@@ -34,6 +35,7 @@ export default function SecretaryMessages() {
       setShowModal(false);
       reset();
       setAttachment(null);
+      setInboxKey((k) => k + 1);
     } catch {
       toast.error('Failed to send message.');
     } finally {
@@ -47,7 +49,7 @@ export default function SecretaryMessages() {
         <Button onClick={() => setShowModal(true)}>✉️ New Message</Button>
       </div>
 
-      <MessageInbox />
+      <MessageInbox refreshKey={inboxKey} />
 
       <Modal isOpen={showModal} onClose={() => { setShowModal(false); reset(); setAttachment(null); }} title="New Message">
         <form onSubmit={handleSubmit(sendMessage)} className="space-y-4">

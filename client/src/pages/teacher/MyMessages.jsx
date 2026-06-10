@@ -16,6 +16,7 @@ export default function MyMessages() {
   const { register, handleSubmit, reset } = useForm();
 
   const [attachment, setAttachment] = useState(null);
+  const [inboxKey, setInboxKey] = useState(0);
 
   useEffect(() => {
     const requests = [
@@ -39,6 +40,7 @@ export default function MyMessages() {
       setShowModal(false);
       reset();
       setAttachment(null);
+      setInboxKey((k) => k + 1);
     } catch {
       toast.error('Failed to send message.');
     } finally {
@@ -52,7 +54,7 @@ export default function MyMessages() {
         <Button onClick={() => setShowModal(true)}>✉️ New Message</Button>
       </div>
 
-      <MessageInbox />
+      <MessageInbox refreshKey={inboxKey} />
 
       <Modal isOpen={showModal} onClose={() => { setShowModal(false); reset(); setAttachment(null); }} title="New Message">
         <form onSubmit={handleSubmit(sendMessage)} className="space-y-4">

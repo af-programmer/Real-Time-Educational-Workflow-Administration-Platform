@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { messagesApi } from '../../api/messagesApi';
 import { useNotifications } from '../../context/NotificationContext';
 import Spinner from './Spinner';
@@ -6,31 +6,31 @@ import { format } from 'date-fns';
 import clsx from 'clsx';
 import toast from 'react-hot-toast';
 
-export default function MessageInbox({ onUnreadChange }) {
+export default function MessageInbox({ onUnreadChange, refreshKey }) {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
   const { socket } = useNotifications();
 
+  const fetchInbox = useCallback(() =>
+    messagesApi.getInbox().then((r) => setMessages(r.data.data || [])).catch(() => {}),
+  []);
+
   useEffect(() => {
-    messagesApi.getInbox()
-      .then((r) => setMessages(r.data.data || []))
-      .catch(() => { })
-      .finally(() => setLoading(false));
-  }, []);
+    setLoading(true);
+    fetchInbox().finally(() => setLoading(false));
+  }, [refreshKey, fetchInbox]);
 
   useEffect(() => {
     const sock = socket?.current;
     if (!sock) return;
     const handler = (notification) => {
       if (notification.type !== 'message') return;
-      messagesApi.getInbox()
-        .then((r) => setMessages(r.data.data || []))
-        .catch(() => {});
+      fetchInbox();
     };
     sock.on('notification', handler);
     return () => sock.off('notification', handler);
-  }, [socket]);
+  }, [socket, fetchInbox]);
 
   const unreadCount = messages.filter((m) => !m.is_read).length;
 
@@ -119,7 +119,7 @@ export default function MessageInbox({ onUnreadChange }) {
             <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{selected.body}</p>
             {selected.attachment_path && (
               <a
-                href={`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/uploads/${selected.attachment_path}`}
+                href={`/uploads/${selected.attachment_path}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-4 inline-flex items-center gap-2 text-sm text-primary-600 hover:underline"

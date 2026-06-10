@@ -12,6 +12,7 @@ export default function AdminMessages() {
   const [showModal, setShowModal] = useState(false);
   const [sending, setSending] = useState(false);
   const [broadcastMode, setBroadcastMode] = useState(false);
+  const [attachment, setAttachment] = useState(null);
   const { register, handleSubmit, reset } = useForm();
 
   useEffect(() => {
@@ -24,11 +25,12 @@ export default function AdminMessages() {
       if (broadcastMode) {
         await messagesApi.broadcast({ recipient_role: data.recipient_role, subject: data.subject, body: data.body });
       } else {
-        await messagesApi.send({ recipient_id: parseInt(data.recipient_id), subject: data.subject, body: data.body });
+        await messagesApi.send({ recipient_id: parseInt(data.recipient_id), subject: data.subject, body: data.body }, attachment);
       }
       toast.success('Message sent!');
       setShowModal(false);
       reset();
+      setAttachment(null);
     } catch {
       toast.error('Failed to send message.');
     } finally {
@@ -47,7 +49,7 @@ export default function AdminMessages() {
 
       <MessageInbox />
 
-      <Modal isOpen={showModal} onClose={() => { setShowModal(false); reset(); }}
+      <Modal isOpen={showModal} onClose={() => { setShowModal(false); reset(); setAttachment(null); }}
         title={broadcastMode ? 'Broadcast Message' : 'New Message'}>
         <form onSubmit={handleSubmit(send)} className="space-y-4">
           {broadcastMode ? (
@@ -78,6 +80,12 @@ export default function AdminMessages() {
             <label className="label">Message *</label>
             <textarea {...register('body', { required: true })} rows={5} className="input resize-none" />
           </div>
+          {!broadcastMode && (
+            <div>
+              <label className="label">Attachment</label>
+              <input type="file" className="input" onChange={(e) => setAttachment(e.target.files[0] || null)} />
+            </div>
+          )}
           <div className="flex gap-3 justify-end">
             <Button variant="secondary" type="button" onClick={() => { setShowModal(false); reset(); }}>Cancel</Button>
             <Button type="submit" loading={sending}>Send</Button>
