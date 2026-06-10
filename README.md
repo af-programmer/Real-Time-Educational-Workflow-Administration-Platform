@@ -17,9 +17,7 @@ A production-ready full-stack web application built with React, Node.js + Expres
 
 ### 1. Database Setup
 ```bash
-# Create MySQL database and run schema
-mysql -u root -p < server/database/schema.sql
-mysql -u root -p eduflow < server/database/seed.sql
+mysql -u root -p -e "DROP DATABASE IF EXISTS eduflow;" && mysql -u root -p < database/schema.sql && mysql -u root -p < database/seed.sql
 ```
 
 ### 2. Backend
