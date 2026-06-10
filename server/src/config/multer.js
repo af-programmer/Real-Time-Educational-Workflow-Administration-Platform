@@ -4,7 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 
 const UPLOAD_DIR = path.join(__dirname, '../../', process.env.UPLOAD_DIR || 'uploads');
-const MAX_SIZE = parseInt(process.env.UPLOAD_MAX_SIZE) || 10 * 1024 * 1024; // 10MB
+const MAX_SIZE = parseInt(process.env.UPLOAD_MAX_SIZE) || 100 * 1024 * 1024; // 100MB
 
 if (!fs.existsSync(UPLOAD_DIR)) {
   fs.mkdirSync(UPLOAD_DIR, { recursive: true });
@@ -44,7 +44,7 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: MAX_SIZE },
+  limits: { fileSize: MAX_SIZE }, // set UPLOAD_MAX_SIZE in .env to override
 });
 
 module.exports = { upload, UPLOAD_DIR };

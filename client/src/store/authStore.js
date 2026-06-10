@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
 const useAuthStore = create(
   persist(
@@ -12,7 +12,7 @@ const useAuthStore = create(
       logout: () => set({ user: null, token: null, isAuthenticated: false }),
       updateUser: (updates) => set((state) => ({ user: { ...state.user, ...updates } })),
     }),
-    { name: 'eduflow-auth' }
+    { name: 'eduflow-auth', storage: createJSONStorage(() => sessionStorage) }
   )
 );
 

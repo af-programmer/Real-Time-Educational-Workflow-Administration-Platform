@@ -19,6 +19,10 @@ function FileSection({ files, setFiles, libraryFiles, selectedLibraryFile, setSe
   const [showLibrary, setShowLibrary] = useState(false);
   const removeFile = (i) => setFiles((prev) => prev.filter((_, idx) => idx !== i));
 
+  const handleFileChange = (e) => {
+    setFiles((prev) => [...prev, ...Array.from(e.target.files)]);
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
@@ -55,12 +59,12 @@ function FileSection({ files, setFiles, libraryFiles, selectedLibraryFile, setSe
       )}
       <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-primary-400 transition-colors">
         <input type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.ppt,.pptx"
-          onChange={(e) => setFiles((prev) => [...prev, ...Array.from(e.target.files)])}
+        onChange={handleFileChange}
           className="hidden" id="file-upload" />
         <label htmlFor="file-upload" className="cursor-pointer">
           <div className="text-3xl mb-2">📎</div>
           <p className="text-sm text-gray-600">Click to upload or drag & drop</p>
-          <p className="text-xs text-gray-400 mt-1">PDF, Images, Word, PowerPoint (max 10MB)</p>
+          <p className="text-xs text-gray-400 mt-1">PDF, Images, Word, PowerPoint(max 30MB)</p>
         </label>
       </div>
       {files.length > 0 && (

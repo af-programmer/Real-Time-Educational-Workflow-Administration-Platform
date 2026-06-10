@@ -6,8 +6,9 @@ export const printRequestsApi = {
   getHistory: (params) => axiosInstance.get('/print-requests/history', { params }),
   getById: (id) => axiosInstance.get(`/print-requests/${id}`),
   create: (formData) =>
-    axiosInstance.post('/print-requests', formData, {
+    axiosInstance.post('http://localhost:5000/api/print-requests', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 0,
     }),
   updateStatus: (id, status) =>
     axiosInstance.patch(`/print-requests/${id}/status`, { status }),
