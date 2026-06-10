@@ -117,6 +117,16 @@ export default function MessageInbox({ onUnreadChange }) {
               From: <b>{selected.sender_name}</b> · {format(new Date(selected.created_at), 'dd MMM yyyy, HH:mm')}
             </p>
             <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{selected.body}</p>
+            {selected.attachment_path && (
+              <a
+                href={`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/uploads/${selected.attachment_path}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 inline-flex items-center gap-2 text-sm text-primary-600 hover:underline"
+              >
+                📎 {selected.attachment_name}
+              </a>
+            )}
           </div>
         ) : (
           <div className="h-full flex items-center justify-center text-gray-400 text-center">

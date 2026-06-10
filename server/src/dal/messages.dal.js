@@ -1,10 +1,10 @@
 const { pool } = require('../config/db');
 
-async function create({ sender_id, recipient_id, recipient_role, subject, body, is_broadcast }) {
+async function create({ sender_id, recipient_id, recipient_role, subject, body, is_broadcast, attachment_path, attachment_name }) {
   const [result] = await pool.query(
-    `INSERT INTO messages (sender_id, recipient_id, recipient_role, subject, body, is_broadcast)
-     VALUES (?, ?, ?, ?, ?, ?)`,
-    [sender_id, recipient_id || null, recipient_role || null, subject || null, body, is_broadcast ? 1 : 0]
+    `INSERT INTO messages (sender_id, recipient_id, recipient_role, subject, body, is_broadcast, attachment_path, attachment_name)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [sender_id, recipient_id || null, recipient_role || null, subject || null, body, is_broadcast ? 1 : 0, attachment_path || null, attachment_name || null]
   );
   return result.insertId;
 }
@@ -13,7 +13,8 @@ async function findInbox(userId, role) {
   const [rows] = await pool.query(
     `SELECT m.*,
        u.name AS sender_name, u.email AS sender_email, ur.name AS sender_role,
-       (mr.user_id IS NOT NULL) AS is_read
+         (mr.user_id IS NOT NULL) AS is_read,
+       m.attachment_path, m.attachment_name
      FROM messages m
      JOIN users u ON u.id = m.sender_id
      JOIN roles ur ON ur.id = u.role_id

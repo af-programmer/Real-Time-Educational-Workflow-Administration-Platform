@@ -25,7 +25,7 @@ async function getInbox(userId, role) {
   return messagesDAL.findInbox(userId, role);
 }
 
-async function sendMessage(senderId, { recipient_id, subject, body }, app) {
+async function sendMessage(senderId, { recipient_id, subject, body }, app, file) {
   if (!recipient_id) throw new AppError('recipient_id is required.', 400);
 
   const recipient = await usersDAL.findById(recipient_id);
@@ -35,6 +35,8 @@ async function sendMessage(senderId, { recipient_id, subject, body }, app) {
 
   const messageId = await messagesDAL.create({
     sender_id: senderId, recipient_id, recipient_role: null, subject, body, is_broadcast: false,
+    attachment_path: file?.filename || null,
+    attachment_name: file?.originalname || null,
   });
 
   // Admin messages go to inbox only — no notification/sound

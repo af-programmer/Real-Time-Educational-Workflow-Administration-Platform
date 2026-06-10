@@ -7,7 +7,7 @@ const getInbox = asyncWrapper(async (req, res) => {
 });
 
 const send = asyncWrapper(async (req, res) => {
-  const messageId = await messagesService.sendMessage(req.user.id, req.body, req.app);
+  const messageId = await messagesService.sendMessage(req.user.id, req.body, req.app, req.file);
   res.status(201).json({ success: true, data: { id: messageId } });
 });
 

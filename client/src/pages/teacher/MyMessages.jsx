@@ -15,6 +15,8 @@ export default function MyMessages() {
   const [recipients, setRecipients] = useState([]);
   const { register, handleSubmit, reset } = useForm();
 
+  const [attachment, setAttachment] = useState(null);
+
   useEffect(() => {
     const requests = [
       teachersApi.getSecretaries().then((r) => (r.data.data || []).map((u) => ({ ...u, _group: 'Secretary' }))),
@@ -32,10 +34,11 @@ export default function MyMessages() {
   const sendMessage = async (data) => {
     setSending(true);
     try {
-      await messagesApi.send({ recipient_id: parseInt(data.recipient_id), subject: data.subject, body: data.body });
+      await messagesApi.send({ recipient_id: parseInt(data.recipient_id), subject: data.subject, body: data.body }, attachment);
       toast.success('Message sent!');
       setShowModal(false);
       reset();
+      setAttachment(null);
     } catch {
       toast.error('Failed to send message.');
     } finally {
@@ -51,7 +54,7 @@ export default function MyMessages() {
 
       <MessageInbox />
 
-      <Modal isOpen={showModal} onClose={() => { setShowModal(false); reset(); }} title="New Message">
+      <Modal isOpen={showModal} onClose={() => { setShowModal(false); reset(); setAttachment(null); }} title="New Message">
         <form onSubmit={handleSubmit(sendMessage)} className="space-y-4">
           <div>
             <label className="label">Send To *</label>
@@ -69,6 +72,10 @@ export default function MyMessages() {
           <div>
             <label className="label">Message *</label>
             <textarea {...register('body', { required: true })} rows={5} className="input resize-none" />
+          </div>
+          <div>
+            <label className="label">Attachment</label>
+            <input type="file" className="input" onChange={(e) => setAttachment(e.target.files[0] || null)} />
           </div>
           <div className="flex gap-3 justify-end">
             <Button variant="secondary" type="button" onClick={() => { setShowModal(false); reset(); }}>Cancel</Button>
