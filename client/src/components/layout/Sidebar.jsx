@@ -2,6 +2,7 @@ import { NavLink } from 'react-router-dom';
 import clsx from 'clsx';
 import useAuthStore from '../../store/authStore';
 import { useAuthActions } from '../../hooks/useAuth';
+import { sidebarColors } from '../../styles/variantClasses';
 
 const navItems = {
   teacher: [
@@ -36,14 +37,8 @@ export default function Sidebar({ mobileOpen, onClose }) {
   const { logout } = useAuthActions();
   const items = navItems[user?.role] || [];
 
-  const roleColors = {
-    admin: 'from-indigo-800 to-indigo-900',
-    secretary: 'from-pink-800 to-pink-900',
-    teacher: 'from-primary-800 to-primary-900',
-  };
-
   const SidebarContent = () => (
-    <div className={clsx('flex flex-col h-full bg-gradient-to-b text-white', roleColors[user?.role] || roleColors.teacher)}>
+    <div className={clsx('flex flex-col h-full bg-gradient-to-b text-white', sidebarColors[user?.role] || sidebarColors.teacher)}>
       <div className="flex items-center gap-3 px-6 py-5 border-b border-white/10">
         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/20 font-bold text-lg">E</div>
         <div>

@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import clsx from 'clsx';
+import { modalSizes } from '../../styles/variantClasses';
 
 export default function Modal({ isOpen, onClose, title, children, size = 'md' }) {
   useEffect(() => {
@@ -11,8 +12,6 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
 
   if (!isOpen) return null;
 
-  const sizes = { sm: 'max-w-md', md: 'max-w-lg', lg: 'max-w-2xl', xl: 'max-w-4xl' };
-
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
@@ -22,7 +21,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
       <div className={clsx(
         'relative bg-white rounded-2xl shadow-2xl w-full',
         'max-h-[90vh] flex flex-col',
-        sizes[size]
+        modalSizes[size]
       )}>
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">

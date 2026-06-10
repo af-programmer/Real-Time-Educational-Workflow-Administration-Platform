@@ -1,0 +1,11 @@
+@layer components {
+  .input {
+    @apply block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm placeholder-gray-400;
+    @apply focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500;
+    @apply disabled:bg-gray-100 disabled:cursor-not-allowed;
+  }
+
+  .label {
+    @apply block text-sm font-medium text-gray-700 mb-1;
+  }
+}
