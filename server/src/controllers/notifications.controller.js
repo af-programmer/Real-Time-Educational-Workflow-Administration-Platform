@@ -20,6 +20,17 @@ const markOneRead = asyncWrapper(async (req, res) => {
 const createAnnouncement = asyncWrapper(async (req, res) => {
   const { title, content, targetRole } = req.body;
   const id = await notificationsService.createAnnouncement(title, content, targetRole);
+
+  const notifNS = req.app.locals.notifNS;
+  if (notifNS) {
+    const payload = { id, type: 'announcement', title, content };
+    if (!targetRole || targetRole === 'all') {
+      notifNS.emit('notification', payload);
+    } else {
+      notifNS.to(`role:${targetRole}`).emit('notification', payload);
+    }
+  }
+
   res.status(201).json({ success: true, data: { id } });
 });
 

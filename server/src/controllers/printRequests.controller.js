@@ -11,6 +11,17 @@ const create = asyncWrapper(async (req, res) => {
     req.body.lesson_date = req.body.lesson_date.toString().slice(0, 10);
   }
   const request = await printRequestsService.createPrintRequest(req.user.id, req.body, files);
+
+  const isUrgent = req.body.priority === 'urgent';
+  const notifNS = req.app.locals.notifNS;
+  if (notifNS) {
+    notifNS.to('role:secretary').to('role:admin').emit('notification', {
+      type:  isUrgent ? 'urgent_request' : 'print_request',
+      title: isUrgent ? '🚨 Urgent Print Request' : '🖨️ New Print Request',
+      content: `New ${req.body.priority || 'normal'} print request submitted.`,
+    });
+  }
+
   res.status(201).json({ success: true, data: request });
 });
 
@@ -27,6 +38,18 @@ const getAll = asyncWrapper(async (req, res) => {
 
 const updateStatus = asyncWrapper(async (req, res) => {
   const request = await printRequestsService.updateStatus(req.params.id, req.body.status);
+
+  if (req.body.status === 'completed') {
+    const notifNS = req.app.locals.notifNS;
+    if (notifNS && request.teacher_id) {
+      notifNS.to(`user:${request.teacher_id}`).emit('notification', {
+        type: 'print_completed',
+        title: '✅ Print Request Completed',
+        content: 'Your print request has been marked as completed.',
+      });
+    }
+  }
+
   res.json({ success: true, data: request });
 });
 

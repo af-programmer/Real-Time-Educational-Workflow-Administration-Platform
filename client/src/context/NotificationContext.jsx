@@ -5,6 +5,36 @@ import useNotificationStore from '../store/notificationStore';
 import toast from 'react-hot-toast';
 import { notificationsApi } from '../api/notificationsApi';
 
+function beep(ctx, freq, startTime, duration, type = 'sine', volume = 0.3) {
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.type = type;
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(volume, startTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+  osc.start(startTime);
+  osc.stop(startTime + duration);
+}
+
+function playSound(type) {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (type === 'urgent_request') {
+      // 3 sharp beeps
+      beep(ctx, 880, ctx.currentTime,        0.12, 'square', 0.4);
+      beep(ctx, 880, ctx.currentTime + 0.18, 0.12, 'square', 0.4);
+      beep(ctx, 880, ctx.currentTime + 0.36, 0.12, 'square', 0.4);
+    } else {
+      // soft 2-note chime
+      beep(ctx, 660, ctx.currentTime,        0.3, 'sine', 0.25);
+      beep(ctx, 880, ctx.currentTime + 0.15, 0.4, 'sine', 0.25);
+    }
+    setTimeout(() => ctx.close(), 1000);
+  } catch {}
+}
+
 const NotificationContext = createContext(null);
 
 export function NotificationProvider({ children }) {
@@ -32,6 +62,7 @@ export function NotificationProvider({ children }) {
       if (notification.type !== 'message') {
         addNotification(notification);
       }
+      playSound(notification.type);
       toast(notification.title, {
         icon: notification.type === 'urgent_request' ? '🚨' : notification.type === 'message' ? '✉️' : '🔔',
         duration: 4000,
