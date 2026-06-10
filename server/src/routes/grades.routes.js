@@ -14,6 +14,6 @@ router.get('/exam-types', requireRoles('teacher'), gradesController.getExamTypes
 router.get('/mine', requireRoles('teacher'), gradesController.getMyGrades);
 router.post('/', requireRoles('teacher'), validate(createGradeSchema), gradesController.createGrade);
 router.put('/:id', requireRoles('teacher'), validate(updateGradeSchema), gradesController.updateGrade);
-router.get('/student/:studentId', requireRoles('teacher', 'admin'), gradesController.getStudentGrades);
+router.get('/student/:studentId', requireRoles('teacher', 'admin', 'secretary'), gradesController.getStudentGrades);
 
 module.exports = router;

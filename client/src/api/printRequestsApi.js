@@ -31,6 +31,7 @@ export const classesStudentsApi = {
   createStudent: (data) => axiosInstance.post('/classes/students', data),
   updateStudent: (id, data) => axiosInstance.put(`/classes/students/${id}`, data),
   getStudent: (id) => axiosInstance.get(`/classes/students/${id}`),
+  getStudentGrades: (studentId) => axiosInstance.get(`/grades/student/${studentId}`),
 };
 
 export const teacherApi = {

@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 export default function StudentForm({ classId, student, classes, onSave, onCancel }) {
   const [form, setForm] = useState({
     name:          student?.name          || '',
+    id_number:     student?.id_number     || '',
     class_id:      student?.class_id      || classId || '',
     date_of_birth: student?.date_of_birth ? student.date_of_birth.split('T')[0] : '',
     phone_father:  student?.phone_father  || '',
@@ -47,6 +48,10 @@ export default function StudentForm({ classId, student, classes, onSave, onCance
         <div>
           <label className="label">Full Name *</label>
           <input className="input" value={form.name} onChange={set('name')} />
+        </div>
+        <div>
+          <label className="label">ID Number</label>
+          <input className="input" value={form.id_number} onChange={set('id_number')} placeholder="e.g. 123456789" />
         </div>
         <div>
           <label className="label">Class *</label>
