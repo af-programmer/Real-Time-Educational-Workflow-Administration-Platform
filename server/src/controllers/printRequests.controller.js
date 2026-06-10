@@ -15,11 +15,13 @@ const create = asyncWrapper(async (req, res) => {
   const isUrgent = req.body.priority === 'urgent';
   const notifNS = req.app.locals.notifNS;
   if (notifNS) {
-    notifNS.to('role:secretary').to('role:admin').emit('notification', {
-      type:  isUrgent ? 'urgent_request' : 'print_request',
-      title: isUrgent ? '🚨 Urgent Print Request' : '🖨️ New Print Request',
-      content: `New ${req.body.priority || 'normal'} print request submitted.`,
-    });
+    const payload = {
+      type:       isUrgent ? 'urgent_request' : 'print_request',
+      title:      isUrgent ? '🚨 Urgent Print Request' : '🖨️ New Print Request',
+      content:    `New ${req.body.priority || 'normal'} print request submitted.`,
+      created_at: new Date().toISOString(),
+    };
+    notifNS.to('role:secretary').emit('notification', payload);
   }
 
   res.status(201).json({ success: true, data: request });

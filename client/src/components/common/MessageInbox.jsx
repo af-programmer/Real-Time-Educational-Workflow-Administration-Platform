@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { messagesApi } from '../../api/messagesApi';
+import { useNotifications } from '../../context/NotificationContext';
 import Spinner from './Spinner';
 import { format } from 'date-fns';
 import clsx from 'clsx';
@@ -9,6 +10,7 @@ export default function MessageInbox({ onUnreadChange }) {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
+  const { socket } = useNotifications();
 
   useEffect(() => {
     messagesApi.getInbox()
@@ -16,6 +18,19 @@ export default function MessageInbox({ onUnreadChange }) {
       .catch(() => { })
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    const sock = socket?.current;
+    if (!sock) return;
+    const handler = (notification) => {
+      if (notification.type !== 'message') return;
+      messagesApi.getInbox()
+        .then((r) => setMessages(r.data.data || []))
+        .catch(() => {});
+    };
+    sock.on('notification', handler);
+    return () => sock.off('notification', handler);
+  }, [socket]);
 
   const unreadCount = messages.filter((m) => !m.is_read).length;
 

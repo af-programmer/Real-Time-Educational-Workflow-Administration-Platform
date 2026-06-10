@@ -66,17 +66,6 @@ async function generateCoverPage(requestId, res) {
   drawField('Request Status', request.status.replace('_', ' ').toUpperCase(), y); y += lineHeight;
   drawField('Submitted', new Date(request.created_at).toLocaleString('en-GB'), y); y += lineHeight;
 
-  // Notes section
-  if (request.notes) {
-    y += 8;
-    doc.fontSize(10).fillColor('#6b7280').font('Helvetica-Bold').text('NOTES', labelX, y);
-    y += 16;
-    doc.rect(labelX, y, doc.page.width - 100, 50).fill('#f9fafb').stroke('#e5e7eb');
-    doc.fontSize(11).fillColor('#374151').font('Helvetica')
-      .text(request.notes, labelX + 8, y + 8, { width: doc.page.width - 120, height: 36, ellipsis: true });
-    y += 58;
-  }
-
   if (request.files && request.files.length) {
     y += 8;
     doc.fontSize(10).fillColor('#6b7280').font('Helvetica-Bold')

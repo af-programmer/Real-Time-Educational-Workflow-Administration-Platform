@@ -14,6 +14,18 @@ router.get('/', requireRoles('secretary', 'admin'), asyncWrapper(async (req, res
   res.json({ success: true, ...result });
 }));
 
+// Teacher can get list of secretaries (for messaging)
+router.get('/secretaries', requireRoles('teacher'), asyncWrapper(async (req, res) => {
+  const result = await usersService.getAllUsers({ role: 'secretary', limit: 100 });
+  res.json({ success: true, ...result });
+}));
+
+// Secretary can get list of admins (for messaging)
+router.get('/admins', requireRoles('secretary'), asyncWrapper(async (req, res) => {
+  const result = await usersService.getAllUsers({ role: 'admin', limit: 100 });
+  res.json({ success: true, ...result });
+}));
+
 // Get teacher's own profile with classes + subjects
 router.get('/me', requireRoles('teacher'), asyncWrapper(async (req, res) => {
   const profile = await usersService.getTeacherProfile(req.user.id);

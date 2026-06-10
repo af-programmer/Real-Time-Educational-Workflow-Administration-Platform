@@ -7,7 +7,7 @@ const { requireRoles } = require('../middleware/roles.middleware');
 router.use(authMiddleware);
 
 router.get('/', messagesController.getInbox);
-router.post('/', requireRoles('secretary', 'admin'), messagesController.send);
+router.post('/', requireRoles('teacher', 'secretary', 'admin'), messagesController.send);
 router.post('/broadcast', requireRoles('admin'), messagesController.broadcast);
 router.patch('/:id/read', messagesController.markRead);
 router.delete('/:id', messagesController.deleteMessage);

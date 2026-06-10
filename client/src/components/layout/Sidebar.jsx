@@ -24,6 +24,7 @@ const navItems = {
   admin: [
     { to: '/admin', label: 'Dashboard', icon: '🏠', end: true },
     { to: '/admin/users', label: 'User Management', icon: '👥' },
+    { to: '/admin/staff', label: 'Staff', icon: '👩‍💼' },
     { to: '/admin/classes', label: 'Classes', icon: '🏫' },
     { to: '/admin/announcements', label: 'Announcements', icon: '📢' },
     { to: '/admin/messages', label: 'Messages', icon: '✉️' },

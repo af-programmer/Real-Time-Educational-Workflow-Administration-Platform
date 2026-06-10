@@ -31,9 +31,14 @@ async function sendMessage(senderId, { recipient_id, subject, body }, app) {
   const recipient = await usersDAL.findById(recipient_id);
   if (!recipient) throw new AppError('Recipient not found.', 404);
 
+  const sender = await usersDAL.findById(senderId);
+
   const messageId = await messagesDAL.create({
     sender_id: senderId, recipient_id, recipient_role: null, subject, body, is_broadcast: false,
   });
+
+  // Admin messages go to inbox only — no notification/sound
+  if (sender?.role === 'admin') return messageId;
 
   const payload = buildNotificationPayload(messageId, subject, body);
 

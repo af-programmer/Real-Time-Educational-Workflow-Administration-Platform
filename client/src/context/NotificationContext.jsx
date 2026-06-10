@@ -5,6 +5,16 @@ import useNotificationStore from '../store/notificationStore';
 import toast from 'react-hot-toast';
 import { notificationsApi } from '../api/notificationsApi';
 
+// Single shared AudioContext — created once, resumed on every user interaction
+let audioCtx = null;
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+document.addEventListener('click', () => getAudioCtx(), { once: false, passive: true });
+document.addEventListener('keydown', () => getAudioCtx(), { once: false, passive: true });
+
 function beep(ctx, freq, startTime, duration, type = 'sine', volume = 0.3) {
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
@@ -20,18 +30,23 @@ function beep(ctx, freq, startTime, duration, type = 'sine', volume = 0.3) {
 
 function playSound(type) {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    if (type === 'urgent_request') {
-      // 3 sharp beeps
-      beep(ctx, 880, ctx.currentTime,        0.12, 'square', 0.4);
-      beep(ctx, 880, ctx.currentTime + 0.18, 0.12, 'square', 0.4);
-      beep(ctx, 880, ctx.currentTime + 0.36, 0.12, 'square', 0.4);
-    } else {
-      // soft 2-note chime
-      beep(ctx, 660, ctx.currentTime,        0.3, 'sine', 0.25);
-      beep(ctx, 880, ctx.currentTime + 0.15, 0.4, 'sine', 0.25);
-    }
-    setTimeout(() => ctx.close(), 1000);
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = audioCtx;
+    const play = () => {
+      if (type === 'urgent_request') {
+        beep(ctx, 880, ctx.currentTime,        0.12, 'square', 0.4);
+        beep(ctx, 880, ctx.currentTime + 0.18, 0.12, 'square', 0.4);
+        beep(ctx, 880, ctx.currentTime + 0.36, 0.12, 'square', 0.4);
+      } else if (type === 'print_completed') {
+        beep(ctx, 523, ctx.currentTime,        0.15, 'sine', 0.25);
+        beep(ctx, 659, ctx.currentTime + 0.18, 0.15, 'sine', 0.25);
+        beep(ctx, 784, ctx.currentTime + 0.36, 0.3,  'sine', 0.3);
+      } else {
+        beep(ctx, 660, ctx.currentTime,        0.3, 'sine', 0.25);
+        beep(ctx, 880, ctx.currentTime + 0.15, 0.4, 'sine', 0.25);
+      }
+    };
+    ctx.resume().then(play);
   } catch {}
 }
 
@@ -58,7 +73,6 @@ export function NotificationProvider({ children }) {
     });
 
     socketRef.current.on('notification', (notification) => {
-      // 'message' type = broadcast/direct message → toast only, not notification center
       if (notification.type !== 'message') {
         addNotification(notification);
       }

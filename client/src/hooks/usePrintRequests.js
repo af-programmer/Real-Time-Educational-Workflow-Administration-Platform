@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { printRequestsApi } from '../api/printRequestsApi';
+import { useNotifications } from '../context/NotificationContext';
 import toast from 'react-hot-toast';
 
 export function useMyPrintRequests(params = {}) {
@@ -23,6 +24,16 @@ export function useMyPrintRequests(params = {}) {
 
   useEffect(() => { fetch(); }, [fetch]);
 
+  // Real-time: refresh when teacher's request is completed
+  const { socket } = useNotifications();
+  useEffect(() => {
+    const s = socket?.current;
+    if (!s) return;
+    const handler = (n) => { if (n.type === 'print_completed') fetch(); };
+    s.on('notification', handler);
+    return () => s.off('notification', handler);
+  }, [socket?.current, fetch]);
+
   return { data, pagination, loading, error, refetch: fetch };
 }
 
@@ -44,6 +55,18 @@ export function useAllPrintRequests(filters = {}) {
   }, [JSON.stringify(filters)]);
 
   useEffect(() => { fetch(); }, [fetch]);
+
+  // Real-time: refresh when new print request arrives
+  const { socket } = useNotifications();
+  useEffect(() => {
+    const s = socket?.current;
+    if (!s) return;
+    const handler = (n) => {
+      if (n.type === 'print_request' || n.type === 'urgent_request') fetch();
+    };
+    s.on('notification', handler);
+    return () => s.off('notification', handler);
+  }, [socket?.current, fetch]);
 
   const updateStatus = async (id, status) => {
     try {

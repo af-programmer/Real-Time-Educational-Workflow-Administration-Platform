@@ -23,11 +23,15 @@ const createAnnouncement = asyncWrapper(async (req, res) => {
 
   const notifNS = req.app.locals.notifNS;
   if (notifNS) {
-    const payload = { id, type: 'announcement', title, content };
+    const payload = { id, type: 'announcement', title, content, created_at: new Date().toISOString() };
+    const adminUserId = req.user.id;
+    // Map frontend targetRole values to actual socket room names
+    const roleMap = { all_teachers: 'teacher', all_secretaries: 'secretary', teacher: 'teacher', secretary: 'secretary' };
     if (!targetRole || targetRole === 'all') {
-      notifNS.emit('notification', payload);
+      notifNS.except(`user:${adminUserId}`).emit('notification', payload);
     } else {
-      notifNS.to(`role:${targetRole}`).emit('notification', payload);
+      const room = roleMap[targetRole] || targetRole;
+      notifNS.to(`role:${room}`).except(`user:${adminUserId}`).emit('notification', payload);
     }
   }
 

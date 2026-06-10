@@ -15,7 +15,7 @@ export default function AdminMessages() {
   const { register, handleSubmit, reset } = useForm();
 
   useEffect(() => {
-    usersApi.getAll({ limit: 100 }).then((r) => setUsers(r.data.data || [])).catch(() => {});
+    usersApi.getAll({ limit: 100 }).then((r) => setUsers((r.data.data || []).filter((u) => u.role !== 'admin'))).catch(() => {});
   }, []);
 
   const send = async (data) => {

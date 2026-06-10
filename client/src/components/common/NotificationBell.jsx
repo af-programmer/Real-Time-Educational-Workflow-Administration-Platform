@@ -65,9 +65,9 @@ export default function NotificationBell() {
                   No notifications yet
                 </div>
               ) : (
-                notifications.slice(0, 20).map((n) => (
+                notifications.slice(0, 20).map((n, i) => (
                   <div
-                    key={n.id}
+                    key={n.id ?? `sock-${i}`}
                     onClick={() => handleClick(n)}
                     className={clsx(
                       'flex gap-3 px-4 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer',
@@ -79,7 +79,7 @@ export default function NotificationBell() {
                       <p className="text-sm font-medium text-gray-900 truncate">{n.title}</p>
                       <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{n.content}</p>
                       <p className="text-xs text-gray-400 mt-1">
-                        {format(new Date(n.created_at), 'MMM d, HH:mm')}
+                        {n.created_at ? format(new Date(n.created_at), 'MMM d, HH:mm') : ''}
                       </p>
                     </div>
                     {!n.is_read && (

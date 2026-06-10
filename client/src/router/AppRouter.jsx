@@ -23,6 +23,8 @@ import UserManagement from '../pages/admin/UserManagement';
 import ClassManagement from '../pages/admin/ClassManagement';
 import Announcements from '../pages/admin/Announcements';
 import AdminMessages from '../pages/admin/AdminMessages';
+import StaffList from '../pages/admin/StaffList';
+import StaffProfile from '../pages/admin/StaffProfile';
 
 function RootRedirect() {
   const { isAuthenticated, user } = useAuthStore();
@@ -69,6 +71,8 @@ export default function AppRouter() {
           <Route path="/admin/announcements" element={<Announcements />} />
           <Route path="/admin/messages" element={<AdminMessages />} />
           <Route path="/admin/print-history" element={<PrintHistory />} />
+          <Route path="/admin/staff" element={<StaffList />} />
+          <Route path="/admin/staff/:id" element={<StaffProfile />} />
         </Route>
       </Route>
 

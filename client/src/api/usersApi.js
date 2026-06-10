@@ -16,6 +16,8 @@ export const teachersApi = {
   getAll: (params) => axiosInstance.get('/teachers', { params }),
   getMe: () => axiosInstance.get('/teachers/me'),
   getProfile: (id) => axiosInstance.get(`/teachers/${id}/profile`),
+  getSecretaries: () => axiosInstance.get('/teachers/secretaries'),
+  getAdmins: () => axiosInstance.get('/teachers/admins'),
 };
 
 export const classesApi = {
