@@ -1,6 +1,6 @@
 -- ============================================================
 -- EduFlow Full Seed Data
--- Password for ALL users: Password123!
+-- Password for ALL users:  
 -- Run: mysql -u root -p eduflow < database/seed_full.sql
 -- WARNING: replaces all existing data.
 -- ============================================================

@@ -55,10 +55,27 @@ export default function TeacherDashboard() {
       <div className="card p-6 bg-gradient-to-r from-primary-600 to-primary-800 text-white">
         <h2 className="text-2xl font-bold">Good day, {user?.name}! 👋</h2>
         <p className="mt-1 text-white/80">
-          You educate {(user?.is_homeroom ? profile?.homeroomClasses : profile?.classes)?.length || 0} classes and teach{' '}
+          You educate {profile?.classes?.length || 0} classes and teach{' '}
           {profile?.subjects?.length || 0} subjects.
         </p>
       </div>
+
+      {/* Homeroom Classes */}
+      {user?.is_homeroom && profile?.homeroomClasses?.length > 0 && (
+        <div className="card p-5">
+          <h3 className="font-semibold text-gray-900 mb-3">🏠 My Homeroom Classes</h3>
+          <div className="flex flex-wrap gap-3">
+            {profile.homeroomClasses.map((cls) => (
+              <div key={cls.id} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary-50 border border-primary-200">
+                <div>
+                  <p className="font-semibold text-primary-800">{cls.name}</p>
+                  <p className="text-xs text-primary-600">{cls.grade_level} · {cls.student_count} students</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
