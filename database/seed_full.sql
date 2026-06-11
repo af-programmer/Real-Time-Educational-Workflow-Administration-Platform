@@ -106,32 +106,32 @@ INSERT INTO classes (name, student_count, grade_level_id, academic_year) VALUES
 SET @r_admin = (SELECT id FROM roles WHERE name='admin');
 SET @r_sec   = (SELECT id FROM roles WHERE name='secretary');
 SET @r_teach = (SELECT id FROM roles WHERE name='teacher');
-SET @pw      = '$2a$12$Pe2jZy8Ja65LqDM6HCPV4egIT1zkp03o4ckmdTcz0Q8QvZHC9DF4q';
+SET @pw      = '$2a$12$y8htSJCWQSWLXzd28DD1X.O7d68CWxGDPzbqr2WVviba8.lAa7coO';
 
 -- ── Users (18 total) ──────────────────────────────────────────
 INSERT INTO users (name, email, role_id, phone, is_homeroom) VALUES
   -- Admin
-  ('Moshe Katz',         'admin@school.edu',            @r_admin, '052-1000000', FALSE),
+  ('Moshe Katz',         'admin@gmail.com',            @r_admin, '052-1000000', FALSE),
   -- Secretaries
-  ('Sarah Cohen',        'secretary1@school.edu',       @r_sec,   '052-2000001', FALSE),
-  ('Rivka Ben-David',    'secretary2@school.edu',       @r_sec,   '052-2000002', FALSE),
+  ('Sarah Cohen',        'secretary1@gmail.com',       @r_sec,   '052-2000001', FALSE),
+  ('Rivka Ben-David',    'secretary2@gmail.com',       @r_sec,   '052-2000002', FALSE),
   -- Homeroom teachers (12)
-  ('Avi Cohen',          'avi.cohen@school.edu',        @r_teach, '052-3000001', TRUE),
-  ('Maya Levi',          'maya.levi@school.edu',        @r_teach, '052-3000002', TRUE),
-  ('David Mizrahi',      'david.mizrahi@school.edu',    @r_teach, '052-3000003', TRUE),
-  ('Sarah Peretz',       'sarah.peretz@school.edu',     @r_teach, '052-3000004', TRUE),
-  ('Roi Katz',           'roi.katz@school.edu',         @r_teach, '052-3000005', TRUE),
-  ('Tamar Friedman',     'tamar.friedman@school.edu',   @r_teach, '052-3000006', TRUE),
-  ('Yoni Shapiro',       'yoni.shapiro@school.edu',     @r_teach, '052-3000007', TRUE),
-  ('Noa Rosenberg',      'noa.rosenberg@school.edu',    @r_teach, '052-3000008', TRUE),
-  ('Eitan Klein',        'eitan.klein@school.edu',      @r_teach, '052-3000009', TRUE),
-  ('Liron Goldstein',    'liron.goldstein@school.edu',  @r_teach, '052-3000010', TRUE),
-  ('Gal Stern',          'gal.stern@school.edu',        @r_teach, '052-3000011', TRUE),
-  ('Dana Schwartz',      'dana.schwartz@school.edu',    @r_teach, '052-3000012', TRUE),
+  ('Avi Cohen',          'avi.cohen@gmail.com',        @r_teach, '052-3000001', TRUE),
+  ('Maya Levi',          'maya.levi@gmail.com',        @r_teach, '052-3000002', TRUE),
+  ('David Mizrahi',      'david.mizrahi@gmail.com',    @r_teach, '052-3000003', TRUE),
+  ('Sarah Peretz',       'sarah.peretz@gmail.com',     @r_teach, '052-3000004', TRUE),
+  ('Roi Katz',           'roi.katz@gmail.com',         @r_teach, '052-3000005', TRUE),
+  ('Tamar Friedman',     'tamar.friedman@gmail.com',   @r_teach, '052-3000006', TRUE),
+  ('Yoni Shapiro',       'yoni.shapiro@gmail.com',     @r_teach, '052-3000007', TRUE),
+  ('Noa Rosenberg',      'noa.rosenberg@gmail.com',    @r_teach, '052-3000008', TRUE),
+  ('Eitan Klein',        'eitan.klein@gmail.com',      @r_teach, '052-3000009', TRUE),
+  ('Liron Goldstein',    'liron.goldstein@gmail.com',  @r_teach, '052-3000010', TRUE),
+  ('Gal Stern',          'gal.stern@gmail.com',        @r_teach, '052-3000011', TRUE),
+  ('Dana Schwartz',      'dana.schwartz@gmail.com',    @r_teach, '052-3000012', TRUE),
   -- Extra teachers (3)
-  ('Ron Weiss',          'ron.weiss@school.edu',        @r_teach, '052-3000013', FALSE),
-  ('Hila Horowitz',      'hila.horowitz@school.edu',    @r_teach, '052-3000014', FALSE),
-  ('Tal Becker',         'tal.becker@school.edu',       @r_teach, '052-3000015', FALSE);
+  ('Ron Weiss',          'ron.weiss@gmail.com',        @r_teach, '052-3000013', FALSE),
+  ('Hila Horowitz',      'hila.horowitz@gmail.com',    @r_teach, '052-3000014', FALSE),
+  ('Tal Becker',         'tal.becker@gmail.com',       @r_teach, '052-3000015', FALSE);
 
 -- ── Credentials ───────────────────────────────────────────────
 INSERT INTO user_credentials (user_id, password_hash)
@@ -141,153 +141,153 @@ SELECT id, @pw FROM users;
 -- Avi (9A homeroom): Math + Physics → 9th grade
 INSERT INTO teacher_classes (teacher_id, class_id)
 SELECT u.id, c.id FROM users u CROSS JOIN classes c
-WHERE u.email='avi.cohen@school.edu' AND c.name IN ('9A','9B','9C');
+WHERE u.email='avi.cohen@gmail.com' AND c.name IN ('9A','9B','9C');
 
 -- Maya (9B homeroom): English + Hebrew Lit → 9th grade
 INSERT INTO teacher_classes (teacher_id, class_id)
 SELECT u.id, c.id FROM users u CROSS JOIN classes c
-WHERE u.email='maya.levi@school.edu' AND c.name IN ('9A','9B','9C');
+WHERE u.email='maya.levi@gmail.com' AND c.name IN ('9A','9B','9C');
 
 -- David (9C homeroom): History + Geography → 9th grade
 INSERT INTO teacher_classes (teacher_id, class_id)
 SELECT u.id, c.id FROM users u CROSS JOIN classes c
-WHERE u.email='david.mizrahi@school.edu' AND c.name IN ('9A','9B','9C');
+WHERE u.email='david.mizrahi@gmail.com' AND c.name IN ('9A','9B','9C');
 
 -- Sarah (10A homeroom): Biology + Chemistry → 10th grade
 INSERT INTO teacher_classes (teacher_id, class_id)
 SELECT u.id, c.id FROM users u CROSS JOIN classes c
-WHERE u.email='sarah.peretz@school.edu' AND c.name IN ('10A','10B','10C');
+WHERE u.email='sarah.peretz@gmail.com' AND c.name IN ('10A','10B','10C');
 
 -- Roi (10B homeroom): CS + Civic Ed → 10th grade
 INSERT INTO teacher_classes (teacher_id, class_id)
 SELECT u.id, c.id FROM users u CROSS JOIN classes c
-WHERE u.email='roi.katz@school.edu' AND c.name IN ('10A','10B','10C');
+WHERE u.email='roi.katz@gmail.com' AND c.name IN ('10A','10B','10C');
 
 -- Tamar (10C homeroom): Art + PE → 10th grade
 INSERT INTO teacher_classes (teacher_id, class_id)
 SELECT u.id, c.id FROM users u CROSS JOIN classes c
-WHERE u.email='tamar.friedman@school.edu' AND c.name IN ('10A','10B','10C');
+WHERE u.email='tamar.friedman@gmail.com' AND c.name IN ('10A','10B','10C');
 
 -- Yoni (11A homeroom): Math + Physics → 11th grade
 INSERT INTO teacher_classes (teacher_id, class_id)
 SELECT u.id, c.id FROM users u CROSS JOIN classes c
-WHERE u.email='yoni.shapiro@school.edu' AND c.name IN ('11A','11B','11C');
+WHERE u.email='yoni.shapiro@gmail.com' AND c.name IN ('11A','11B','11C');
 
 -- Noa (11B homeroom): Biology + Chemistry → 11th grade
 INSERT INTO teacher_classes (teacher_id, class_id)
 SELECT u.id, c.id FROM users u CROSS JOIN classes c
-WHERE u.email='noa.rosenberg@school.edu' AND c.name IN ('11A','11B','11C');
+WHERE u.email='noa.rosenberg@gmail.com' AND c.name IN ('11A','11B','11C');
 
 -- Eitan (11C homeroom): English + Hebrew Lit → 11th grade
 INSERT INTO teacher_classes (teacher_id, class_id)
 SELECT u.id, c.id FROM users u CROSS JOIN classes c
-WHERE u.email='eitan.klein@school.edu' AND c.name IN ('11A','11B','11C');
+WHERE u.email='eitan.klein@gmail.com' AND c.name IN ('11A','11B','11C');
 
 -- Liron (12A homeroom): History + Geography → 12th grade
 INSERT INTO teacher_classes (teacher_id, class_id)
 SELECT u.id, c.id FROM users u CROSS JOIN classes c
-WHERE u.email='liron.goldstein@school.edu' AND c.name IN ('12A','12B','12C');
+WHERE u.email='liron.goldstein@gmail.com' AND c.name IN ('12A','12B','12C');
 
 -- Gal (12B homeroom): CS + Math → 12th grade
 INSERT INTO teacher_classes (teacher_id, class_id)
 SELECT u.id, c.id FROM users u CROSS JOIN classes c
-WHERE u.email='gal.stern@school.edu' AND c.name IN ('12A','12B','12C');
+WHERE u.email='gal.stern@gmail.com' AND c.name IN ('12A','12B','12C');
 
 -- Dana (12C homeroom): Art + PE → 12th grade
 INSERT INTO teacher_classes (teacher_id, class_id)
 SELECT u.id, c.id FROM users u CROSS JOIN classes c
-WHERE u.email='dana.schwartz@school.edu' AND c.name IN ('12A','12B','12C');
+WHERE u.email='dana.schwartz@gmail.com' AND c.name IN ('12A','12B','12C');
 
 -- Ron: Civic Ed + PE → 9th & 11th grade
 INSERT INTO teacher_classes (teacher_id, class_id)
 SELECT u.id, c.id FROM users u CROSS JOIN classes c
-WHERE u.email='ron.weiss@school.edu' AND c.name IN ('9A','9B','9C','11A','11B','11C');
+WHERE u.email='ron.weiss@gmail.com' AND c.name IN ('9A','9B','9C','11A','11B','11C');
 
 -- Hila: Math → 10th grade
 INSERT INTO teacher_classes (teacher_id, class_id)
 SELECT u.id, c.id FROM users u CROSS JOIN classes c
-WHERE u.email='hila.horowitz@school.edu' AND c.name IN ('10A','10B','10C');
+WHERE u.email='hila.horowitz@gmail.com' AND c.name IN ('10A','10B','10C');
 
 -- Tal: Hebrew Lit + Physics → 12th grade
 INSERT INTO teacher_classes (teacher_id, class_id)
 SELECT u.id, c.id FROM users u CROSS JOIN classes c
-WHERE u.email='tal.becker@school.edu' AND c.name IN ('12A','12B','12C');
+WHERE u.email='tal.becker@gmail.com' AND c.name IN ('12A','12B','12C');
 
 -- ── Teacher → Subjects ────────────────────────────────────────
 INSERT INTO teacher_subjects (teacher_id, subject_id)
 SELECT u.id, s.id FROM users u CROSS JOIN subjects s
-WHERE u.email='avi.cohen@school.edu'      AND s.name IN ('Mathematics','Physics');
+WHERE u.email='avi.cohen@gmail.com'      AND s.name IN ('Mathematics','Physics');
 
 INSERT INTO teacher_subjects (teacher_id, subject_id)
 SELECT u.id, s.id FROM users u CROSS JOIN subjects s
-WHERE u.email='maya.levi@school.edu'      AND s.name IN ('English','Hebrew Literature');
+WHERE u.email='maya.levi@gmail.com'      AND s.name IN ('English','Hebrew Literature');
 
 INSERT INTO teacher_subjects (teacher_id, subject_id)
 SELECT u.id, s.id FROM users u CROSS JOIN subjects s
-WHERE u.email='david.mizrahi@school.edu'  AND s.name IN ('History','Geography');
+WHERE u.email='david.mizrahi@gmail.com'  AND s.name IN ('History','Geography');
 
 INSERT INTO teacher_subjects (teacher_id, subject_id)
 SELECT u.id, s.id FROM users u CROSS JOIN subjects s
-WHERE u.email='sarah.peretz@school.edu'   AND s.name IN ('Biology','Chemistry');
+WHERE u.email='sarah.peretz@gmail.com'   AND s.name IN ('Biology','Chemistry');
 
 INSERT INTO teacher_subjects (teacher_id, subject_id)
 SELECT u.id, s.id FROM users u CROSS JOIN subjects s
-WHERE u.email='roi.katz@school.edu'       AND s.name IN ('Computer Science','Civic Education');
+WHERE u.email='roi.katz@gmail.com'       AND s.name IN ('Computer Science','Civic Education');
 
 INSERT INTO teacher_subjects (teacher_id, subject_id)
 SELECT u.id, s.id FROM users u CROSS JOIN subjects s
-WHERE u.email='tamar.friedman@school.edu' AND s.name IN ('Art','Physical Education');
+WHERE u.email='tamar.friedman@gmail.com' AND s.name IN ('Art','Physical Education');
 
 INSERT INTO teacher_subjects (teacher_id, subject_id)
 SELECT u.id, s.id FROM users u CROSS JOIN subjects s
-WHERE u.email='yoni.shapiro@school.edu'   AND s.name IN ('Mathematics','Physics');
+WHERE u.email='yoni.shapiro@gmail.com'   AND s.name IN ('Mathematics','Physics');
 
 INSERT INTO teacher_subjects (teacher_id, subject_id)
 SELECT u.id, s.id FROM users u CROSS JOIN subjects s
-WHERE u.email='noa.rosenberg@school.edu'  AND s.name IN ('Biology','Chemistry');
+WHERE u.email='noa.rosenberg@gmail.com'  AND s.name IN ('Biology','Chemistry');
 
 INSERT INTO teacher_subjects (teacher_id, subject_id)
 SELECT u.id, s.id FROM users u CROSS JOIN subjects s
-WHERE u.email='eitan.klein@school.edu'    AND s.name IN ('English','Hebrew Literature');
+WHERE u.email='eitan.klein@gmail.com'    AND s.name IN ('English','Hebrew Literature');
 
 INSERT INTO teacher_subjects (teacher_id, subject_id)
 SELECT u.id, s.id FROM users u CROSS JOIN subjects s
-WHERE u.email='liron.goldstein@school.edu' AND s.name IN ('History','Geography');
+WHERE u.email='liron.goldstein@gmail.com' AND s.name IN ('History','Geography');
 
 INSERT INTO teacher_subjects (teacher_id, subject_id)
 SELECT u.id, s.id FROM users u CROSS JOIN subjects s
-WHERE u.email='gal.stern@school.edu'      AND s.name IN ('Computer Science','Mathematics');
+WHERE u.email='gal.stern@gmail.com'      AND s.name IN ('Computer Science','Mathematics');
 
 INSERT INTO teacher_subjects (teacher_id, subject_id)
 SELECT u.id, s.id FROM users u CROSS JOIN subjects s
-WHERE u.email='dana.schwartz@school.edu'  AND s.name IN ('Art','Physical Education');
+WHERE u.email='dana.schwartz@gmail.com'  AND s.name IN ('Art','Physical Education');
 
 INSERT INTO teacher_subjects (teacher_id, subject_id)
 SELECT u.id, s.id FROM users u CROSS JOIN subjects s
-WHERE u.email='ron.weiss@school.edu'      AND s.name IN ('Physical Education','Civic Education');
+WHERE u.email='ron.weiss@gmail.com'      AND s.name IN ('Physical Education','Civic Education');
 
 INSERT INTO teacher_subjects (teacher_id, subject_id)
 SELECT u.id, s.id FROM users u CROSS JOIN subjects s
-WHERE u.email='hila.horowitz@school.edu'  AND s.name IN ('Mathematics');
+WHERE u.email='hila.horowitz@gmail.com'  AND s.name IN ('Mathematics');
 
 INSERT INTO teacher_subjects (teacher_id, subject_id)
 SELECT u.id, s.id FROM users u CROSS JOIN subjects s
-WHERE u.email='tal.becker@school.edu'     AND s.name IN ('Hebrew Literature','Physics');
+WHERE u.email='tal.becker@gmail.com'     AND s.name IN ('Hebrew Literature','Physics');
 
 -- ── Homeroom assignments ──────────────────────────────────────
 INSERT INTO teacher_homeroom_classes (teacher_id, class_id) VALUES
-  ((SELECT id FROM users WHERE email='avi.cohen@school.edu'),     (SELECT id FROM classes WHERE name='9A')),
-  ((SELECT id FROM users WHERE email='maya.levi@school.edu'),     (SELECT id FROM classes WHERE name='9B')),
-  ((SELECT id FROM users WHERE email='david.mizrahi@school.edu'), (SELECT id FROM classes WHERE name='9C')),
-  ((SELECT id FROM users WHERE email='sarah.peretz@school.edu'),  (SELECT id FROM classes WHERE name='10A')),
-  ((SELECT id FROM users WHERE email='roi.katz@school.edu'),      (SELECT id FROM classes WHERE name='10B')),
-  ((SELECT id FROM users WHERE email='tamar.friedman@school.edu'),(SELECT id FROM classes WHERE name='10C')),
-  ((SELECT id FROM users WHERE email='yoni.shapiro@school.edu'),  (SELECT id FROM classes WHERE name='11A')),
-  ((SELECT id FROM users WHERE email='noa.rosenberg@school.edu'), (SELECT id FROM classes WHERE name='11B')),
-  ((SELECT id FROM users WHERE email='eitan.klein@school.edu'),   (SELECT id FROM classes WHERE name='11C')),
-  ((SELECT id FROM users WHERE email='liron.goldstein@school.edu'),(SELECT id FROM classes WHERE name='12A')),
-  ((SELECT id FROM users WHERE email='gal.stern@school.edu'),     (SELECT id FROM classes WHERE name='12B')),
-  ((SELECT id FROM users WHERE email='dana.schwartz@school.edu'), (SELECT id FROM classes WHERE name='12C'));
+  ((SELECT id FROM users WHERE email='avi.cohen@gmail.com'),     (SELECT id FROM classes WHERE name='9A')),
+  ((SELECT id FROM users WHERE email='maya.levi@gmail.com'),     (SELECT id FROM classes WHERE name='9B')),
+  ((SELECT id FROM users WHERE email='david.mizrahi@gmail.com'), (SELECT id FROM classes WHERE name='9C')),
+  ((SELECT id FROM users WHERE email='sarah.peretz@gmail.com'),  (SELECT id FROM classes WHERE name='10A')),
+  ((SELECT id FROM users WHERE email='roi.katz@gmail.com'),      (SELECT id FROM classes WHERE name='10B')),
+  ((SELECT id FROM users WHERE email='tamar.friedman@gmail.com'),(SELECT id FROM classes WHERE name='10C')),
+  ((SELECT id FROM users WHERE email='yoni.shapiro@gmail.com'),  (SELECT id FROM classes WHERE name='11A')),
+  ((SELECT id FROM users WHERE email='noa.rosenberg@gmail.com'), (SELECT id FROM classes WHERE name='11B')),
+  ((SELECT id FROM users WHERE email='eitan.klein@gmail.com'),   (SELECT id FROM classes WHERE name='11C')),
+  ((SELECT id FROM users WHERE email='liron.goldstein@gmail.com'),(SELECT id FROM classes WHERE name='12A')),
+  ((SELECT id FROM users WHERE email='gal.stern@gmail.com'),     (SELECT id FROM classes WHERE name='12B')),
+  ((SELECT id FROM users WHERE email='dana.schwartz@gmail.com'), (SELECT id FROM classes WHERE name='12C'));
 
 -- ── Students ──────────────────────────────────────────────────
 
@@ -563,16 +563,16 @@ SET @s_bio        = (SELECT id FROM subjects WHERE name='Biology');
 SET @s_cs         = (SELECT id FROM subjects WHERE name='Computer Science');
 SET @s_phys       = (SELECT id FROM subjects WHERE name='Physics');
 SET @s_chem       = (SELECT id FROM subjects WHERE name='Chemistry');
-SET @t_avi        = (SELECT id FROM users WHERE email='avi.cohen@school.edu');
-SET @t_maya       = (SELECT id FROM users WHERE email='maya.levi@school.edu');
-SET @t_david      = (SELECT id FROM users WHERE email='david.mizrahi@school.edu');
-SET @t_sarah      = (SELECT id FROM users WHERE email='sarah.peretz@school.edu');
-SET @t_roi        = (SELECT id FROM users WHERE email='roi.katz@school.edu');
-SET @t_tamar      = (SELECT id FROM users WHERE email='tamar.friedman@school.edu');
-SET @t_yoni       = (SELECT id FROM users WHERE email='yoni.shapiro@school.edu');
-SET @t_noa        = (SELECT id FROM users WHERE email='noa.rosenberg@school.edu');
-SET @t_liron      = (SELECT id FROM users WHERE email='liron.goldstein@school.edu');
-SET @t_gal        = (SELECT id FROM users WHERE email='gal.stern@school.edu');
+SET @t_avi        = (SELECT id FROM users WHERE email='avi.cohen@gmail.com');
+SET @t_maya       = (SELECT id FROM users WHERE email='maya.levi@gmail.com');
+SET @t_david      = (SELECT id FROM users WHERE email='david.mizrahi@gmail.com');
+SET @t_sarah      = (SELECT id FROM users WHERE email='sarah.peretz@gmail.com');
+SET @t_roi        = (SELECT id FROM users WHERE email='roi.katz@gmail.com');
+SET @t_tamar      = (SELECT id FROM users WHERE email='tamar.friedman@gmail.com');
+SET @t_yoni       = (SELECT id FROM users WHERE email='yoni.shapiro@gmail.com');
+SET @t_noa        = (SELECT id FROM users WHERE email='noa.rosenberg@gmail.com');
+SET @t_liron      = (SELECT id FROM users WHERE email='liron.goldstein@gmail.com');
+SET @t_gal        = (SELECT id FROM users WHERE email='gal.stern@gmail.com');
 
 INSERT INTO print_requests (teacher_id, subject_id, priority_id, status_id, lesson_date, lesson_time, total_copies, notes) VALUES
 (@t_avi,   @s_math,  @pp_normal,    @ps_complete, '2026-02-10','09:00:00', 81,'Chapter 3 quiz — 9th grade'),
@@ -640,9 +640,9 @@ INSERT INTO print_request_classes (print_request_id, class_id, copies_count)
 SELECT @pr15, id, student_count FROM classes WHERE name IN ('12A','12B','12C');
 
 -- ── Messages ──────────────────────────────────────────────────
-SET @u_admin = (SELECT id FROM users WHERE email='admin@school.edu');
-SET @u_sec1  = (SELECT id FROM users WHERE email='secretary1@school.edu');
-SET @u_sec2  = (SELECT id FROM users WHERE email='secretary2@school.edu');
+SET @u_admin = (SELECT id FROM users WHERE email='admin@gmail.com');
+SET @u_sec1  = (SELECT id FROM users WHERE email='secretary1@gmail.com');
+SET @u_sec2  = (SELECT id FROM users WHERE email='secretary2@gmail.com');
 
 -- Broadcast from admin
 INSERT INTO messages (sender_id, recipient_id, recipient_role, subject, body, is_broadcast, created_at) VALUES

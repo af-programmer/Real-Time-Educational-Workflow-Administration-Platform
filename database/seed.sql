@@ -87,11 +87,11 @@ INSERT INTO users (name, email, role_id, is_active) VALUES
 ON DUPLICATE KEY UPDATE name = VALUES(name);
 
 INSERT INTO user_credentials (user_id, password_hash) VALUES
-  ((SELECT id FROM users WHERE email = 'admin@eduflow.com'),     '$2a$12$Pe2jZy8Ja65LqDM6HCPV4egIT1zkp03o4ckmdTcz0Q8QvZHC9DF4q'),
-  ((SELECT id FROM users WHERE email = 'secretary@eduflow.com'), '$2a$12$Pe2jZy8Ja65LqDM6HCPV4egIT1zkp03o4ckmdTcz0Q8QvZHC9DF4q'),
-  ((SELECT id FROM users WHERE email = 'teacher1@eduflow.com'),  '$2a$12$Pe2jZy8Ja65LqDM6HCPV4egIT1zkp03o4ckmdTcz0Q8QvZHC9DF4q'),
-  ((SELECT id FROM users WHERE email = 'teacher2@eduflow.com'),  '$2a$12$Pe2jZy8Ja65LqDM6HCPV4egIT1zkp03o4ckmdTcz0Q8QvZHC9DF4q'),
-  ((SELECT id FROM users WHERE email = 'teacher3@eduflow.com'),  '$2a$12$Pe2jZy8Ja65LqDM6HCPV4egIT1zkp03o4ckmdTcz0Q8QvZHC9DF4q')
+  ((SELECT id FROM users WHERE email = 'admin@eduflow.com'),     '$2a$12$y8htSJCWQSWLXzd28DD1X.O7d68CWxGDPzbqr2WVviba8.lAa7coO'),
+  ((SELECT id FROM users WHERE email = 'secretary@eduflow.com'), '$2a$12$y8htSJCWQSWLXzd28DD1X.O7d68CWxGDPzbqr2WVviba8.lAa7coO'),
+  ((SELECT id FROM users WHERE email = 'teacher1@eduflow.com'),  '$2a$12$y8htSJCWQSWLXzd28DD1X.O7d68CWxGDPzbqr2WVviba8.lAa7coO'),
+  ((SELECT id FROM users WHERE email = 'teacher2@eduflow.com'),  '$2a$12$y8htSJCWQSWLXzd28DD1X.O7d68CWxGDPzbqr2WVviba8.lAa7coO'),
+  ((SELECT id FROM users WHERE email = 'teacher3@eduflow.com'),  '$2a$12$y8htSJCWQSWLXzd28DD1X.O7d68CWxGDPzbqr2WVviba8.lAa7coO')
 ON DUPLICATE KEY UPDATE password_hash = VALUES(password_hash);
 
 -- ============================================================
