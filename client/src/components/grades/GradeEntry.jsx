@@ -11,9 +11,9 @@ const EXAM_TYPES = [
   { code: 'homework', label: 'Homework',  max: null }, // pass/fail
 ];
 
-export default function GradeEntry({ classes, subjects, onSuccess, initialClassId }) {
+export default function GradeEntry({ classes, subjects, onSuccess, initialClassId, initialSubjectId }) {
   const [step, setStep] = useState(1);
-  const [selectedSubjectId, setSelectedSubjectId] = useState(null);
+  const [selectedSubjectId, setSelectedSubjectId] = useState(initialSubjectId ? String(initialSubjectId) : null);
   const [selectedClassId, setSelectedClassId] = useState(initialClassId ? String(initialClassId) : String(classes[0]?.id || ''));
   const [examTypeIds, setExamTypeIds] = useState({});
   const [saving, setSaving] = useState(false);
@@ -27,6 +27,13 @@ export default function GradeEntry({ classes, subjects, onSuccess, initialClassI
       setExamTypeIds(map);
     }).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (initialSubjectId) {
+      handleSelectSubject(String(initialSubjectId));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialSubjectId]);
 
   const activeClass = classes.find((c) => String(c.id) === String(selectedClassId)) || classes[0];
   const students = activeClass?.students || [];
@@ -42,17 +49,20 @@ export default function GradeEntry({ classes, subjects, onSuccess, initialClassI
         inputs[s.id] = {};
         EXAM_TYPES.forEach((et) => {
           const found = existing.find((g) => g.student_id === s.id && g.exam_type === et.code);
+          const baseDate = found?.date ? new Date(found.date).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10);
           if (et.code === 'homework') {
             inputs[s.id][et.code] = {
               value: found ? (found.grade >= 1 ? 'pass' : 'fail') : null,
               gradeId: found?.id || null,
-              date: found?.date ? new Date(found.date).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
+              date: baseDate,
+              notes: found?.notes || '',
             };
           } else {
             inputs[s.id][et.code] = {
               value: found ? String(found.grade) : '',
               gradeId: found?.id || null,
-              date: found?.date ? new Date(found.date).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
+              date: baseDate,
+              notes: found?.notes || '',
             };
           }
         });
@@ -101,7 +111,7 @@ export default function GradeEntry({ classes, subjects, onSuccess, initialClassI
           maxGrade = et.max;
         }
 
-        const payload = { grade: gradeVal, max_grade: maxGrade, date: cell.date || today, exam_type_id: examTypeId };
+        const payload = { grade: gradeVal, max_grade: maxGrade, date: cell.date || today, exam_type_id: examTypeId, notes: cell.notes || '' };
 
         if (cell.gradeId) {
           promises.push(gradesApi.update(cell.gradeId, payload));
@@ -189,7 +199,7 @@ export default function GradeEntry({ classes, subjects, onSuccess, initialClassI
             <tr>
               <th className="text-left px-3 py-2 text-xs font-semibold text-gray-500 uppercase sticky left-0 bg-gray-50 min-w-[120px]">Student</th>
               {EXAM_TYPES.map((et) => (
-                <th key={et.code} className="text-center px-2 py-2 text-xs font-semibold text-gray-500 uppercase min-w-[100px]">
+                <th key={et.code} className="text-center px-2 py-2 text-xs font-semibold text-gray-500 uppercase min-w-[110px]">
                   {et.label}
                   {et.max && <span className="block text-gray-400 normal-case font-normal">/{et.max}</span>}
                 </th>
@@ -231,6 +241,13 @@ export default function GradeEntry({ classes, subjects, onSuccess, initialClassI
                             }`}
                           >✗</button>
                         </div>
+                        <input
+                          type="text"
+                          placeholder="note..."
+                          value={cell?.notes ?? ''}
+                          onChange={(e) => setCell(s.id, et.code, 'notes', e.target.value)}
+                          className="mt-1 w-full rounded border border-gray-200 bg-white px-1 py-0.5 text-xs focus:outline-none focus:ring-1 focus:ring-primary-400"
+                        />
                       </td>
                     );
                   }
@@ -248,6 +265,13 @@ export default function GradeEntry({ classes, subjects, onSuccess, initialClassI
                         className={`w-16 text-center rounded-lg border px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 ${
                           isExisting ? 'border-blue-300 bg-blue-50 text-blue-800' : 'border-gray-200 bg-white'
                         }`}
+                      />
+                      <input
+                        type="text"
+                        placeholder="note..."
+                        value={cell?.notes ?? ''}
+                        onChange={(e) => setCell(s.id, et.code, 'notes', e.target.value)}
+                        className="mt-1 w-full rounded border border-gray-200 bg-white px-1 py-0.5 text-xs focus:outline-none focus:ring-1 focus:ring-primary-400"
                       />
                     </td>
                   );

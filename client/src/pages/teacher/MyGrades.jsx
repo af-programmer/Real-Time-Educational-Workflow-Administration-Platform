@@ -134,6 +134,7 @@ export default function MyGrades() {
             classes={classes}
             subjects={subjects}
             initialClassId={activeClassId}
+            initialSubjectId={selectedSubjectName ? subjects.find((s) => s.name === selectedSubjectName)?.id : undefined}
             onSuccess={() => { setShowModal(false); loadGrades(); }}
           />
         </Modal>
@@ -183,6 +184,7 @@ export default function MyGrades() {
             classes={classes}
             subjects={subjects}
             initialClassId={activeClassId}
+            initialSubjectId={subjects.find((s) => s.name === selectedSubjectName)?.id}
             onSuccess={() => { setShowModal(false); loadGrades(); }}
           />
         </Modal>
