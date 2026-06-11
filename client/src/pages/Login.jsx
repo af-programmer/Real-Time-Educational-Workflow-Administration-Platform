@@ -24,8 +24,21 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-800 via-primary-900 to-indigo-900 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div className="relative min-h-screen flex items-center justify-center p-4 overflow-hidden">
+      {/* Video background */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover"
+      >
+        <source src="/videos/bg.mp4" type="video/mp4" />
+      </video>
+      {/* Dark overlay */}
+      <div className="absolute inset-0 bg-black/50" />
+
+      <div className="relative z-10 w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm text-white text-3xl font-bold mb-4">
@@ -74,18 +87,9 @@ export default function Login() {
               Sign In
             </Button>
           </form>
-
-          <div className="mt-6 p-4 bg-gray-50 rounded-xl border border-gray-100">
-            <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Demo Accounts</p>
-            <div className="space-y-1 text-xs text-gray-600">
-              <p><span className="font-medium text-indigo-600">Admin:</span> admin@eduflow.com</p>
-              <p><span className="font-medium text-pink-600">Secretary:</span> secretary@eduflow.com</p>
-              <p><span className="font-medium text-teal-600">Teacher:</span> teacher1@eduflow.com</p>
-              <p className="text-gray-400 mt-1">Password: Password123!</p>
-            </div>
-          </div>
         </div>
       </div>
     </div>
   );
 }
+
