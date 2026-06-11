@@ -63,7 +63,7 @@ Client → Rate Limiter → CORS/Helmet → Auth Middleware (JWT)
 
 - **Teacher:** Submit print requests (PDF/images), grade management per class/subject, messaging
 - **Secretary:** Print queue with filters, urgent request highlights, cover page PDF generation, merge requests, teacher profiles
-- **Admin:** Full user CRUD, class/subject assignment, broadcast messaging, system announcements
+- **Admin:** Full user CRUD, class/subject assignment, messaging, system notifications
 - **Real-time:** Socket.io notifications for new/urgent requests and messages
 - **Security:** JWT, bcrypt, role-based guards, Joi validation, SQL injection protection via parameterized queries, rate limiting, file type validation
 
@@ -84,5 +84,5 @@ Client → Rate Limiter → CORS/Helmet → Auth Middleware (JWT)
 | GET | /api/grades/my-classes | Teacher |
 | POST | /api/grades | Teacher |
 | GET | /api/messages | All |
-| POST | /api/messages/broadcast | Admin |
+| POST | /api/messages | Teacher/Secretary/Admin |
 | GET | /api/notifications | All |

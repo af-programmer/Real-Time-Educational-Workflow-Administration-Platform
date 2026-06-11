@@ -65,11 +65,10 @@ export default function AdminDashboard() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
         <StatCard label="Total Users" value={stats.totalUsers} icon="👥" color="bg-blue-100" to="/admin/users" />
         <StatCard label="Teachers" value={stats.teachers} icon="👩🏫" color="bg-teal-100" to="/admin/users?role=teacher" />
         <StatCard label="Secretaries" value={stats.secretaries} icon="💼" color="bg-pink-100" to="/admin/users?role=secretary" />
-        <StatCard label="Print History" icon="🖨️" color="bg-purple-100" to="/admin/print-history" />
       </div>
 
       {/* Quick Actions */}

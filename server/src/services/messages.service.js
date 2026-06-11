@@ -56,28 +56,6 @@ async function sendMessage(senderId, { recipient_id, subject, body }, app, file)
   return messageId;
 }
 
-async function broadcastMessage(senderId, { recipient_role, subject, body }, app) {
-  const validRoles = ['all', 'all_teachers', 'all_secretaries', 'admin', 'secretary', 'teacher'];
-  if (!validRoles.includes(recipient_role))
-    throw new AppError('Invalid recipient role for broadcast.', 400);
-
-  const messageId = await messagesDAL.create({
-    sender_id: senderId, recipient_id: null, recipient_role, subject, body, is_broadcast: true,
-  });
-
-  const roleTarget =
-    recipient_role === 'all_teachers'    ? 'teacher'   :
-    recipient_role === 'all_secretaries' ? 'secretary' :
-    recipient_role;
-
-  const rooms = roleTarget === 'all'
-    ? ['role:admin', 'role:secretary', 'role:teacher']
-    : [`role:${roleTarget}`];
-
-  emitNotification(app, rooms, buildNotificationPayload(messageId, subject, body));
-  return messageId;
-}
-
 async function markRead(messageId, userId) {
   await messagesDAL.markRead(messageId, userId);
 }
@@ -86,4 +64,4 @@ async function deleteMessage(messageId, userId) {
   await messagesDAL.deleteForUser(messageId, userId);
 }
 
-module.exports = { getInbox, sendMessage, broadcastMessage, markRead, deleteMessage };
+module.exports = { getInbox, sendMessage, markRead, deleteMessage };

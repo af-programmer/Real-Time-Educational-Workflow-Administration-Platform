@@ -26,6 +26,7 @@ export const badgeVariants = {
   completed:   'bg-green-100 text-green-800 ring-green-200',
   admin:       'bg-indigo-100 text-indigo-800',
   teacher:     'bg-teal-100 text-teal-800',
+  homeroom_teacher: 'bg-purple-100 text-purple-800',
   secretary:   'bg-pink-100 text-pink-800',
   default:     'bg-gray-100 text-gray-700',
 };
@@ -47,4 +48,5 @@ export const sidebarColors = {
   admin:     'from-indigo-800 to-indigo-900',
   secretary: 'from-pink-800 to-pink-900',
   teacher:   'from-primary-800 to-primary-900',
+  homeroom:  'from-purple-700 to-purple-900',
 };

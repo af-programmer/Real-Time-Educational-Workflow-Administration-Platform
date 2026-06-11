@@ -55,8 +55,8 @@ export default function TeacherDashboard() {
       <div className="card p-6 bg-gradient-to-r from-primary-600 to-primary-800 text-white">
         <h2 className="text-2xl font-bold">Good day, {user?.name}! 👋</h2>
         <p className="mt-1 text-white/80">
-          You are teaching {profile?.subjects?.length || 0} subjects in{' '}
-          {profile?.classes?.length || 0} classes.
+          You educate {(user?.is_homeroom ? profile?.homeroomClasses : profile?.classes)?.length || 0} classes and teach{' '}
+          {profile?.subjects?.length || 0} subjects.
         </p>
       </div>
 
