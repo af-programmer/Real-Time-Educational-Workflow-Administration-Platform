@@ -4,19 +4,7 @@ import { usersApi } from '../../api/usersApi';
 import useNotificationStore from '../../store/notificationStore';
 import Spinner from '../../components/common/Spinner';
 import DailyQuote from '../../components/common/DailyQuote';
-
-function StatCard({ label, value, icon, color, to }) {
-  const inner = (
-    <div className={`card p-5 flex items-center gap-4 ${to ? 'hover:shadow-md transition-shadow cursor-pointer' : ''}`}>
-      <div className={`flex h-12 w-12 items-center justify-center rounded-xl text-2xl ${color}`}>{icon}</div>
-      <div>
-        <p className="text-2xl font-bold text-gray-900">{value}</p>
-        <p className="text-sm text-gray-500">{label}</p>
-      </div>
-    </div>
-  );
-  return to ? <Link to={to}>{inner}</Link> : inner;
-}
+import StatCard from '../../components/common/StatCard';
 
 export default function AdminDashboard() {
   const { unreadCount } = useNotificationStore();

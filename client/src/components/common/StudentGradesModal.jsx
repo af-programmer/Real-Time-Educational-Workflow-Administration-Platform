@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { classesStudentsApi } from '../../api/printRequestsApi';
+import { classesStudentsApi } from '../../api/usersApi';
 import Spinner from './Spinner';
 
 export default function StudentGradesModal({ student, onClose }) {

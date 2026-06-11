@@ -39,9 +39,6 @@ async function sendMessage(senderId, { recipient_id, subject, body }, app, file)
     attachment_name: file?.originalname || null,
   });
 
-  // Admin messages go to inbox only — no notification/sound
-  if (sender?.role === 'admin') return messageId;
-
   const payload = buildNotificationPayload(messageId, subject, body);
 
   await notificationsDAL.create({

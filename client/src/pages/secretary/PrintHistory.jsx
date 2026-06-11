@@ -1,10 +1,20 @@
 import { useState, useEffect, useCallback } from 'react';
 import { printRequestsApi } from '../../api/printRequestsApi';
 import Spinner from '../../components/common/Spinner';
+import toast from 'react-hot-toast';
 import Pagination from '../../components/common/Pagination';
 import Badge from '../../components/common/Badge';
 import { format } from 'date-fns';
-import toast from 'react-hot-toast';
+
+async function openCover(id) {
+  try {
+    const res = await printRequestsApi.getCover(id);
+    const url = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+    const a = document.createElement('a');
+    a.href = url; a.target = '_blank'; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  } catch { toast.error('Failed to generate cover page.'); }
+}
 
 export default function PrintHistory() {
   const [data, setData] = useState([]);
@@ -76,7 +86,7 @@ export default function PrintHistory() {
                       {format(new Date(req.updated_at), 'dd MMM, HH:mm')}
                     </td>
                     <td className="px-4 py-3">
-                      <button onClick={() => window.open(`http://localhost:5000/api/print-requests/${req.id}/cover`, '_blank')}
+                      <button onClick={() => openCover(req.id)}
                         className="text-primary-600 hover:text-primary-800 text-xs">📄 Cover</button>
                     </td>
                   </tr>

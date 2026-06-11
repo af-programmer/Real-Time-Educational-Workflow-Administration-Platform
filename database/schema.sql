@@ -52,6 +52,7 @@ CREATE TABLE IF NOT EXISTS users (
   avatar_url   VARCHAR(255) DEFAULT NULL,
   phone        VARCHAR(20)  DEFAULT NULL,
   phone2       VARCHAR(20)  DEFAULT NULL,
+  is_homeroom  TINYINT(1)   NOT NULL DEFAULT 0,
   created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE RESTRICT
@@ -139,12 +140,23 @@ CREATE TABLE IF NOT EXISTS teacher_subjects (
 );
 
 -- ============================================================
+-- TEACHER → HOMEROOM CLASSES (Many-to-Many)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS teacher_homeroom_classes (
+  teacher_id INT NOT NULL,
+  class_id   INT NOT NULL,
+  PRIMARY KEY (teacher_id, class_id),
+  FOREIGN KEY (teacher_id) REFERENCES users(id)   ON DELETE CASCADE,
+  FOREIGN KEY (class_id)   REFERENCES classes(id) ON DELETE CASCADE
+);
+
+-- ============================================================
 -- TEACHER LIBRARY
 -- ============================================================
 CREATE TABLE IF NOT EXISTS teacher_library (
   id            INT PRIMARY KEY AUTO_INCREMENT,
   teacher_id    INT NOT NULL,
-  subject_id    INT NOT NULL,
+  subject_id    INT NULL,
   original_name VARCHAR(255) NOT NULL,
   stored_name   VARCHAR(255) NOT NULL,
   file_size     INT NOT NULL,
@@ -212,7 +224,7 @@ CREATE TABLE IF NOT EXISTS grades (
   id           INT PRIMARY KEY AUTO_INCREMENT,
   student_id   INT NOT NULL,
   subject_id   INT NOT NULL,
-  teacher_id   INT NOT NULL,
+  teacher_id   INT NULL,
   exam_type_id INT NOT NULL,
   grade        DECIMAL(5,2) NOT NULL,
   max_grade    DECIMAL(5,2) NOT NULL DEFAULT 100,
@@ -222,7 +234,7 @@ CREATE TABLE IF NOT EXISTS grades (
   updated_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (student_id)   REFERENCES students(id)   ON DELETE CASCADE,
   FOREIGN KEY (subject_id)   REFERENCES subjects(id)   ON DELETE RESTRICT,
-  FOREIGN KEY (teacher_id)   REFERENCES users(id)      ON DELETE RESTRICT,
+  FOREIGN KEY (teacher_id)   REFERENCES users(id)      ON DELETE SET NULL,
   FOREIGN KEY (exam_type_id) REFERENCES exam_types(id) ON DELETE RESTRICT
 );
 
@@ -250,6 +262,8 @@ CREATE TABLE IF NOT EXISTS messages (
   body              TEXT NOT NULL,
   is_broadcast      BOOLEAN DEFAULT FALSE,
   parent_message_id INT DEFAULT NULL,
+  attachment_path   VARCHAR(255) DEFAULT NULL,
+  attachment_name   VARCHAR(255) DEFAULT NULL,
   created_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (sender_id)         REFERENCES users(id)    ON DELETE CASCADE,
   FOREIGN KEY (recipient_id)      REFERENCES users(id)    ON DELETE CASCADE,
@@ -319,6 +333,17 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 );
 
 -- ============================================================
+-- QUOTES (motivational quotes shown per role on dashboard)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS quotes (
+  id         INT PRIMARY KEY AUTO_INCREMENT,
+  role       ENUM('admin', 'teacher', 'secretary') NOT NULL,
+  text       TEXT NOT NULL,
+  is_active  BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ============================================================
 -- INDEXES
 -- ============================================================
 -- users
@@ -355,3 +380,5 @@ CREATE INDEX idx_audit_entity    ON audit_logs(entity, entity_id);
 
 -- NOTE: is_read (notifications/messages) intentionally NOT indexed —
 -- boolean columns with ~50% distribution offer no benefit to MySQL optimizer.
+
+CREATE INDEX IF NOT EXISTS idx_quotes_role ON quotes(role, is_active);

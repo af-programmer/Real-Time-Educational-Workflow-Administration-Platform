@@ -5,14 +5,6 @@ import { useAuthActions } from '../../hooks/useAuth';
 import { sidebarColors } from '../../styles/variantClasses';
 
 const navItems = {
-  teacher: [
-    { to: '/teacher', label: 'Dashboard', icon: '🏠', end: true },
-    { to: '/teacher/print-requests', label: 'Print Requests', icon: '🖨️' },
-    { to: '/teacher/new-print-request', label: 'New Request', icon: '➕' },
-    { to: '/teacher/library', label: 'My Library', icon: '📚' },
-    { to: '/teacher/grades', label: 'My Grades', icon: '📊' },
-    { to: '/teacher/messages', label: 'Messages', icon: '✉️' },
-  ],
   secretary: [
     { to: '/secretary', label: 'Dashboard', icon: '🏠', end: true },
     { to: '/secretary/print-center', label: 'Print Center', icon: '🖨️' },

@@ -3,7 +3,7 @@ const router = express.Router();
 const classesController = require('../controllers/classes.controller');
 const authMiddleware = require('../middleware/auth.middleware');
 const { requireRoles } = require('../middleware/roles.middleware');
-const usersDAL = require('../dal/users.dal');
+const teacherAssignmentsDAL = require('../dal/teacherAssignments.dal');
 const asyncWrapper = require('../utils/asyncWrapper');
 
 router.use(authMiddleware);
@@ -16,7 +16,7 @@ router.get('/:id/students', asyncWrapper(async (req, res, next) => {
   const { role, id: userId } = req.user;
   if (role === 'secretary' || role === 'admin') return next();
   if (role === 'teacher') {
-    const homeroom = await usersDAL.getHomeroomClasses(userId);
+    const homeroom = await teacherAssignmentsDAL.getHomeroomClasses(userId);
     if (homeroom.some((c) => c.id === parseInt(req.params.id))) return next();
   }
   return res.status(403).json({ success: false, message: 'Access denied.' });

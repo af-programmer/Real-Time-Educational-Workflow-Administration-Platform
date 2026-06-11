@@ -1,4 +1,5 @@
 const printRequestsDAL = require('../dal/printRequests.dal');
+const printRequestsQueryDAL = require('../dal/printRequestsQuery.dal');
 const classesDAL = require('../dal/classes.dal');
 const notificationsDAL = require('../dal/notifications.dal');
 const libraryDAL = require('../dal/library.dal');
@@ -73,7 +74,7 @@ async function getMyRequests(teacherId, { page = 1, limit = 20 } = {}) {
 
 async function getAllRequests({ teacherId, priority, status, dateFrom, dateTo, page = 1, limit = 20 }) {
   const { offset, limit: lim, page: p } = paginate(null, page, limit);
-  const { rows, total } = await printRequestsDAL.findAll({
+  const { rows, total } = await printRequestsQueryDAL.findAll({
     teacherId, priority, status, dateFrom, dateTo, page: p, limit: lim, offset,
   });
   return paginateResponse(rows, total, p, lim);
@@ -102,7 +103,7 @@ async function deleteRequest(requestId, userId, userRole) {
 
 async function getHistory({ priority, dateFrom, dateTo, search, page = 1, limit = 20 }) {
   const { offset, limit: lim, page: p } = paginate(null, page, limit);
-  const { rows, total } = await printRequestsDAL.findHistory({ priority, dateFrom, dateTo, search, page: p, limit: lim, offset });
+  const { rows, total } = await printRequestsQueryDAL.findHistory({ priority, dateFrom, dateTo, search, page: p, limit: lim, offset });
   return paginateResponse(rows, total, p, lim);
 }
 

@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const usersDAL = require('../dal/users.dal');
+const teacherAssignmentsDAL = require('../dal/teacherAssignments.dal');
 const AppError = require('../utils/AppError');
 const { paginate, paginateResponse } = require('../utils/paginate');
 
@@ -29,7 +30,7 @@ async function createUser({ name, email, password, role, phone, phone2, is_homer
   const id = await usersDAL.create({ name, email, role_id: roleId, phone, phone2, is_homeroom: !!is_homeroom });
   await usersDAL.createCredential(id, password_hash);
   if (is_homeroom && homeroom_class_ids?.length)
-    await usersDAL.assignHomeroomClasses(id, homeroom_class_ids);
+    await teacherAssignmentsDAL.assignHomeroomClasses(id, homeroom_class_ids);
   return usersDAL.findById(id);
 }
 
@@ -58,22 +59,22 @@ async function assignClasses(teacherId, classIds) {
   const user = await usersDAL.findById(teacherId);
   if (!user) throw new AppError('User not found.', 404);
   if (user.role !== 'teacher') throw new AppError('Only teachers can be assigned to classes.', 400);
-  await usersDAL.assignClasses(teacherId, classIds);
+  await teacherAssignmentsDAL.assignClasses(teacherId, classIds);
 }
 
 async function assignSubjects(teacherId, subjectIds) {
   const user = await usersDAL.findById(teacherId);
   if (!user) throw new AppError('User not found.', 404);
   if (user.role !== 'teacher') throw new AppError('Only teachers can be assigned to subjects.', 400);
-  await usersDAL.assignSubjects(teacherId, subjectIds);
+  await teacherAssignmentsDAL.assignSubjects(teacherId, subjectIds);
 }
 
 async function getTeacherProfile(teacherId) {
   const user = await usersDAL.findById(teacherId);
   if (!user) throw new AppError('Teacher not found.', 404);
-  const classes  = await usersDAL.getTeacherClasses(teacherId);
-  const subjects = await usersDAL.getTeacherSubjects(teacherId);
-  const homeroomClasses = await usersDAL.getHomeroomClasses(teacherId);
+  const classes  = await teacherAssignmentsDAL.getTeacherClasses(teacherId);
+  const subjects = await teacherAssignmentsDAL.getTeacherSubjects(teacherId);
+  const homeroomClasses = await teacherAssignmentsDAL.getHomeroomClasses(teacherId);
   return { ...user, classes, subjects, homeroomClasses };
 }
 
@@ -81,7 +82,7 @@ async function assignHomeroomClasses(teacherId, classIds) {
   const user = await usersDAL.findById(teacherId);
   if (!user) throw new AppError('User not found.', 404);
   if (user.role !== 'teacher') throw new AppError('Only teachers can be homeroom teachers.', 400);
-  await usersDAL.assignHomeroomClasses(teacherId, classIds);
+  await teacherAssignmentsDAL.assignHomeroomClasses(teacherId, classIds);
   // update is_homeroom flag
   await usersDAL.update(teacherId, { is_homeroom: classIds.length > 0 });
 }

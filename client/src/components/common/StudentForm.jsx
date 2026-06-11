@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { classesStudentsApi } from '../../api/printRequestsApi';
+import { classesStudentsApi } from '../../api/usersApi';
 import toast from 'react-hot-toast';
 
 export default function StudentForm({ classId, student, classes, onSave, onCancel }) {

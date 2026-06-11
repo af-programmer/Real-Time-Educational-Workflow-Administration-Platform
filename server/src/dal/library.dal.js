@@ -1,4 +1,5 @@
 const { pool } = require('../config/db');
+const { buildUpdateClause } = require('../utils/buildUpdateClause');
 
 async function findByTeacher(teacherId) {
   const [rows] = await pool.query(
@@ -32,13 +33,10 @@ async function create({ teacher_id, subject_id, original_name, stored_name, file
   return result.insertId;
 }
 
-async function update(id, { description, subject_id }) {
-  const fields = [];
-  const values = [];
-  if (description !== undefined) { fields.push('description = ?'); values.push(description); }
-  if (subject_id !== undefined) { fields.push('subject_id = ?'); values.push(subject_id); }
-  if (!fields.length) return false;
-  await pool.query(`UPDATE teacher_library SET ${fields.join(', ')} WHERE id = ?`, [...values, id]);
+async function update(id, fields) {
+  const { clause, values, hasFields } = buildUpdateClause(fields, ['description', 'subject_id']);
+  if (!hasFields) return false;
+  await pool.query(`UPDATE teacher_library SET ${clause} WHERE id = ?`, [...values, id]);
   return true;
 }
 

@@ -3,13 +3,13 @@ import { useSearchParams } from 'react-router-dom';
 import { usersApi, classesApi, subjectsApi } from '../../api/usersApi';
 import Table from '../../components/common/Table';
 import Badge from '../../components/common/Badge';
-import Button from '../../components/common/Button';
-import Modal from '../../components/common/Modal';
 import Pagination from '../../components/common/Pagination';
-import { useForm } from 'react-hook-form';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
+import UserFilters from '../../components/users/UserFilters';
+import CreateUserModal from '../../components/users/CreateUserModal';
+import AssignModal from '../../components/users/AssignModal';
 
 export default function UserManagement() {
   const [searchParams] = useSearchParams();
@@ -17,23 +17,14 @@ export default function UserManagement() {
   const [pagination, setPagination] = useState(null);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({ role: searchParams.get('role') || '', search: '', page: 1 });
-
-  useEffect(() => {
-    setFilters({ role: searchParams.get('role') || '', search: '', page: 1 });
-  }, [searchParams]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(null);
   const [classes, setClasses] = useState([]);
   const [subjects, setSubjects] = useState([]);
-  const [selectedClasses, setSelectedClasses] = useState([]);
-  const [selectedSubjects, setSelectedSubjects] = useState([]);
-  const [selectedHomeroomClasses, setSelectedHomeroomClasses] = useState([]);
-  const [submitting, setSubmitting] = useState(false);
-  const [watchedRole, setWatchedRole] = useState('');
 
-  const { register, handleSubmit, reset, watch, formState: { errors } } = useForm();
-  const selectedRole = watch('role', '');
-  const isHomeroom = watch('is_homeroom', false);
+  useEffect(() => {
+    setFilters({ role: searchParams.get('role') || '', search: '', page: 1 });
+  }, [searchParams]);
 
   const load = () => {
     setLoading(true);
@@ -54,39 +45,12 @@ export default function UserManagement() {
     subjectsApi.getAll().then((r) => setSubjects(r.data.data || [])).catch(() => {});
   }, []);
 
-  const createUser = async (data) => {
-    setSubmitting(true);
-    try {
-      const payload = {
-        ...data,
-        is_homeroom: data.is_homeroom === true || data.is_homeroom === 'true',
-        homeroom_class_ids: data.is_homeroom
-          ? (Array.isArray(data.homeroom_class_ids)
-              ? data.homeroom_class_ids.map(Number)
-              : data.homeroom_class_ids ? [Number(data.homeroom_class_ids)] : [])
-          : [],
-      };
-      delete payload.homeroom_class_id;
-      await usersApi.create(payload);
-      toast.success('User created!');
-      setShowCreateModal(false);
-      reset();
-      load();
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to create user.');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
   const toggleSuspend = async (user) => {
     try {
       await usersApi.suspend(user.id, !user.is_suspended);
       toast.success(user.is_suspended ? 'User unsuspended.' : 'User suspended.');
       load();
-    } catch {
-      toast.error('Failed to update user.');
-    }
+    } catch { toast.error('Failed to update user.'); }
   };
 
   const deleteUser = async (id) => {
@@ -95,41 +59,7 @@ export default function UserManagement() {
       await usersApi.delete(id);
       toast.success('User deleted.');
       load();
-    } catch {
-      toast.error('Failed to delete user.');
-    }
-  };
-
-  const openAssign = async (user) => {
-    setShowAssignModal(user);
-    setSelectedClasses([]);
-    setSelectedSubjects([]);
-    setSelectedHomeroomClasses([]);
-    try {
-      const r = await usersApi.getProfile(user.id);
-      const profile = r.data.data;
-      setSelectedClasses((profile.classes || []).map((c) => c.id));
-      setSelectedSubjects((profile.subjects || []).map((s) => s.id));
-      setSelectedHomeroomClasses((profile.homeroomClasses || []).map((c) => c.id));
-    } catch {}
-  };
-
-  const saveAssign = async () => {
-    if (!showAssignModal) return;
-    setSubmitting(true);
-    try {
-      if (selectedClasses.length)
-        await usersApi.assignClasses(showAssignModal.id, selectedClasses);
-      if (selectedSubjects.length)
-        await usersApi.assignSubjects(showAssignModal.id, selectedSubjects);
-      await usersApi.assignHomeroomClasses(showAssignModal.id, selectedHomeroomClasses);
-      toast.success('Assignments saved!');
-      setShowAssignModal(null);
-    } catch {
-      toast.error('Failed to save assignments.');
-    } finally {
-      setSubmitting(false);
-    }
+    } catch { toast.error('Failed to delete user.'); }
   };
 
   const columns = [
@@ -138,9 +68,8 @@ export default function UserManagement() {
     {
       key: 'role', header: 'Role',
       render: (role, row) => {
-        const isHomeroom = role === 'teacher' && row.is_homeroom;
-        const label = isHomeroom ? 'Teacher Educator' : role.charAt(0).toUpperCase() + role.slice(1);
-        return <Badge label={label} variant={isHomeroom ? 'homeroom_teacher' : role} />;
+        const homeroom = role === 'teacher' && row.is_homeroom;
+        return <Badge label={homeroom ? 'Teacher Educator' : role.charAt(0).toUpperCase() + role.slice(1)} variant={homeroom ? 'homeroom_teacher' : role} />;
       },
     },
     {
@@ -152,28 +81,18 @@ export default function UserManagement() {
         </div>
       ),
     },
-    {
-      key: 'created_at', header: 'Joined',
-      render: (date) => format(new Date(date), 'dd MMM yyyy'),
-    },
+    { key: 'created_at', header: 'Joined', render: (date) => format(new Date(date), 'dd MMM yyyy') },
     {
       key: 'actions', header: 'Actions',
       render: (_, row) => (
         <div className="flex items-center gap-2">
           {row.role === 'teacher' && (
-            <button onClick={() => openAssign(row)}
-              className="text-xs text-blue-600 hover:text-blue-700 font-medium">
-              Assign
-            </button>
+            <button onClick={() => setShowAssignModal(row)} className="text-xs text-blue-600 hover:text-blue-700 font-medium">Assign</button>
           )}
-          <button onClick={() => toggleSuspend(row)}
-            className={clsx('text-xs font-medium', row.is_suspended ? 'text-green-600' : 'text-yellow-600')}>
+          <button onClick={() => toggleSuspend(row)} className={clsx('text-xs font-medium', row.is_suspended ? 'text-green-600' : 'text-yellow-600')}>
             {row.is_suspended ? 'Unsuspend' : 'Suspend'}
           </button>
-          <button onClick={() => deleteUser(row.id)}
-            className="text-xs text-red-600 hover:text-red-700 font-medium">
-            Delete
-          </button>
+          <button onClick={() => deleteUser(row.id)} className="text-xs text-red-600 hover:text-red-700 font-medium">Delete</button>
         </div>
       ),
     },
@@ -181,166 +100,13 @@ export default function UserManagement() {
 
   return (
     <div className="space-y-5">
-      {/* Filters */}
-      <div className="card p-4 flex flex-wrap gap-4 items-end">
-        <div>
-          <label className="label">Role</label>
-          <select
-            value={filters.role}
-            onChange={(e) => setFilters((f) => ({ ...f, role: e.target.value, page: 1 }))}
-            className="input"
-          >
-            <option value="">All Roles</option>
-            <option value="teacher">Teacher Educator</option>
-            <option value="secretary">Secretary</option>
-            <option value="admin">Admin</option>
-          </select>
-        </div>
-        <div>
-          <label className="label">Search</label>
-          <input
-            type="search"
-            value={filters.search}
-            onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value, page: 1 }))}
-            className="input"
-            placeholder="Name or email..."
-          />
-        </div>
-        <Button onClick={() => setShowCreateModal(true)} className="ml-auto">+ New User</Button>
-      </div>
-
-      {/* Table */}
+      <UserFilters filters={filters} setFilters={setFilters} onCreateClick={() => setShowCreateModal(true)} />
       <div className="card overflow-hidden">
         <Table columns={columns} data={users} loading={loading} emptyMessage="No users found." />
       </div>
       <Pagination pagination={pagination} onPageChange={(p) => setFilters((f) => ({ ...f, page: p }))} />
-
-      {/* Create User Modal */}
-      <Modal isOpen={showCreateModal} onClose={() => { setShowCreateModal(false); reset(); }} title="Create New User">
-        <form onSubmit={handleSubmit(createUser)} className="space-y-4">
-          <div>
-            <label className="label">Full Name *</label>
-            <input {...register('name', { required: true })} className="input" placeholder="John Doe" />
-          </div>
-          <div>
-            <label className="label">Email *</label>
-            <input {...register('email', { required: true })} type="email" className="input" />
-          </div>
-          <div>
-            <label className="label">Password *</label>
-            <input {...register('password', { required: true, minLength: 8 })} type="password" className="input" />
-          </div>
-          <div>
-            <label className="label">Role *</label>
-            <select {...register('role', { required: true })} className="input">
-              <option value="">Select role...</option>
-              <option value="teacher">Teacher Educator</option>
-              <option value="secretary">Secretary</option>
-              <option value="admin">Admin</option>
-            </select>
-          </div>
-          {selectedRole === 'teacher' && (
-            <div className="space-y-3 p-3 bg-gray-50 rounded-lg">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" {...register('is_homeroom')} className="rounded border-gray-300 text-primary-600" />
-                <span className="text-sm font-medium text-gray-700">Homeroom Teacher Educator (מחנכת)</span>
-              </label>
-              {isHomeroom && (
-                <div>
-                  <label className="label">Homeroom Classes *</label>
-                  <div className="grid grid-cols-2 gap-2 mt-1">
-                    {classes.map((c) => (
-                      <label key={c.id} className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          value={c.id}
-                          {...register('homeroom_class_ids')}
-                          className="rounded border-gray-300 text-primary-600"
-                        />
-                        <span className="text-sm text-gray-700">{c.name}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-          <div>
-            <label className="label">Phone</label>
-            <input {...register('phone')} type="tel" className="input" placeholder="+1 555..." />
-          </div>
-          <div className="flex gap-3 justify-end">
-            <Button variant="secondary" type="button" onClick={() => { setShowCreateModal(false); reset(); }}>Cancel</Button>
-            <Button type="submit" loading={submitting}>Create User</Button>
-          </div>
-        </form>
-      </Modal>
-
-      {/* Assign Modal */}
-      <Modal isOpen={!!showAssignModal} onClose={() => setShowAssignModal(null)} title={`Assign to ${showAssignModal?.name}`} size="lg">
-        <div className="space-y-5">
-          <div>
-            <p className="label mb-2">Classes</p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {classes.map((c) => (
-                <label key={c.id} className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={selectedClasses.includes(c.id)}
-                    onChange={(e) => setSelectedClasses((prev) =>
-                      e.target.checked ? [...prev, c.id] : prev.filter((x) => x !== c.id)
-                    )}
-                    className="rounded border-gray-300 text-primary-600"
-                  />
-                  <span className="text-sm text-gray-700">{c.name} ({c.student_count})</span>
-                </label>
-              ))}
-            </div>
-          </div>
-          <div>
-            <p className="label mb-2">Subjects</p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {subjects.map((s) => (
-                <label key={s.id} className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={selectedSubjects.includes(s.id)}
-                    onChange={(e) => setSelectedSubjects((prev) =>
-                      e.target.checked ? [...prev, s.id] : prev.filter((x) => x !== s.id)
-                    )}
-                    className="rounded border-gray-300 text-primary-600"
-                  />
-                  <span className="text-sm text-gray-700">{s.name}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-          {showAssignModal?.role === 'teacher' && (
-            <div>
-              <p className="label mb-2">Homeroom Classes (כיתות חינוך)</p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {classes.map((c) => (
-                  <label key={c.id} className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={selectedHomeroomClasses.includes(c.id)}
-                      onChange={(e) => setSelectedHomeroomClasses((prev) =>
-                        e.target.checked ? [...prev, c.id] : prev.filter((x) => x !== c.id)
-                      )}
-                      className="rounded border-gray-300 text-primary-600"
-                    />
-                    <span className="text-sm text-gray-700">{c.name}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          )}
-          <div className="flex gap-3 justify-end">
-            <Button variant="secondary" onClick={() => setShowAssignModal(null)}>Cancel</Button>
-            <Button onClick={saveAssign} loading={submitting}>Save Assignments</Button>
-          </div>
-        </div>
-      </Modal>
+      <CreateUserModal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} classes={classes} onCreated={load} />
+      <AssignModal user={showAssignModal} classes={classes} subjects={subjects} onClose={() => setShowAssignModal(null)} />
     </div>
   );
 }

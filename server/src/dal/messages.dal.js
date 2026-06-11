@@ -13,8 +13,7 @@ async function findInbox(userId, role) {
   const [rows] = await pool.query(
     `SELECT m.*,
        u.name AS sender_name, u.email AS sender_email, ur.name AS sender_role,
-         (mr.user_id IS NOT NULL) AS is_read,
-       m.attachment_path, m.attachment_name
+         (mr.user_id IS NOT NULL) AS is_read
      FROM messages m
      JOIN users u ON u.id = m.sender_id
      JOIN roles ur ON ur.id = u.role_id

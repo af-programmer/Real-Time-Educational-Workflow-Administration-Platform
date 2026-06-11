@@ -21,7 +21,7 @@ export default function PrintCard({ request, onStatusChange, onDelete, showTeach
       const res = await printRequestsApi.getById(request.id);
       const files = res.data?.data?.files || [];
       if (!files.length) { toast.error('No files attached.'); return; }
-      files.forEach((f) => window.open(`http://localhost:5000/uploads/${f.stored_name}`, '_blank'));
+      files.forEach((f) => window.open(`/uploads/${f.stored_name}`, '_blank'));
     } catch {
       toast.error('Failed to open file.');
     } finally {

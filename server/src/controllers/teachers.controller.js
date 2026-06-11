@@ -1,0 +1,54 @@
+const usersService = require('../services/users.service');
+const teacherAssignmentsDAL = require('../dal/teacherAssignments.dal');
+const asyncWrapper = require('../utils/asyncWrapper');
+
+const getAll = asyncWrapper(async (req, res) => {
+  const result = await usersService.getAllUsers({ role: 'teacher', ...req.query });
+  res.json({ success: true, ...result });
+});
+
+const getSecretaries = asyncWrapper(async (req, res) => {
+  const result = await usersService.getAllUsers({ role: 'secretary', limit: 100 });
+  res.json({ success: true, ...result });
+});
+
+const getMyHomeroomTeachers = asyncWrapper(async (req, res) => {
+  if (!req.user.is_homeroom)
+    return res.status(403).json({ success: false, message: 'Not a homeroom teacher.' });
+  const homeroomClasses = await teacherAssignmentsDAL.getHomeroomClasses(req.user.id);
+  if (!homeroomClasses.length)
+    return res.json({ success: true, data: [] });
+  const teacherSets = await Promise.all(
+    homeroomClasses.map((c) => teacherAssignmentsDAL.getTeachersByClass(c.id))
+  );
+  const seen = new Set([req.user.id]);
+  const teachers = teacherSets.flat().filter((t) => !seen.has(t.id) && seen.add(t.id));
+  res.json({ success: true, data: teachers });
+});
+
+const getAdmins = asyncWrapper(async (req, res) => {
+  const result = await usersService.getAllUsers({ role: 'admin', limit: 100 });
+  res.json({ success: true, ...result });
+});
+
+const getMe = asyncWrapper(async (req, res) => {
+  const profile = await usersService.getTeacherProfile(req.user.id);
+  res.json({ success: true, data: profile });
+});
+
+const getMyClasses = asyncWrapper(async (req, res) => {
+  const classes = await teacherAssignmentsDAL.getTeacherClasses(req.user.id);
+  res.json({ success: true, data: classes });
+});
+
+const getMySubjects = asyncWrapper(async (req, res) => {
+  const subjects = await teacherAssignmentsDAL.getTeacherSubjects(req.user.id);
+  res.json({ success: true, data: subjects });
+});
+
+const getProfile = asyncWrapper(async (req, res) => {
+  const profile = await usersService.getTeacherProfile(req.params.id);
+  res.json({ success: true, data: profile });
+});
+
+module.exports = { getAll, getSecretaries, getMyHomeroomTeachers, getAdmins, getMe, getMyClasses, getMySubjects, getProfile };

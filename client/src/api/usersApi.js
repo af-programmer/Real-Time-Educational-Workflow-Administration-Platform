@@ -20,6 +20,8 @@ export const teachersApi = {
   getSecretaries: () => axiosInstance.get('/teachers/secretaries'),
   getAdmins: () => axiosInstance.get('/teachers/admins'),
   getMyHomeroomTeachers: () => axiosInstance.get('/teachers/my-homeroom-teachers'),
+  getMyClasses: () => axiosInstance.get('/teachers/me/classes'),
+  getMySubjects: () => axiosInstance.get('/teachers/me/subjects'),
 };
 
 export const classesApi = {
@@ -32,4 +34,14 @@ export const classesApi = {
 
 export const subjectsApi = {
   getAll: () => axiosInstance.get('/subjects'),
+};
+
+// Student / class-level operations (moved from printRequestsApi.js)
+export const classesStudentsApi = {
+  getStudents: (classId) => axiosInstance.get(`/classes/${classId}/students`),
+  getAllClasses: () => axiosInstance.get('/classes'),
+  createStudent: (data) => axiosInstance.post('/classes/students', data),
+  updateStudent: (id, data) => axiosInstance.put(`/classes/students/${id}`, data),
+  getStudent: (id) => axiosInstance.get(`/classes/students/${id}`),
+  getStudentGrades: (studentId) => axiosInstance.get(`/grades/student/${studentId}`),
 };

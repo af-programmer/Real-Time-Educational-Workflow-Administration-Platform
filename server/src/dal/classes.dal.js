@@ -49,38 +49,66 @@ async function update(id, fields) {
 }
 
 async function getStudentsByClass(classId) {
-  const [rows] = await pool.query(
-    `SELECT id, name, id_number, student_number, phone_father, phone_mother, phone_home,
-            parent_email, date_of_birth
-     FROM students WHERE class_id = ? AND is_active = TRUE ORDER BY name ASC`,
-    [classId]
-  );
-  return rows;
+  try {
+    const [rows] = await pool.query(
+      `SELECT id, name, id_number, student_number, phone_father, phone_mother, phone_home,
+              parent_email, date_of_birth
+       FROM students WHERE class_id = ? AND is_active = TRUE ORDER BY name ASC`,
+      [classId]
+    );
+    return rows;
+  } catch {
+    // DB not yet migrated — fall back to base columns only
+    const [rows] = await pool.query(
+      'SELECT id, name FROM students WHERE class_id = ? ORDER BY name ASC',
+      [classId]
+    );
+    return rows;
+  }
 }
 
 async function getAllStudents() {
-  const [rows] = await pool.query(
-    `SELECT s.id, s.name, s.id_number, s.student_number, s.class_id, s.date_of_birth,
-            s.phone_father, s.phone_mother, s.phone_home, s.parent_email,
-            c.name AS class_name
-     FROM students s
-     JOIN classes c ON c.id = s.class_id
-     WHERE s.is_active = TRUE ORDER BY c.name ASC, s.name ASC`
-  );
-  return rows;
+  try {
+    const [rows] = await pool.query(
+      `SELECT s.id, s.name, s.id_number, s.student_number, s.class_id, s.date_of_birth,
+              s.phone_father, s.phone_mother, s.phone_home, s.parent_email,
+              c.name AS class_name
+       FROM students s
+       JOIN classes c ON c.id = s.class_id
+       WHERE s.is_active = TRUE ORDER BY c.name ASC, s.name ASC`
+    );
+    return rows;
+  } catch {
+    const [rows] = await pool.query(
+      `SELECT s.id, s.name, s.class_id, c.name AS class_name
+       FROM students s JOIN classes c ON c.id = s.class_id
+       ORDER BY c.name ASC, s.name ASC`
+    );
+    return rows;
+  }
 }
 
 async function findStudentById(id) {
-  const [rows] = await pool.query(
-    `SELECT s.id, s.name, s.id_number, s.student_number, s.class_id, s.date_of_birth,
-            s.phone_father, s.phone_mother, s.phone_home, s.parent_email,
-            c.name AS class_name
-     FROM students s
-     JOIN classes c ON c.id = s.class_id
-     WHERE s.id = ? LIMIT 1`,
-    [id]
-  );
-  return rows[0] || null;
+  try {
+    const [rows] = await pool.query(
+      `SELECT s.id, s.name, s.id_number, s.student_number, s.class_id, s.date_of_birth,
+              s.phone_father, s.phone_mother, s.phone_home, s.parent_email,
+              c.name AS class_name
+       FROM students s
+       JOIN classes c ON c.id = s.class_id
+       WHERE s.id = ? LIMIT 1`,
+      [id]
+    );
+    return rows[0] || null;
+  } catch {
+    const [rows] = await pool.query(
+      `SELECT s.id, s.name, s.class_id, c.name AS class_name
+       FROM students s JOIN classes c ON c.id = s.class_id
+       WHERE s.id = ? LIMIT 1`,
+      [id]
+    );
+    return rows[0] || null;
+  }
 }
 
 async function getNextStudentNumber() {
