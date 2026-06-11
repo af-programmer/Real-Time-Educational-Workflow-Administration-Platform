@@ -9,7 +9,6 @@ router.use(authMiddleware);
 
 router.get('/', messagesController.getInbox);
 router.post('/', requireRoles('teacher', 'secretary', 'admin'), handleUpload('attachment', 1), messagesController.send);
-router.post('/broadcast', requireRoles('admin'), messagesController.broadcast);
 router.patch('/:id/read', messagesController.markRead);
 router.delete('/:id', messagesController.deleteMessage);
 

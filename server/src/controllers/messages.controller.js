@@ -11,11 +11,6 @@ const send = asyncWrapper(async (req, res) => {
   res.status(201).json({ success: true, data: { id: messageId } });
 });
 
-const broadcast = asyncWrapper(async (req, res) => {
-  const messageId = await messagesService.broadcastMessage(req.user.id, req.body, req.app);
-  res.status(201).json({ success: true, data: { id: messageId } });
-});
-
 const markRead = asyncWrapper(async (req, res) => {
   await messagesService.markRead(req.params.id, req.user.id);
   res.json({ success: true });
@@ -26,4 +21,4 @@ const deleteMessage = asyncWrapper(async (req, res) => {
   res.json({ success: true });
 });
 
-module.exports = { getInbox, send, broadcast, markRead, deleteMessage };
+module.exports = { getInbox, send, markRead, deleteMessage };

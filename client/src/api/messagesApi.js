@@ -8,7 +8,6 @@ export const messagesApi = {
     if (file) form.append('attachment', file);
     return axiosInstance.post('/messages', form);
   },
-  broadcast: (data) => axiosInstance.post('/messages/broadcast', data),
   markRead: (id) => axiosInstance.patch(`/messages/${id}/read`),
   delete: (id) => axiosInstance.delete(`/messages/${id}`),
 };

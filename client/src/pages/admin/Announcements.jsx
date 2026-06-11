@@ -1,12 +1,10 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { notificationsApi } from '../../api/notificationsApi';
-import { messagesApi } from '../../api/messagesApi';
 import Button from '../../components/common/Button';
 import toast from 'react-hot-toast';
 
 export default function Announcements() {
-  const [type, setType] = useState('notification');
   const [sending, setSending] = useState(false);
   const [sentLog, setSentLog] = useState(() => {
     try { return JSON.parse(localStorage.getItem('adminSentLog') || '[]'); } catch { return []; }
@@ -16,21 +14,14 @@ export default function Announcements() {
   const onSubmit = async (data) => {
     setSending(true);
     try {
-      if (type === 'notification') {
-        await notificationsApi.createAnnouncement({
-          title: data.title,
-          content: data.message,
-          targetRole: data.target,
-        });
-      } else {
-        await messagesApi.broadcast({
-          recipient_role: data.target,
-          subject: data.title,
-          body: data.message,
-        });
-      }
+      await notificationsApi.createAnnouncement({
+        title: data.title,
+        content: data.message,
+        targetRole: data.target,
+      });
+      
       const entry = {
-        type,
+        type: 'notification',
         title: data.title,
         target: data.target,
         sentAt: new Date().toLocaleString('he-IL'),
@@ -49,34 +40,11 @@ export default function Announcements() {
 
   return (
     <div className="max-w-2xl space-y-6">
-      {/* Type Selector */}
-      <div className="card p-5">
-        <p className="label mb-3">Announcement Type</p>
-        <div className="grid grid-cols-2 gap-3">
-          {['notification', 'message'].map((t) => (
-            <button
-              key={t}
-              type="button"
-              onClick={() => setType(t)}
-              className={`rounded-xl border-2 p-4 text-left transition-all ${
-                type === t ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'
-              }`}
-            >
-              <p className="font-semibold text-gray-900">
-                {t === 'notification' ? '🔔 System Notification' : '📨 Broadcast Message'}
-              </p>
-              <p className="text-xs text-gray-500 mt-1">
-                {t === 'notification'
-                  ? 'Appears in notification center'
-                  : 'Sent to inbox of recipients'}
-              </p>
-            </button>
-          ))}
-        </div>
-      </div>
-
       {/* Form */}
       <div className="card p-5">
+        <h2 className="text-lg font-semibold mb-4 text-gray-900">🔔 System Notification</h2>
+        <p className="text-sm text-gray-600 mb-4">Send system notifications that appear in users' notification center</p>
+        
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
             <label className="label">Send To *</label>
@@ -94,7 +62,7 @@ export default function Announcements() {
               {...register('title', { required: true })}
               type="text"
               className="input"
-              placeholder="Announcement title..."
+              placeholder="Notification title..."
             />
           </div>
 
@@ -104,13 +72,13 @@ export default function Announcements() {
               {...register('message', { required: true })}
               rows={6}
               className="input resize-none"
-              placeholder="Write your announcement..."
+              placeholder="Write your notification..."
             />
           </div>
 
           <div className="flex gap-3">
             <Button type="submit" loading={sending} className="flex-1">
-              📢 Send Announcement
+              📢 Send Notification
             </Button>
             <Button type="button" variant="secondary" onClick={reset}>
               Clear
@@ -130,7 +98,7 @@ export default function Announcements() {
                   <span className="font-medium text-gray-900">{item.title}</span>
                   <span className="ml-2 text-xs text-gray-400">→ {item.target}</span>
                   <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-primary-100 text-primary-700">
-                    {item.type === 'notification' ? '🔔' : '📨'}
+                    🔔
                   </span>
                 </div>
                 <span className="text-xs text-gray-400">{item.sentAt}</span>

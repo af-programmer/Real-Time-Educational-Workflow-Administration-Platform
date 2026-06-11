@@ -187,7 +187,7 @@ export default function UserManagement() {
             className="input"
           >
             <option value="">All Roles</option>
-            <option value="teacher">Teacher</option>
+            <option value="teacher">Teacher Educator</option>
             <option value="secretary">Secretary</option>
             <option value="admin">Admin</option>
           </select>
@@ -230,7 +230,7 @@ export default function UserManagement() {
             <label className="label">Role *</label>
             <select {...register('role', { required: true })} className="input">
               <option value="">Select role...</option>
-              <option value="teacher">Teacher</option>
+              <option value="teacher">Teacher Educator</option>
               <option value="secretary">Secretary</option>
               <option value="admin">Admin</option>
             </select>
@@ -239,7 +239,7 @@ export default function UserManagement() {
             <div className="space-y-3 p-3 bg-gray-50 rounded-lg">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" {...register('is_homeroom')} className="rounded border-gray-300 text-primary-600" />
-                <span className="text-sm font-medium text-gray-700">Homeroom Teacher (מחנכת)</span>
+                <span className="text-sm font-medium text-gray-700">Homeroom Teacher Educator (מחנכת)</span>
               </label>
               {isHomeroom && (
                 <div>
