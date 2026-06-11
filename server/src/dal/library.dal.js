@@ -2,11 +2,11 @@ const { pool } = require('../config/db');
 
 async function findByTeacher(teacherId) {
   const [rows] = await pool.query(
-    `SELECT tl.*, s.name AS subject_name
+    `SELECT tl.*, COALESCE(s.name, 'Others') AS subject_name
      FROM teacher_library tl
-     JOIN subjects s ON s.id = tl.subject_id
+     LEFT JOIN subjects s ON s.id = tl.subject_id
      WHERE tl.teacher_id = ?
-     ORDER BY s.name ASC, tl.created_at DESC`,
+     ORDER BY CASE WHEN tl.subject_id IS NULL THEN 1 ELSE 0 END, s.name ASC, tl.created_at DESC`,
     [teacherId]
   );
   return rows;
@@ -14,9 +14,9 @@ async function findByTeacher(teacherId) {
 
 async function findById(id) {
   const [rows] = await pool.query(
-    `SELECT tl.*, s.name AS subject_name
+    `SELECT tl.*, COALESCE(s.name, 'Others') AS subject_name
      FROM teacher_library tl
-     JOIN subjects s ON s.id = tl.subject_id
+     LEFT JOIN subjects s ON s.id = tl.subject_id
      WHERE tl.id = ? LIMIT 1`,
     [id]
   );

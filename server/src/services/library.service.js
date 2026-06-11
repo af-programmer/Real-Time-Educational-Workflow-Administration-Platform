@@ -19,7 +19,7 @@ async function addFile(teacherId, { subject_id, description }, file) {
   if (!file) throw new AppError('No file uploaded.', 400);
   const id = await libraryDAL.create({
     teacher_id: teacherId,
-    subject_id,
+    subject_id: subject_id || null,
     original_name: file.originalname,
     stored_name: file.filename,
     file_size: file.size,

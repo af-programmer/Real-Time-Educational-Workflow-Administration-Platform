@@ -15,7 +15,7 @@ export function UploadModal({ subjects, onClose, onUploaded }) {
     try {
       const fd = new FormData();
       fd.append('file', file);
-      fd.append('subject_id', form.subject_id);
+      if (form.subject_id !== 'others') fd.append('subject_id', form.subject_id);
       fd.append('description', form.description);
       await libraryApi.upload(fd);
       toast.success('File uploaded!');
@@ -39,6 +39,7 @@ export function UploadModal({ subjects, onClose, onUploaded }) {
               onChange={(e) => setForm((f) => ({ ...f, subject_id: e.target.value }))}>
               <option value="">Select subject...</option>
               {subjects.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+              <option value="others">Others</option>
             </select>
           </div>
           <div>
@@ -76,14 +77,17 @@ export function UploadModal({ subjects, onClose, onUploaded }) {
 }
 
 export function EditModal({ file, subjects, onClose, onSaved }) {
-  const [form, setForm] = useState({ description: file.description || '', subject_id: file.subject_id });
+  const [form, setForm] = useState({ description: file.description || '', subject_id: file.subject_id ?? 'others' });
   const [saving, setSaving] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
     setSaving(true);
     try {
-      await libraryApi.update(file.id, form);
+      await libraryApi.update(file.id, {
+        ...form,
+        subject_id: form.subject_id === 'others' ? null : form.subject_id,
+      });
       toast.success('Updated.');
       onSaved();
     } catch { toast.error('Failed to update.'); }
@@ -103,6 +107,7 @@ export function EditModal({ file, subjects, onClose, onSaved }) {
             <select className="input" value={form.subject_id}
               onChange={(e) => setForm((f) => ({ ...f, subject_id: e.target.value }))}>
               {subjects.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+              <option value="others">Others</option>
             </select>
           </div>
           <div>
