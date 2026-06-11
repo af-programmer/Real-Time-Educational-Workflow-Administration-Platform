@@ -72,7 +72,7 @@ async function findAll({ roleFilter, search, page, limit, offset }) {
 
   const [rows] = await pool.query(
     `SELECT u.id, u.name, u.email, u.is_active, u.is_suspended,
-            u.phone, u.phone2, u.created_at, r.name AS role
+            u.phone, u.phone2, u.is_homeroom, u.created_at, r.name AS role
      FROM users u JOIN roles r ON u.role_id = r.id
      ${where}
      ORDER BY u.created_at DESC LIMIT ? OFFSET ?`,

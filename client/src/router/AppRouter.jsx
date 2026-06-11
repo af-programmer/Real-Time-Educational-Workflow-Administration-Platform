@@ -70,7 +70,6 @@ export default function AppRouter() {
           <Route path="/admin/classes" element={<ClassManagement />} />
           <Route path="/admin/announcements" element={<Announcements />} />
           <Route path="/admin/messages" element={<AdminMessages />} />
-          <Route path="/admin/print-history" element={<PrintHistory />} />
           <Route path="/admin/staff" element={<StaffList />} />
           <Route path="/admin/staff/:id" element={<StaffProfile />} />
         </Route>

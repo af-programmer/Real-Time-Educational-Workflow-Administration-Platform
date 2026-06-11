@@ -50,7 +50,7 @@ export default function Sidebar({ mobileOpen, onClose }) {
   const items = user?.role === 'teacher' ? teacherItems : (navItems[user?.role] || []);
 
   const SidebarContent = () => (
-    <div className={clsx('flex flex-col h-full bg-gradient-to-b text-white', sidebarColors[user?.role] || sidebarColors.teacher)}>
+    <div className={clsx('flex flex-col h-full bg-gradient-to-b text-white', sidebarColors[user?.is_homeroom ? 'homeroom' : user?.role] || sidebarColors.teacher)}>
       <div className="flex items-center gap-3 px-6 py-5 border-b border-white/10">
         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/20 font-bold text-lg">E</div>
         <div>

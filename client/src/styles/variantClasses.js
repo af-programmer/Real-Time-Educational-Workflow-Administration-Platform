@@ -48,4 +48,5 @@ export const sidebarColors = {
   admin:     'from-indigo-800 to-indigo-900',
   secretary: 'from-pink-800 to-pink-900',
   teacher:   'from-primary-800 to-primary-900',
+  homeroom:  'from-purple-700 to-purple-900',
 };

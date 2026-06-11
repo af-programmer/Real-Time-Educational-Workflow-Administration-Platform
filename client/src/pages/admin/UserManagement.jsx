@@ -137,7 +137,11 @@ export default function UserManagement() {
     { key: 'email', header: 'Email' },
     {
       key: 'role', header: 'Role',
-      render: (role) => <Badge label={role} variant={role} />,
+      render: (role, row) => {
+        const isHomeroom = role === 'teacher' && row.is_homeroom;
+        const label = isHomeroom ? 'Teacher Educator' : role.charAt(0).toUpperCase() + role.slice(1);
+        return <Badge label={label} variant={isHomeroom ? 'homeroom_teacher' : role} />;
+      },
     },
     {
       key: 'is_active', header: 'Status',
