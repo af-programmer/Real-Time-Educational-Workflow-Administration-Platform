@@ -1,5 +1,5 @@
 להפעלה מחדש בפעם הבאה:
-
+mysql -u root -p eduflow < database/seed_full.sql
 
 # Terminal 1 – Backend
 cd server && npm run dev
