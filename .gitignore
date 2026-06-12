@@ -5,3 +5,5 @@ frontend/node_modules/
 dist/
 build/
 server/logs/
+server/.env
+client/.env
