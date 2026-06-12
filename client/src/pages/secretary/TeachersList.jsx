@@ -58,11 +58,11 @@ export default function TeachersList() {
                     </p>
                     <p className="text-sm text-gray-500 truncate">{teacher.email}</p>
                     <div className="mt-2 flex flex-wrap gap-1">
+                      {teacher.is_homeroom
+                        ? <Badge label="EDUCATOR" variant="homeroom_teacher" />
+                        : <Badge label="Professional Teacher" variant="professional_teacher" />}
                       {teacher.is_blocked && <Badge label="Blocked" variant="urgent" />}
                       {!teacher.is_active && <Badge label="Inactive" variant="pending" />}
-                      {teacher.is_active && !teacher.is_blocked && (
-                        <Badge label="Active" variant="completed" />
-                      )}
                     </div>
                   </div>
                 </div>

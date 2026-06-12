@@ -53,6 +53,18 @@ export default function StudentForm({ classId, student, classes, onSave, onCance
           <label className="label">ID Number</label>
           <input className="input" value={form.id_number} onChange={set('id_number')} placeholder="e.g. 123456789" />
         </div>
+        {student && (
+          <div>
+            <label className="label">Student Number</label>
+            <input
+              className="input bg-gray-50 text-gray-500 cursor-not-allowed"
+              value={student.student_number || '—'}
+              readOnly
+              disabled
+              title="Student number is assigned automatically and cannot be changed"
+            />
+          </div>
+        )}
         <div>
           <label className="label">Class *</label>
           <select className="input" value={form.class_id} onChange={set('class_id')}>

@@ -18,4 +18,18 @@ const resetPasswordSchema = Joi.object({
   }),
 });
 
-module.exports = { loginSchema, resetPasswordSchema };
+const changePasswordSchema = Joi.object({
+  currentPassword: Joi.string().min(1).required().messages({
+    'any.required': 'Current password is required.',
+  }),
+  newPassword: Joi.string().min(8).required().messages({
+    'string.min': 'New password must be at least 8 characters.',
+    'any.required': 'New password is required.',
+  }),
+});
+
+const verifyPasswordSchema = Joi.object({
+  password: Joi.string().min(1).required(),
+});
+
+module.exports = { loginSchema, resetPasswordSchema, changePasswordSchema, verifyPasswordSchema };

@@ -11,13 +11,19 @@ router.use(authMiddleware);
 router.get('/', classesController.getAll);
 router.get('/:id', classesController.getById);
 
-// Homeroom teachers can view their own class students; secretary/admin can view any
+// Admin/secretary: full access; teachers: own homeroom OR assigned teaching class
 router.get('/:id/students', asyncWrapper(async (req, res, next) => {
   const { role, id: userId } = req.user;
   if (role === 'secretary' || role === 'admin') return next();
   if (role === 'teacher') {
-    const homeroom = await teacherAssignmentsDAL.getHomeroomClasses(userId);
-    if (homeroom.some((c) => c.id === parseInt(req.params.id))) return next();
+    const classId = parseInt(req.params.id);
+    const [homeroom, teaching] = await Promise.all([
+      teacherAssignmentsDAL.getHomeroomClasses(userId),
+      teacherAssignmentsDAL.getTeacherClasses(userId),
+    ]);
+    if (homeroom.some((c) => c.id === classId) || teaching.some((c) => c.id === classId)) {
+      return next();
+    }
   }
   return res.status(403).json({ success: false, message: 'Access denied.' });
 }), classesController.getStudents);

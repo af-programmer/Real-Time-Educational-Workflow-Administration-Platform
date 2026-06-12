@@ -1,14 +1,20 @@
 const notificationsService = require('../services/notifications.service');
 const asyncWrapper = require('../utils/asyncWrapper');
 
+const PAGE_SIZE = 10;
+
 const getAll = asyncWrapper(async (req, res) => {
-  const notifications = await notificationsService.getNotifications(req.user.id, req.user.role);
-  const unread = await notificationsService.getUnreadCount(req.user.id, req.user.role);
-  res.json({ success: true, data: notifications, unreadCount: unread });
+  const limit  = Math.min(parseInt(req.query.limit  || PAGE_SIZE, 10), 50);
+  const offset = Math.max(parseInt(req.query.offset || 0,         10), 0);
+  const { notifications, hasMore } = await notificationsService.getNotifications(
+    req.user.id, req.user.role, req.user.is_homeroom, { limit, offset }
+  );
+  const unread = await notificationsService.getUnreadCount(req.user.id, req.user.role, req.user.is_homeroom);
+  res.json({ success: true, data: notifications, unreadCount: unread, hasMore });
 });
 
 const markAllRead = asyncWrapper(async (req, res) => {
-  await notificationsService.markAllRead(req.user.id, req.user.role);
+  await notificationsService.markAllRead(req.user.id, req.user.role, req.user.is_homeroom);
   res.json({ success: true });
 });
 
@@ -25,13 +31,18 @@ const createAnnouncement = asyncWrapper(async (req, res) => {
   if (notifNS) {
     const payload = { id, type: 'announcement', title, content, created_at: new Date().toISOString() };
     const adminUserId = req.user.id;
-    // Map frontend targetRole values to actual socket room names
-    const roleMap = { all_teachers: 'teacher', all_secretaries: 'secretary', teacher: 'teacher', secretary: 'secretary' };
     if (!targetRole || targetRole === 'all') {
       notifNS.except(`user:${adminUserId}`).emit('notification', payload);
+    } else if (targetRole === 'professional_teacher') {
+      notifNS.to('role:professional_teacher').except(`user:${adminUserId}`).emit('notification', payload);
+    } else if (targetRole === 'homeroom_teacher') {
+      notifNS.to('role:homeroom_teacher').except(`user:${adminUserId}`).emit('notification', payload);
+    } else if (targetRole === 'all_teachers') {
+      notifNS.to('role:teacher').except(`user:${adminUserId}`).emit('notification', payload);
+    } else if (targetRole === 'all_secretaries') {
+      notifNS.to('role:secretary').except(`user:${adminUserId}`).emit('notification', payload);
     } else {
-      const room = roleMap[targetRole] || targetRole;
-      notifNS.to(`role:${room}`).except(`user:${adminUserId}`).emit('notification', payload);
+      notifNS.to(`role:${targetRole}`).except(`user:${adminUserId}`).emit('notification', payload);
     }
   }
 

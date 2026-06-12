@@ -5,25 +5,40 @@ import { notificationsApi } from '../../api/notificationsApi';
 import { format } from 'date-fns';
 import clsx from 'clsx';
 
+const PAGE_SIZE = 10;
+
 const typeIcons = {
   urgent_request: '🚨',
-  print_request: '🖨️',
-  message: '✉️',
-  announcement: '📢',
-  grade: '📊',
-  system: '⚙️',
-  user_blocked: '🚫',
+  print_request:  '🖨️',
+  message:        '✉️',
+  announcement:   '📢',
+  grade:          '📊',
+  system:         '⚙️',
+  user_blocked:   '🚫',
 };
 
 export default function NotificationBell() {
   const [open, setOpen] = useState(false);
-  const { notifications, unreadCount, markOneRead } = useNotificationStore();
+  const [loadingMore, setLoadingMore] = useState(false);
+  const { notifications, unreadCount, hasMore, markOneRead, appendNotifications } = useNotificationStore();
   const { markAll } = useNotificationActions();
 
   async function handleClick(n) {
     if (!n.is_read) {
       markOneRead(n.id);
       notificationsApi.markOneRead(n.id).catch(() => {});
+    }
+  }
+
+  async function handleLoadMore() {
+    setLoadingMore(true);
+    try {
+      const { data } = await notificationsApi.getAll({ limit: PAGE_SIZE, offset: notifications.length });
+      appendNotifications(data?.data || [], data?.hasMore || false);
+    } catch {
+      // silently fail — user can retry
+    } finally {
+      setLoadingMore(false);
     }
   }
 
@@ -59,34 +74,49 @@ export default function NotificationBell() {
                 </button>
               )}
             </div>
+
             <div className="max-h-96 overflow-y-auto">
               {notifications.length === 0 ? (
                 <div className="py-10 text-center text-gray-400 text-sm">
                   No notifications yet
                 </div>
               ) : (
-                notifications.slice(0, 20).map((n, i) => (
-                  <div
-                    key={n.id ?? `sock-${i}`}
-                    onClick={() => handleClick(n)}
-                    className={clsx(
-                      'flex gap-3 px-4 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer',
-                      !n.is_read && 'bg-blue-50'
-                    )}
-                  >
-                    <span className="text-xl flex-shrink-0">{typeIcons[n.type] || '🔔'}</span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{n.title}</p>
-                      <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{n.content}</p>
-                      <p className="text-xs text-gray-400 mt-1">
-                        {n.created_at ? format(new Date(n.created_at), 'MMM d, HH:mm') : ''}
-                      </p>
+                <>
+                  {notifications.map((n, i) => (
+                    <div
+                      key={n.id ?? `sock-${i}`}
+                      onClick={() => handleClick(n)}
+                      className={clsx(
+                        'flex gap-3 px-4 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer',
+                        !n.is_read && 'bg-blue-50'
+                      )}
+                    >
+                      <span className="text-xl flex-shrink-0">{typeIcons[n.type] || '🔔'}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">{n.title}</p>
+                        <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{n.content}</p>
+                        <p className="text-xs text-gray-400 mt-1">
+                          {n.created_at ? format(new Date(n.created_at), 'MMM d, HH:mm') : ''}
+                        </p>
+                      </div>
+                      {!n.is_read && (
+                        <span className="h-2 w-2 rounded-full bg-blue-500 flex-shrink-0 mt-1.5" />
+                      )}
                     </div>
-                    {!n.is_read && (
-                      <span className="h-2 w-2 rounded-full bg-blue-500 flex-shrink-0 mt-1.5" />
-                    )}
-                  </div>
-                ))
+                  ))}
+
+                  {hasMore && (
+                    <div className="px-4 py-3 border-t border-gray-100">
+                      <button
+                        onClick={handleLoadMore}
+                        disabled={loadingMore}
+                        className="w-full text-xs text-primary-600 hover:text-primary-700 font-medium py-1 disabled:opacity-50"
+                      >
+                        {loadingMore ? 'Loading…' : 'Load More'}
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>

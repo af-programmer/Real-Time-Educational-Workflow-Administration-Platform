@@ -24,7 +24,7 @@ export default function GradeClassView({ classes, classSubjects, activeClassId, 
             </button>
           ))}
         </div>
-        <Button size="sm" onClick={() => setShowModal(true)}>+ Enter Grade</Button>
+        <Button size="sm" onClick={() => setShowModal(true)}>ENTER/EDIT GRADES</Button>
       </div>
 
       {gradesLoading ? (

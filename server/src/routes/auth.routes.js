@@ -5,11 +5,13 @@ const authMiddleware = require('../middleware/auth.middleware');
 const { requireRoles } = require('../middleware/roles.middleware');
 const { validate } = require('../middleware/validate.middleware');
 const { authLimiter } = require('../middleware/rateLimiter.middleware');
-const { loginSchema, resetPasswordSchema } = require('../validators/auth.validator');
+const { loginSchema, resetPasswordSchema, changePasswordSchema, verifyPasswordSchema } = require('../validators/auth.validator');
 
 router.post('/login', authLimiter, validate(loginSchema), authController.login);
 router.post('/logout', authMiddleware, authController.logout);
 router.post('/reset-password', authMiddleware, requireRoles('admin'), validate(resetPasswordSchema), authController.resetPassword);
+router.post('/change-password', authMiddleware, validate(changePasswordSchema), authController.changePassword);
+router.post('/verify-password', authMiddleware, validate(verifyPasswordSchema), authController.verifyPassword);
 router.get('/me', authMiddleware, authController.me);
 
 module.exports = router;

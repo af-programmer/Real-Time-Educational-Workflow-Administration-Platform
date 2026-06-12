@@ -60,16 +60,16 @@ export function NotificationProvider({ children }) {
   useEffect(() => {
     if (!isAuthenticated || !user) return;
 
-    // Load initial notifications
-    notificationsApi.getAll().then(({ data }) => {
+    // Load initial 10 notifications
+    notificationsApi.getAll({ limit: 10, offset: 0 }).then(({ data }) => {
       const list = data?.data;
-      setNotifications(Array.isArray(list) ? list : [], data?.unreadCount || 0);
+      setNotifications(Array.isArray(list) ? list : [], data?.unreadCount || 0, data?.hasMore || false);
     }).catch(() => {});
 
     // Connect Socket.io
     const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
     socketRef.current = io(`${apiBase}/notifications`, {
-      auth: { userId: user.id, role: user.role },
+      auth: { userId: user.id, role: user.role, isHomeroom: user.is_homeroom },
       transports: ['websocket', 'polling'],
     });
 

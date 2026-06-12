@@ -9,6 +9,7 @@ import MyPrintRequests from '../pages/teacher/MyPrintRequests';
 import NewPrintRequest from '../pages/teacher/NewPrintRequest';
 import MyGrades from '../pages/teacher/MyGrades';
 import MyClasses from '../pages/teacher/MyClasses';
+import ClassRoster from '../pages/teacher/ClassRoster';
 import MyMessages from '../pages/teacher/MyMessages';
 import TeacherLibrary from '../pages/teacher/TeacherLibrary';
 import SecretaryDashboard from '../pages/secretary/SecretaryDashboard';
@@ -47,6 +48,7 @@ export default function AppRouter() {
           <Route path="/teacher/library" element={<TeacherLibrary />} />
           <Route path="/teacher/grades" element={<MyGrades />} />
           <Route path="/teacher/classes" element={<MyClasses />} />
+          <Route path="/teacher/classes/:classId/roster" element={<ClassRoster />} />
           <Route path="/teacher/messages" element={<MyMessages />} />
         </Route>
       </Route>

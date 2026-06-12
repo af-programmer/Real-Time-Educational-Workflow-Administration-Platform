@@ -344,41 +344,56 @@ CREATE TABLE IF NOT EXISTS quotes (
 );
 
 -- ============================================================
--- INDEXES
+-- INDEXES (idempotent — safe to re-run on existing database)
+-- MySQL has no CREATE INDEX IF NOT EXISTS, so we use a helper
+-- procedure that checks information_schema.STATISTICS first.
 -- ============================================================
+DROP PROCEDURE IF EXISTS _ci;
+DELIMITER $$
+CREATE PROCEDURE _ci(IN p_tbl VARCHAR(64), IN p_idx VARCHAR(64), IN p_sql TEXT)
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.STATISTICS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME   = p_tbl
+      AND INDEX_NAME   = p_idx
+  ) THEN
+    SET @_s = p_sql;
+    PREPARE _st FROM @_s;
+    EXECUTE _st;
+    DEALLOCATE PREPARE _st;
+  END IF;
+END $$
+DELIMITER ;
+
 -- users
-CREATE INDEX idx_users_email     ON users(email);
-CREATE INDEX idx_users_role      ON users(role_id);
-
--- print_requests — high-traffic filters
-CREATE INDEX idx_pr_teacher      ON print_requests(teacher_id);
-CREATE INDEX idx_pr_status       ON print_requests(status_id);
-CREATE INDEX idx_pr_priority     ON print_requests(priority_id);
-CREATE INDEX idx_pr_date         ON print_requests(lesson_date);
-
--- grades — always filtered by teacher + student
-CREATE INDEX idx_grades_student  ON grades(student_id);
-CREATE INDEX idx_grades_subject  ON grades(subject_id);
-CREATE INDEX idx_grades_teacher  ON grades(teacher_id);
-
--- messages — inbox queries filter by recipient
-CREATE INDEX idx_msg_recipient   ON messages(recipient_id);
-CREATE INDEX idx_msg_sender      ON messages(sender_id);
-
--- notifications — per-user bell icon query
-CREATE INDEX idx_notif_user      ON notifications(user_id);
-
--- students — always fetched by class
-CREATE INDEX idx_students_class  ON students(class_id);
-
--- library — always fetched by teacher
-CREATE INDEX idx_library_teacher ON teacher_library(teacher_id);
-
--- audit_logs — admin queries by entity or user
-CREATE INDEX idx_audit_user      ON audit_logs(user_id);
-CREATE INDEX idx_audit_entity    ON audit_logs(entity, entity_id);
+CALL _ci('users',           'idx_users_email',    'CREATE INDEX idx_users_email ON users(email)');
+CALL _ci('users',           'idx_users_role',     'CREATE INDEX idx_users_role ON users(role_id)');
+-- print_requests
+CALL _ci('print_requests',  'idx_pr_teacher',     'CREATE INDEX idx_pr_teacher ON print_requests(teacher_id)');
+CALL _ci('print_requests',  'idx_pr_status',      'CREATE INDEX idx_pr_status ON print_requests(status_id)');
+CALL _ci('print_requests',  'idx_pr_priority',    'CREATE INDEX idx_pr_priority ON print_requests(priority_id)');
+CALL _ci('print_requests',  'idx_pr_date',        'CREATE INDEX idx_pr_date ON print_requests(lesson_date)');
+-- grades
+CALL _ci('grades',          'idx_grades_student', 'CREATE INDEX idx_grades_student ON grades(student_id)');
+CALL _ci('grades',          'idx_grades_subject', 'CREATE INDEX idx_grades_subject ON grades(subject_id)');
+CALL _ci('grades',          'idx_grades_teacher', 'CREATE INDEX idx_grades_teacher ON grades(teacher_id)');
+-- messages
+CALL _ci('messages',        'idx_msg_recipient',  'CREATE INDEX idx_msg_recipient ON messages(recipient_id)');
+CALL _ci('messages',        'idx_msg_sender',     'CREATE INDEX idx_msg_sender ON messages(sender_id)');
+-- notifications
+CALL _ci('notifications',   'idx_notif_user',     'CREATE INDEX idx_notif_user ON notifications(user_id)');
+-- students
+CALL _ci('students',        'idx_students_class', 'CREATE INDEX idx_students_class ON students(class_id)');
+-- teacher_library
+CALL _ci('teacher_library', 'idx_library_teacher','CREATE INDEX idx_library_teacher ON teacher_library(teacher_id)');
+-- audit_logs
+CALL _ci('audit_logs',      'idx_audit_user',     'CREATE INDEX idx_audit_user ON audit_logs(user_id)');
+CALL _ci('audit_logs',      'idx_audit_entity',   'CREATE INDEX idx_audit_entity ON audit_logs(entity, entity_id)');
+-- quotes
+CALL _ci('quotes',          'idx_quotes_role',    'CREATE INDEX idx_quotes_role ON quotes(role, is_active)');
 
 -- NOTE: is_read (notifications/messages) intentionally NOT indexed —
 -- boolean columns with ~50% distribution offer no benefit to MySQL optimizer.
 
-CREATE INDEX IF NOT EXISTS idx_quotes_role ON quotes(role, is_active);
+DROP PROCEDURE IF EXISTS _ci;

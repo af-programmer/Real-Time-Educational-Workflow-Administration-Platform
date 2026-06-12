@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { usersApi, classesApi, subjectsApi } from '../../api/usersApi';
 import Table from '../../components/common/Table';
@@ -12,33 +12,54 @@ import CreateUserModal from '../../components/users/CreateUserModal';
 import AssignModal from '../../components/users/AssignModal';
 
 export default function UserManagement() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [users, setUsers] = useState([]);
   const [pagination, setPagination] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState({ role: searchParams.get('role') || '', search: '', page: 1 });
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(null);
   const [classes, setClasses] = useState([]);
   const [subjects, setSubjects] = useState([]);
 
-  useEffect(() => {
-    setFilters({ role: searchParams.get('role') || '', search: '', page: 1 });
-  }, [searchParams]);
+  // Derive all filter values from URL — single source of truth
+  const role   = searchParams.get('role')   || '';
+  const search = searchParams.get('search') || '';
+  const page   = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
+  const filters = { role, search, page };
 
-  const load = () => {
+  // URL-synced setFilters — compatible with functional updater form used by UserFilters
+  const setFilters = useCallback((updater) => {
+    setSearchParams((prev) => {
+      const current = {
+        role:   prev.get('role')   || '',
+        search: prev.get('search') || '',
+        page:   parseInt(prev.get('page') || '1', 10),
+      };
+      const next = typeof updater === 'function' ? updater(current) : updater;
+      const out = new URLSearchParams();
+      if (next.role)              out.set('role',   next.role);
+      if (next.search)            out.set('search', next.search);
+      if (next.page && next.page !== 1) out.set('page', String(next.page));
+      return out;
+    }, { replace: true });
+  }, [setSearchParams]);
+
+  const load = useCallback(() => {
     setLoading(true);
-    usersApi.getAll(filters)
+    const apiRole = role.startsWith('teacher__') ? 'teacher' : role;
+    usersApi.getAll({ role: apiRole, search, page })
       .then((r) => {
-        const data = r.data?.data;
-        setUsers(Array.isArray(data) ? data : []);
+        let data = Array.isArray(r.data?.data) ? r.data.data : [];
+        if (role === 'teacher__professional') data = data.filter((u) => !u.is_homeroom);
+        if (role === 'teacher__educator')     data = data.filter((u) => !!u.is_homeroom);
+        setUsers(data);
         setPagination(r.data?.pagination || null);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  };
+  }, [role, search, page]);
 
-  useEffect(() => { load(); }, [filters]);
+  useEffect(() => { load(); }, [load]);
 
   useEffect(() => {
     classesApi.getAll().then((r) => setClasses(r.data.data || [])).catch(() => {});
@@ -68,8 +89,12 @@ export default function UserManagement() {
     {
       key: 'role', header: 'Role',
       render: (role, row) => {
-        const homeroom = role === 'teacher' && row.is_homeroom;
-        return <Badge label={homeroom ? 'Teacher Educator' : role.charAt(0).toUpperCase() + role.slice(1)} variant={homeroom ? 'homeroom_teacher' : role} />;
+        if (role === 'teacher') {
+          return row.is_homeroom
+            ? <Badge label="EDUCATOR" variant="homeroom_teacher" />
+            : <Badge label="Professional Teacher" variant="professional_teacher" />;
+        }
+        return <Badge label={role.charAt(0).toUpperCase() + role.slice(1)} variant={role} />;
       },
     },
     {

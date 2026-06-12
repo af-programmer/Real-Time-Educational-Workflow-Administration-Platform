@@ -1,14 +1,32 @@
 -- EduFlow Schema Migration (consolidated)
 -- Safe to run against any EduFlow database version — all statements are idempotent.
--- MySQL 8.0+ required (uses ADD COLUMN IF NOT EXISTS).
+-- Standard MySQL compatible (no MariaDB-only syntax).
 -- Run: mysql -u <user> -p eduflow < database/migrate.sql
 USE eduflow;
 
+-- ── Helper: add a column only if it does not already exist ────────────
+DROP PROCEDURE IF EXISTS _ac;
+DELIMITER $$
+CREATE PROCEDURE _ac(IN p_tbl VARCHAR(64), IN p_col VARCHAR(64), IN p_def TEXT)
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME   = p_tbl
+      AND COLUMN_NAME  = p_col
+  ) THEN
+    SET @_s = CONCAT('ALTER TABLE `', p_tbl, '` ADD COLUMN ', p_def);
+    PREPARE _st FROM @_s;
+    EXECUTE _st;
+    DEALLOCATE PREPARE _st;
+  END IF;
+END $$
+DELIMITER ;
+
 -- ── users ─────────────────────────────────────────────────────────────────────
-ALTER TABLE users
-  ADD COLUMN IF NOT EXISTS is_homeroom TINYINT(1)   NOT NULL DEFAULT 0,
-  ADD COLUMN IF NOT EXISTS phone2      VARCHAR(20)  DEFAULT NULL,
-  ADD COLUMN IF NOT EXISTS avatar_url  VARCHAR(255) DEFAULT NULL;
+CALL _ac('users', 'is_homeroom', 'is_homeroom TINYINT(1)   NOT NULL DEFAULT 0');
+CALL _ac('users', 'phone2',      'phone2      VARCHAR(20)  DEFAULT NULL');
+CALL _ac('users', 'avatar_url',  'avatar_url  VARCHAR(255) DEFAULT NULL');
 
 -- Drop legacy homeroom FK + column if still present from old schema version
 SET @fk := (SELECT COUNT(*) FROM information_schema.TABLE_CONSTRAINTS
@@ -23,22 +41,20 @@ SET @sql := IF(@col > 0, 'ALTER TABLE users DROP COLUMN homeroom_class_id', 'SEL
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 -- ── students ──────────────────────────────────────────────────────────────────
-ALTER TABLE students
-  ADD COLUMN IF NOT EXISTS id_number      VARCHAR(20)  DEFAULT NULL,
-  ADD COLUMN IF NOT EXISTS student_number VARCHAR(20)  DEFAULT NULL,
-  ADD COLUMN IF NOT EXISTS phone_father   VARCHAR(20)  DEFAULT NULL,
-  ADD COLUMN IF NOT EXISTS phone_mother   VARCHAR(20)  DEFAULT NULL,
-  ADD COLUMN IF NOT EXISTS phone_home     VARCHAR(20)  DEFAULT NULL,
-  ADD COLUMN IF NOT EXISTS parent_email   VARCHAR(100) DEFAULT NULL,
-  ADD COLUMN IF NOT EXISTS date_of_birth  DATE         DEFAULT NULL,
-  ADD COLUMN IF NOT EXISTS is_active      TINYINT(1)   NOT NULL DEFAULT 1;
+CALL _ac('students', 'id_number',      'id_number      VARCHAR(20)  DEFAULT NULL');
+CALL _ac('students', 'student_number', 'student_number VARCHAR(20)  DEFAULT NULL');
+CALL _ac('students', 'phone_father',   'phone_father   VARCHAR(20)  DEFAULT NULL');
+CALL _ac('students', 'phone_mother',   'phone_mother   VARCHAR(20)  DEFAULT NULL');
+CALL _ac('students', 'phone_home',     'phone_home     VARCHAR(20)  DEFAULT NULL');
+CALL _ac('students', 'parent_email',   'parent_email   VARCHAR(100) DEFAULT NULL');
+CALL _ac('students', 'date_of_birth',  'date_of_birth  DATE         DEFAULT NULL');
+CALL _ac('students', 'is_active',      'is_active      TINYINT(1)   NOT NULL DEFAULT 1');
 
 -- ── messages ──────────────────────────────────────────────────────────────────
-ALTER TABLE messages
-  ADD COLUMN IF NOT EXISTS attachment_path VARCHAR(255) DEFAULT NULL,
-  ADD COLUMN IF NOT EXISTS attachment_name VARCHAR(255) DEFAULT NULL,
-  ADD COLUMN IF NOT EXISTS is_broadcast    TINYINT(1)   NOT NULL DEFAULT 0,
-  ADD COLUMN IF NOT EXISTS recipient_role  VARCHAR(50)  DEFAULT NULL;
+CALL _ac('messages', 'attachment_path', 'attachment_path VARCHAR(255) DEFAULT NULL');
+CALL _ac('messages', 'attachment_name', 'attachment_name VARCHAR(255) DEFAULT NULL');
+CALL _ac('messages', 'is_broadcast',    'is_broadcast    TINYINT(1)   NOT NULL DEFAULT 0');
+CALL _ac('messages', 'recipient_role',  'recipient_role  VARCHAR(50)  DEFAULT NULL');
 
 -- ── teacher_library ───────────────────────────────────────────────────────────
 -- Allow files without a subject ("Others" category)
@@ -50,7 +66,13 @@ PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 -- ── grades ────────────────────────────────────────────────────────────────────
 -- Allow teachers to be deleted without losing grade history (SET NULL instead of RESTRICT)
 ALTER TABLE grades MODIFY COLUMN teacher_id INT NULL;
-ALTER TABLE grades DROP FOREIGN KEY IF EXISTS grades_ibfk_3;
+
+SET @_fk := (SELECT COUNT(*) FROM information_schema.TABLE_CONSTRAINTS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'grades'
+    AND CONSTRAINT_NAME = 'grades_ibfk_3' AND CONSTRAINT_TYPE = 'FOREIGN KEY');
+SET @_sql := IF(@_fk > 0, 'ALTER TABLE grades DROP FOREIGN KEY grades_ibfk_3', 'SELECT 1');
+PREPARE _st FROM @_sql; EXECUTE _st; DEALLOCATE PREPARE _st;
+
 ALTER TABLE grades
   ADD CONSTRAINT grades_ibfk_3
   FOREIGN KEY (teacher_id) REFERENCES users(id) ON DELETE SET NULL;
@@ -72,7 +94,11 @@ CREATE TABLE IF NOT EXISTS quotes (
   is_active  BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-CREATE INDEX IF NOT EXISTS idx_quotes_role ON quotes(role, is_active);
+
+SET @_idx := (SELECT COUNT(*) FROM information_schema.STATISTICS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'quotes' AND INDEX_NAME = 'idx_quotes_role');
+SET @_sql := IF(@_idx = 0, 'CREATE INDEX idx_quotes_role ON quotes(role, is_active)', 'SELECT 1');
+PREPARE _st FROM @_sql; EXECUTE _st; DEALLOCATE PREPARE _st;
 
 INSERT IGNORE INTO quotes (role, text) VALUES
   ('admin',     'Leadership is not about rank or title — it is about influence, impact, and the inspiration you spark in others.'),
@@ -101,5 +127,8 @@ INSERT IGNORE INTO quotes (role, text) VALUES
   ('secretary', 'The way you answer the phone or greet someone at the desk is the showcase of the entire institution.'),
   ('secretary', 'Efficiency and order in the office create the peace of mind that lets teachers teach and leaders lead.'),
   ('secretary', 'Where there is order, there is room to grow.');
+
+-- Cleanup helper procedure
+DROP PROCEDURE IF EXISTS _ac;
 
 SELECT 'Migration complete.' AS result;

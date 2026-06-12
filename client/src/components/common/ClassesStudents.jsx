@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useClassesStudents } from '../../hooks/useClassesStudents';
 import StudentForm from './StudentForm';
 import StudentTable from './StudentTable';
@@ -13,11 +14,21 @@ export default function ClassesStudents({ filterClassIds = null, readOnly = fals
     <div className="flex gap-5">
       <div className="w-56 flex-shrink-0 space-y-2">
         {classes.map((cls) => (
-          <button key={cls.id} onClick={() => loadStudents(cls)}
-            className={`w-full text-left card p-3 hover:shadow-md transition-all ${selectedClass?.id === cls.id ? 'ring-2 ring-primary-400' : ''}`}>
-            <p className="font-bold text-gray-900">{cls.name}</p>
-            <p className="text-xs text-gray-500">{cls.grade_level} · {cls.student_count} pupils</p>
-          </button>
+          <div key={cls.id}
+            className={`card p-3 transition-all ${selectedClass?.id === cls.id ? 'ring-2 ring-primary-400' : ''}`}>
+            <button onClick={() => loadStudents(cls)} className="w-full text-left">
+              <p className="font-bold text-gray-900">{cls.name}</p>
+              <p className="text-xs text-gray-500">{cls.grade_level} · {cls.student_count} pupils</p>
+            </button>
+            {readOnly && (
+              <Link
+                to={`/teacher/classes/${cls.id}/roster`}
+                className="mt-1.5 block text-xs text-primary-600 hover:text-primary-700"
+              >
+                View Roster →
+              </Link>
+            )}
+          </div>
         ))}
       </div>
 

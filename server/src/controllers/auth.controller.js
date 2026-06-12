@@ -22,4 +22,16 @@ const me = asyncWrapper(async (req, res) => {
   res.json({ success: true, user: req.user });
 });
 
-module.exports = { login, logout, resetPassword, me };
+const changePassword = asyncWrapper(async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  await authService.changePassword(req.user.id, currentPassword, newPassword);
+  res.json({ success: true, message: 'Password changed successfully.' });
+});
+
+const verifyPassword = asyncWrapper(async (req, res) => {
+  const { password } = req.body;
+  await authService.verifyPassword(req.user.id, password);
+  res.json({ success: true });
+});
+
+module.exports = { login, logout, resetPassword, me, changePassword, verifyPassword };

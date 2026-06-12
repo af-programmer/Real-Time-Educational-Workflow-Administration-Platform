@@ -20,11 +20,14 @@ const io = new Server(server, {
 const notifNS = io.of('/notifications');
 
 notifNS.on('connection', (socket) => {
-  const { userId, role } = socket.handshake.auth;
+  const { userId, role, isHomeroom } = socket.handshake.auth;
 
   if (userId) {
     socket.join(`user:${userId}`);
     socket.join(`role:${role}`);
+    if (role === 'teacher') {
+      socket.join(isHomeroom ? 'role:homeroom_teacher' : 'role:professional_teacher');
+    }
   }
 
   socket.on('disconnect', () => {});

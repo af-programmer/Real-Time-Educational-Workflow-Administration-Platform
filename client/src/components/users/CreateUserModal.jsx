@@ -65,7 +65,7 @@ export default function CreateUserModal({ isOpen, onClose, classes, onCreated })
           <div className="space-y-3 p-3 bg-gray-50 rounded-lg">
             <label className="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" {...register('is_homeroom')} className="rounded border-gray-300 text-primary-600" />
-              <span className="text-sm font-medium text-gray-700">Homeroom Teacher (מחנכ/ת)</span>
+              <span className="text-sm font-medium text-gray-700">EDUCATOR</span>
             </label>
             {isHomeroom && (
               <div>

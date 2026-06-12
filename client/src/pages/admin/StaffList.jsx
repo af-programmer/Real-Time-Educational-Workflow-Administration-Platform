@@ -1,28 +1,63 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { usersApi } from '../../api/usersApi';
 import Spinner from '../../components/common/Spinner';
 import Badge from '../../components/common/Badge';
 import Pagination from '../../components/common/Pagination';
 
 export default function StaffList() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [users, setUsers] = useState([]);
   const [pagination, setPagination] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [roleFilter, setRoleFilter] = useState('');
-  const [page, setPage] = useState(1);
 
-  useEffect(() => {
+  // Derive filter state from URL
+  const search     = searchParams.get('search') || '';
+  const roleFilter = searchParams.get('role')   || '';
+  const page       = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
+
+  const setSearch = useCallback((val) => {
+    setSearchParams((prev) => {
+      const out = new URLSearchParams(prev);
+      if (val) out.set('search', val); else out.delete('search');
+      out.delete('page');
+      return out;
+    }, { replace: true });
+  }, [setSearchParams]);
+
+  const setRoleFilter = useCallback((val) => {
+    setSearchParams((prev) => {
+      const out = new URLSearchParams(prev);
+      if (val) out.set('role', val); else out.delete('role');
+      out.delete('page');
+      return out;
+    }, { replace: true });
+  }, [setSearchParams]);
+
+  const setPage = useCallback((p) => {
+    setSearchParams((prev) => {
+      const out = new URLSearchParams(prev);
+      if (p > 1) out.set('page', String(p)); else out.delete('page');
+      return out;
+    }, { replace: true });
+  }, [setSearchParams]);
+
+  const load = useCallback(() => {
     setLoading(true);
-    usersApi.getAll({ search, role: roleFilter || undefined, page, limit: 20 })
+    const apiRole = roleFilter?.startsWith('teacher__') ? 'teacher' : (roleFilter || undefined);
+    usersApi.getAll({ search, role: apiRole, page, limit: 20 })
       .then((r) => {
-        setUsers((r.data.data || []).filter((u) => u.role !== 'admin'));
+        let data = (r.data.data || []).filter((u) => u.role !== 'admin');
+        if (roleFilter === 'teacher__professional') data = data.filter((u) => !u.is_homeroom);
+        if (roleFilter === 'teacher__educator')     data = data.filter((u) => !!u.is_homeroom);
+        setUsers(data);
         setPagination(r.data.pagination);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [search, roleFilter, page]);
+
+  useEffect(() => { load(); }, [load]);
 
   return (
     <div className="space-y-5">
@@ -30,17 +65,19 @@ export default function StaffList() {
         <input
           type="search"
           value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+          onChange={(e) => setSearch(e.target.value)}
           className="input max-w-xs"
           placeholder="Search by name or email..."
         />
         <select
           value={roleFilter}
-          onChange={(e) => { setRoleFilter(e.target.value); setPage(1); }}
+          onChange={(e) => setRoleFilter(e.target.value)}
           className="input w-auto"
         >
           <option value="">All Staff</option>
-          <option value="teacher">Teachers</option>
+          <option value="teacher">All Teachers</option>
+          <option value="teacher__professional">Professional Teacher</option>
+          <option value="teacher__educator">EDUCATOR</option>
           <option value="secretary">Secretaries</option>
         </select>
       </div>
@@ -62,9 +99,13 @@ export default function StaffList() {
                     <p className="font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">{u.name}</p>
                     <p className="text-sm text-gray-500 truncate">{u.email}</p>
                     <div className="mt-2 flex flex-wrap gap-1">
-                      <Badge label={u.role} variant={u.role} />
-                      {u.is_blocked && <Badge label="Blocked" variant="urgent" />}
-                      {!u.is_active && <Badge label="Inactive" variant="pending" />}
+                      {u.role === 'teacher'
+                        ? (u.is_homeroom
+                            ? <Badge label="EDUCATOR" variant="homeroom_teacher" />
+                            : <Badge label="Professional Teacher" variant="professional_teacher" />)
+                        : <Badge label={u.role.charAt(0).toUpperCase() + u.role.slice(1)} variant={u.role} />}
+                      {u.is_blocked  && <Badge label="Blocked"   variant="urgent"  />}
+                      {!u.is_active  && <Badge label="Inactive"  variant="pending" />}
                     </div>
                   </div>
                 </div>

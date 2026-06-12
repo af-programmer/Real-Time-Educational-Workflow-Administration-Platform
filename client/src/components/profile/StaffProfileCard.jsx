@@ -14,7 +14,11 @@ export default function StaffProfileCard({ profile }) {
             {profile.phone && <p className="text-gray-500 text-sm">{profile.phone}</p>}
           </div>
           <div className="flex flex-col gap-2">
-            <Badge label={profile.role} variant={profile.role} />
+            {profile.role === 'teacher'
+              ? (profile.is_homeroom
+                  ? <Badge label="EDUCATOR" variant="homeroom_teacher" />
+                  : <Badge label="Professional Teacher" variant="professional_teacher" />)
+              : <Badge label={profile.role.charAt(0).toUpperCase() + profile.role.slice(1)} variant={profile.role} />}
             {profile.is_blocked && <Badge label="Blocked" variant="urgent" />}
             {!profile.is_active && <Badge label="Inactive" variant="pending" />}
           </div>

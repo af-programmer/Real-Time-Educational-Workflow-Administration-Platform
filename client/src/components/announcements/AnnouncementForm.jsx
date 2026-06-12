@@ -29,6 +29,8 @@ export default function AnnouncementForm({ onSent }) {
           <select {...register('target', { required: true })} className="input">
             <option value="all">All Staff</option>
             <option value="all_teachers">All Teachers</option>
+            <option value="professional_teacher">Professional Teachers Only</option>
+            <option value="homeroom_teacher">Educators (Homeroom) Only</option>
             <option value="all_secretaries">All Secretaries</option>
             <option value="admin">Admins Only</option>
           </select>

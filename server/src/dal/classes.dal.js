@@ -58,9 +58,11 @@ async function getStudentsByClass(classId) {
     );
     return rows;
   } catch {
-    // DB not yet migrated — fall back to base columns only
+    // id_number column missing — run database/migrate.sql to add it
     const [rows] = await pool.query(
-      'SELECT id, name FROM students WHERE class_id = ? ORDER BY name ASC',
+      `SELECT id, name, NULL AS id_number, student_number, phone_father, phone_mother, phone_home,
+              parent_email, date_of_birth
+       FROM students WHERE class_id = ? AND is_active = TRUE ORDER BY name ASC`,
       [classId]
     );
     return rows;
@@ -80,9 +82,12 @@ async function getAllStudents() {
     return rows;
   } catch {
     const [rows] = await pool.query(
-      `SELECT s.id, s.name, s.class_id, c.name AS class_name
-       FROM students s JOIN classes c ON c.id = s.class_id
-       ORDER BY c.name ASC, s.name ASC`
+      `SELECT s.id, s.name, NULL AS id_number, s.student_number, s.class_id, s.date_of_birth,
+              s.phone_father, s.phone_mother, s.phone_home, s.parent_email,
+              c.name AS class_name
+       FROM students s
+       JOIN classes c ON c.id = s.class_id
+       WHERE s.is_active = TRUE ORDER BY c.name ASC, s.name ASC`
     );
     return rows;
   }
@@ -102,8 +107,11 @@ async function findStudentById(id) {
     return rows[0] || null;
   } catch {
     const [rows] = await pool.query(
-      `SELECT s.id, s.name, s.class_id, c.name AS class_name
-       FROM students s JOIN classes c ON c.id = s.class_id
+      `SELECT s.id, s.name, NULL AS id_number, s.student_number, s.class_id, s.date_of_birth,
+              s.phone_father, s.phone_mother, s.phone_home, s.parent_email,
+              c.name AS class_name
+       FROM students s
+       JOIN classes c ON c.id = s.class_id
        WHERE s.id = ? LIMIT 1`,
       [id]
     );
@@ -130,7 +138,7 @@ async function createStudent({ name, id_number, class_id, date_of_birth, parent_
 }
 
 async function updateStudent(id, fields) {
-  const allowed = ['name', 'id_number', 'class_id', 'student_number', 'date_of_birth',
+  const allowed = ['name', 'id_number', 'class_id', 'date_of_birth',
                    'parent_email', 'phone_father', 'phone_mother', 'phone_home'];
   const keys = Object.keys(fields).filter((k) => allowed.includes(k));
   if (!keys.length) return false;

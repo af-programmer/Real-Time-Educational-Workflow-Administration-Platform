@@ -3,9 +3,16 @@ import { create } from 'zustand';
 const useNotificationStore = create((set) => ({
   notifications: [],
   unreadCount: 0,
+  hasMore: false,
 
-  setNotifications: (notifications, unreadCount) =>
-    set({ notifications, unreadCount }),
+  setNotifications: (notifications, unreadCount, hasMore = false) =>
+    set({ notifications, unreadCount, hasMore }),
+
+  appendNotifications: (more, hasMore = false) =>
+    set((state) => ({
+      notifications: [...state.notifications, ...more],
+      hasMore,
+    })),
 
   addNotification: (notification) =>
     set((state) => ({

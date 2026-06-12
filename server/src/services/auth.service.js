@@ -38,4 +38,23 @@ async function resetPassword(userId, newPassword) {
   await usersDAL.updatePassword(userId, hash);
 }
 
-module.exports = { login, resetPassword };
+async function changePassword(userId, currentPassword, newPassword) {
+  const hash = await usersDAL.findPasswordHash(userId);
+  if (!hash) throw new AppError('User not found.', 404);
+
+  const match = await bcrypt.compare(currentPassword, hash);
+  if (!match) throw new AppError('Current password is incorrect.', 401);
+
+  const newHash = await bcrypt.hash(newPassword, 12);
+  await usersDAL.updatePassword(userId, newHash);
+}
+
+async function verifyPassword(userId, password) {
+  const hash = await usersDAL.findPasswordHash(userId);
+  if (!hash) throw new AppError('User not found.', 404);
+
+  const match = await bcrypt.compare(password, hash);
+  if (!match) throw new AppError('Current password is incorrect.', 401);
+}
+
+module.exports = { login, resetPassword, changePassword, verifyPassword };

@@ -107,7 +107,15 @@ async function getRoleId(roleName) {
   return rows[0]?.id || null;
 }
 
+async function findPasswordHash(userId) {
+  const [rows] = await pool.query(
+    'SELECT password_hash FROM user_credentials WHERE user_id = ? LIMIT 1',
+    [userId]
+  );
+  return rows[0]?.password_hash || null;
+}
+
 module.exports = {
   findByEmail, findById, findAll, create, createCredential, update,
-  updatePassword, setSuspended, cleanupUserData, remove, getRoleId,
+  updatePassword, setSuspended, cleanupUserData, remove, getRoleId, findPasswordHash,
 };
