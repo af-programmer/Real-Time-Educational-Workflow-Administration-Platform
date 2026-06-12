@@ -1,19 +1,19 @@
 import { useState, useEffect } from 'react';
-import axiosInstance from '../../api/axiosInstance';
+import apiFetch from '../../api/apiFetch';
 
 export default function DailyQuote({ role }) {
   const [quote, setQuote] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axiosInstance.get(`/quotes/daily?role=${role}`)
+    apiFetch.get(`/quotes/daily?role=${role}`)
       .then((r) => setQuote(r.data.data))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [role]);
 
   function fetchRandom() {
-    axiosInstance.get(`/quotes/random?role=${role}&excludeId=${quote?.id ?? 0}`)
+    apiFetch.get(`/quotes/random?role=${role}&excludeId=${quote?.id ?? 0}`)
       .then((r) => { if (r.data.data) setQuote(r.data.data); })
       .catch(() => {});
   }

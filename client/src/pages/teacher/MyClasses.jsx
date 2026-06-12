@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axiosInstance from '../../api/axiosInstance';
+import apiFetch from '../../api/apiFetch';
 import ClassesStudents from '../../components/common/ClassesStudents';
 import Spinner from '../../components/common/Spinner';
 
@@ -7,7 +7,7 @@ export default function MyClasses() {
   const [classIds, setClassIds] = useState(null);
 
   useEffect(() => {
-    axiosInstance.get('/teachers/me')
+    apiFetch.get('/teachers/me')
       .then((r) => setClassIds((r.data.data?.homeroomClasses || []).map((c) => c.id)))
       .catch(() => setClassIds([]));
   }, []);

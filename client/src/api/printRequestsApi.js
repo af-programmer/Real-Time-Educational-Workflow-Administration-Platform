@@ -1,26 +1,26 @@
-import axiosInstance from './axiosInstance';
+import apiFetch from './apiFetch';
 
 export const printRequestsApi = {
-  getMine: (params) => axiosInstance.get('/print-requests/mine', { params }),
-  getAll: (params) => axiosInstance.get('/print-requests', { params }),
-  getHistory: (params) => axiosInstance.get('/print-requests/history', { params }),
-  getById: (id) => axiosInstance.get(`/print-requests/${id}`),
+  getMine: (params) => apiFetch.get('/print-requests/mine', { params }),
+  getAll: (params) => apiFetch.get('/print-requests', { params }),
+  getHistory: (params) => apiFetch.get('/print-requests/history', { params }),
+  getById: (id) => apiFetch.get(`/print-requests/${id}`),
   create: (formData) =>
-    axiosInstance.post('/print-requests', formData, {
+    apiFetch.post('/print-requests', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
       timeout: 0,
     }),
   updateStatus: (id, status) =>
-    axiosInstance.patch(`/print-requests/${id}/status`, { status }),
+    apiFetch.patch(`/print-requests/${id}/status`, { status }),
   getCoverUrl: (id) => `/api/print-requests/${id}/cover`,
-  getCover: (id) => axiosInstance.get(`/print-requests/${id}/cover`, { responseType: 'arraybuffer' }),
-  delete: (id) => axiosInstance.delete(`/print-requests/${id}`),
+  getCover: (id) => apiFetch.get(`/print-requests/${id}/cover`, { responseType: 'arraybuffer' }),
+  delete: (id) => apiFetch.delete(`/print-requests/${id}`),
 };
 
 export const libraryApi = {
-  getAll: () => axiosInstance.get('/library'),
-  upload: (formData) => axiosInstance.post('/library', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
-  update: (id, data) => axiosInstance.patch(`/library/${id}`, data),
-  delete: (id) => axiosInstance.delete(`/library/${id}`),
+  getAll: () => apiFetch.get('/library'),
+  upload: (formData) => apiFetch.post('/library', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  update: (id, data) => apiFetch.patch(`/library/${id}`, data),
+  delete: (id) => apiFetch.delete(`/library/${id}`),
 };
 

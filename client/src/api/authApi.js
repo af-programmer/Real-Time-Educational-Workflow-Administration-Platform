@@ -1,9 +1,9 @@
-import axiosInstance from './axiosInstance';
+import apiFetch from './apiFetch';
 
 export const authApi = {
-  login: (credentials) => axiosInstance.post('/auth/login', credentials),
-  logout: () => axiosInstance.post('/auth/logout'),
-  me: () => axiosInstance.get('/auth/me'),
+  login: (credentials) => apiFetch.post('/auth/login', credentials),
+  logout: () => apiFetch.post('/auth/logout'),
+  me: () => apiFetch.get('/auth/me'),
   resetPassword: (userId, newPassword) =>
-    axiosInstance.post('/auth/reset-password', { userId, newPassword }),
+    apiFetch.post('/auth/reset-password', { userId, newPassword }),
 };

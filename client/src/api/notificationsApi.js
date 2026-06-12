@@ -1,8 +1,8 @@
-import axiosInstance from './axiosInstance';
+import apiFetch from './apiFetch';
 
 export const notificationsApi = {
-  getAll: () => axiosInstance.get('/notifications'),
-  markAllRead: () => axiosInstance.patch('/notifications/read-all'),
-  markOneRead: (id) => axiosInstance.patch(`/notifications/${id}/read`),
-  createAnnouncement: (data) => axiosInstance.post('/notifications/announcement', data),
+  getAll: () => apiFetch.get('/notifications'),
+  markAllRead: () => apiFetch.patch('/notifications/read-all'),
+  markOneRead: (id) => apiFetch.patch(`/notifications/${id}/read`),
+  createAnnouncement: (data) => apiFetch.post('/notifications/announcement', data),
 };
