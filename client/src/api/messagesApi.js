@@ -1,13 +1,13 @@
-import axiosInstance from './axiosInstance';
+import apiFetch from './apiFetch';
 
 export const messagesApi = {
-  getInbox: () => axiosInstance.get('/messages'),
+  getInbox: () => apiFetch.get('/messages'),
   send: (data, file) => {
     const form = new FormData();
     Object.entries(data).forEach(([k, v]) => v != null && form.append(k, String(v)));
     if (file) form.append('attachment', file);
-    return axiosInstance.post('/messages', form);
+    return apiFetch.post('/messages', form);
   },
-  markRead: (id) => axiosInstance.patch(`/messages/${id}/read`),
-  delete: (id) => axiosInstance.delete(`/messages/${id}`),
+  markRead: (id) => apiFetch.patch(`/messages/${id}/read`),
+  delete: (id) => apiFetch.delete(`/messages/${id}`),
 };

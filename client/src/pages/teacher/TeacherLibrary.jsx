@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { libraryApi } from '../../api/printRequestsApi';
-import axiosInstance from '../../api/axiosInstance';
+import apiFetch from '../../api/apiFetch';
 import { teachersApi } from '../../api/usersApi';
 import UploadModal from '../../components/library/UploadModal';
 import EditModal from '../../components/library/EditModal';
@@ -11,7 +11,7 @@ import toast from 'react-hot-toast';
 
 async function downloadFile(id, filename) {
   try {
-    const res = await axiosInstance.get(`/library/${id}/download`, { responseType: 'blob' });
+    const res = await apiFetch.get(`/library/${id}/download`, { responseType: 'blob' });
     const url = URL.createObjectURL(res.data);
     const a = document.createElement('a');
     a.href = url; a.download = filename; a.click();

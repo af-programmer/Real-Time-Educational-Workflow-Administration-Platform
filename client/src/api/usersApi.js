@@ -1,47 +1,47 @@
-import axiosInstance from './axiosInstance';
+import apiFetch from './apiFetch';
 
 export const usersApi = {
-  getAll: (params) => axiosInstance.get('/users', { params }),
-  getById: (id) => axiosInstance.get(`/users/${id}`),
-  getProfile: (id) => axiosInstance.get(`/users/${id}/profile`),
-  create: (data) => axiosInstance.post('/users', data),
-  update: (id, data) => axiosInstance.put(`/users/${id}`, data),
-  delete: (id) => axiosInstance.delete(`/users/${id}`),
-  suspend: (id, suspend) => axiosInstance.patch(`/users/${id}/suspend`, { suspend }),
-  assignClasses: (id, classIds) => axiosInstance.post(`/users/${id}/assign-classes`, { classIds }),
-  assignSubjects: (id, subjectIds) => axiosInstance.post(`/users/${id}/assign-subjects`, { subjectIds }),
-  assignHomeroomClasses: (id, classIds) => axiosInstance.post(`/users/${id}/assign-homeroom-classes`, { classIds }),
+  getAll: (params) => apiFetch.get('/users', { params }),
+  getById: (id) => apiFetch.get(`/users/${id}`),
+  getProfile: (id) => apiFetch.get(`/users/${id}/profile`),
+  create: (data) => apiFetch.post('/users', data),
+  update: (id, data) => apiFetch.put(`/users/${id}`, data),
+  delete: (id) => apiFetch.delete(`/users/${id}`),
+  suspend: (id, suspend) => apiFetch.patch(`/users/${id}/suspend`, { suspend }),
+  assignClasses: (id, classIds) => apiFetch.post(`/users/${id}/assign-classes`, { classIds }),
+  assignSubjects: (id, subjectIds) => apiFetch.post(`/users/${id}/assign-subjects`, { subjectIds }),
+  assignHomeroomClasses: (id, classIds) => apiFetch.post(`/users/${id}/assign-homeroom-classes`, { classIds }),
 };
 
 export const teachersApi = {
-  getAll: (params) => axiosInstance.get('/teachers', { params }),
-  getMe: () => axiosInstance.get('/teachers/me'),
-  getProfile: (id) => axiosInstance.get(`/teachers/${id}/profile`),
-  getSecretaries: () => axiosInstance.get('/teachers/secretaries'),
-  getAdmins: () => axiosInstance.get('/teachers/admins'),
-  getMyHomeroomTeachers: () => axiosInstance.get('/teachers/my-homeroom-teachers'),
-  getMyClasses: () => axiosInstance.get('/teachers/me/classes'),
-  getMySubjects: () => axiosInstance.get('/teachers/me/subjects'),
+  getAll: (params) => apiFetch.get('/teachers', { params }),
+  getMe: () => apiFetch.get('/teachers/me'),
+  getProfile: (id) => apiFetch.get(`/teachers/${id}/profile`),
+  getSecretaries: () => apiFetch.get('/teachers/secretaries'),
+  getAdmins: () => apiFetch.get('/teachers/admins'),
+  getMyHomeroomTeachers: () => apiFetch.get('/teachers/my-homeroom-teachers'),
+  getMyClasses: () => apiFetch.get('/teachers/me/classes'),
+  getMySubjects: () => apiFetch.get('/teachers/me/subjects'),
 };
 
 export const classesApi = {
-  getAll: () => axiosInstance.get('/classes'),
-  getById: (id) => axiosInstance.get(`/classes/${id}`),
-  createStudent: (data) => axiosInstance.post('/classes/students', data),
-  updateStudent: (id, data) => axiosInstance.put(`/classes/students/${id}`, data),
-  deleteStudent: (id) => axiosInstance.delete(`/classes/students/${id}`),
+  getAll: () => apiFetch.get('/classes'),
+  getById: (id) => apiFetch.get(`/classes/${id}`),
+  createStudent: (data) => apiFetch.post('/classes/students', data),
+  updateStudent: (id, data) => apiFetch.put(`/classes/students/${id}`, data),
+  deleteStudent: (id) => apiFetch.delete(`/classes/students/${id}`),
 };
 
 export const subjectsApi = {
-  getAll: () => axiosInstance.get('/subjects'),
+  getAll: () => apiFetch.get('/subjects'),
 };
 
 // Student / class-level operations (moved from printRequestsApi.js)
 export const classesStudentsApi = {
-  getStudents: (classId) => axiosInstance.get(`/classes/${classId}/students`),
-  getAllClasses: () => axiosInstance.get('/classes'),
-  createStudent: (data) => axiosInstance.post('/classes/students', data),
-  updateStudent: (id, data) => axiosInstance.put(`/classes/students/${id}`, data),
-  getStudent: (id) => axiosInstance.get(`/classes/students/${id}`),
-  getStudentGrades: (studentId) => axiosInstance.get(`/grades/student/${studentId}`),
+  getStudents: (classId) => apiFetch.get(`/classes/${classId}/students`),
+  getAllClasses: () => apiFetch.get('/classes'),
+  createStudent: (data) => apiFetch.post('/classes/students', data),
+  updateStudent: (id, data) => apiFetch.put(`/classes/students/${id}`, data),
+  getStudent: (id) => apiFetch.get(`/classes/students/${id}`),
+  getStudentGrades: (studentId) => apiFetch.get(`/grades/student/${studentId}`),
 };
