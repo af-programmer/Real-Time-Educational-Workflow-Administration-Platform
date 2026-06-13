@@ -1,10 +1,5 @@
--- EduFlow Schema Migration (consolidated)
--- Safe to run against any EduFlow database version — all statements are idempotent.
--- Standard MySQL compatible (no MariaDB-only syntax).
--- Run: mysql -u <user> -p eduflow < database/migrate.sql
 USE eduflow;
 
--- ── Helper: add a column only if it does not already exist ────────────
 DROP PROCEDURE IF EXISTS _ac;
 DELIMITER $$
 CREATE PROCEDURE _ac(IN p_tbl VARCHAR(64), IN p_col VARCHAR(64), IN p_def TEXT)
@@ -23,7 +18,6 @@ BEGIN
 END $$
 DELIMITER ;
 
--- ── users ─────────────────────────────────────────────────────────────────────
 CALL _ac('users', 'is_homeroom', 'is_homeroom TINYINT(1)   NOT NULL DEFAULT 0');
 CALL _ac('users', 'phone2',      'phone2      VARCHAR(20)  DEFAULT NULL');
 CALL _ac('users', 'avatar_url',  'avatar_url  VARCHAR(255) DEFAULT NULL');

@@ -11,20 +11,25 @@ async function create({ sender_id, recipient_id, recipient_role, subject, body, 
 
 async function findInbox(userId, role) {
   const [rows] = await pool.query(
-    `SELECT m.*,
-       u.name AS sender_name, u.email AS sender_email, ur.name AS sender_role,
-         (mr.user_id IS NOT NULL) AS is_read
+    `SELECT
+       m.id, m.sender_id, m.recipient_id, m.recipient_role,
+       m.subject, m.body, m.is_broadcast,
+       m.attachment_path, m.attachment_name, m.created_at,
+       sender_u.name  AS sender_name,
+       sender_u.email AS sender_email,
+       sender_r.name  AS sender_role,
+       (mr.user_id IS NOT NULL) AS is_read
      FROM messages m
-     JOIN users u ON u.id = m.sender_id
-     JOIN roles ur ON ur.id = u.role_id
-     LEFT JOIN message_reads mr ON mr.message_id = m.id AND mr.user_id = ?
+     JOIN users sender_u ON sender_u.id = m.sender_id
+     JOIN roles sender_r ON sender_r.id = sender_u.role_id
+     LEFT JOIN message_reads   mr ON mr.message_id = m.id AND mr.user_id = ?
      LEFT JOIN message_deletes md ON md.message_id = m.id AND md.user_id = ?
      WHERE md.user_id IS NULL
        AND m.sender_id != ?
        AND (m.recipient_id = ?
         OR m.recipient_role = 'all'
         OR m.recipient_role = ?
-        OR (m.recipient_role = 'all_teachers' AND ? = 'teacher')
+        OR (m.recipient_role = 'all_teachers'    AND ? = 'teacher')
         OR (m.recipient_role = 'all_secretaries' AND ? = 'secretary'))
      ORDER BY m.created_at DESC`,
     [userId, userId, userId, userId, role, role, role]

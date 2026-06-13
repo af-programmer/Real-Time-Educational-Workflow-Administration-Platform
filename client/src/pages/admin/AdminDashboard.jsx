@@ -5,6 +5,7 @@ import useNotificationStore from '../../store/notificationStore';
 import Spinner from '../../components/common/Spinner';
 import DailyQuote from '../../components/common/DailyQuote';
 import StatCard from '../../components/common/StatCard';
+import AdminAnalyticsDashboard from '../../components/analytics/AdminAnalyticsDashboard';
 
 export default function AdminDashboard() {
   const { unreadCount } = useNotificationStore();
@@ -77,6 +78,8 @@ export default function AdminDashboard() {
           <p className="text-sm text-gray-500 mt-1">Send system-wide messages</p>
         </Link>
       </div>
+
+      <AdminAnalyticsDashboard />
     </div>
   );
 }

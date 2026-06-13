@@ -51,7 +51,7 @@ export default function MessageInbox({ onUnreadChange, refreshKey }) {
   return (
     <div className="grid lg:grid-cols-2 gap-5">
       <MessageListPanel messages={messages} selectedId={selected?.id} onSelect={openMessage} onDeleteMessage={deleteMessage} />
-      <MessageDetailPanel message={selected} onDeleteMessage={deleteMessage} />
+      <MessageDetailPanel message={selected} onDeleteMessage={deleteMessage} onClose={() => setSelected(null)} />
     </div>
   );
 }
