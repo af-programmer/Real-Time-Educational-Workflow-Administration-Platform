@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { usersApi } from '../../api/usersApi';
+import { usersApi, subjectsApi } from '../../api/usersApi';
 import Modal from '../common/Modal';
 import Button from '../common/Button';
 import toast from 'react-hot-toast';
@@ -9,17 +9,28 @@ const TEACHER_ROLES = ['teacher', 'Educator'];
 export default function AssignModal({ user, classes, onClose }) {
   const [selectedClasses, setSelectedClasses] = useState([]);
   const [selectedHomeroomClasses, setSelectedHomeroomClasses] = useState([]);
+  const [selectedSubjects, setSelectedSubjects] = useState([]);
+  const [subjects, setSubjects] = useState([]);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (!user) return;
     setSelectedClasses([]);
     setSelectedHomeroomClasses([]);
+    setSelectedSubjects([]);
+
+    // Fetch all subjects
+    subjectsApi.getAll().then((r) => {
+      setSubjects(r.data.data || []);
+    }).catch(() => { });
+
+    // Fetch user profile
     usersApi.getProfile(user.id).then((r) => {
       const profile = r.data.data;
       setSelectedClasses((profile.classes || []).map((c) => c.id));
       setSelectedHomeroomClasses((profile.homeroomClasses || []).map((c) => c.id));
-    }).catch(() => {});
+      setSelectedSubjects((profile.subjects || []).map((s) => s.id));
+    }).catch(() => { });
   }, [user?.id]);
 
   const saveAssign = async () => {
@@ -28,6 +39,9 @@ export default function AssignModal({ user, classes, onClose }) {
     try {
       await usersApi.assignClasses(user.id, selectedClasses);
       await usersApi.assignHomeroomClasses(user.id, selectedHomeroomClasses);
+      if (isTeacher) {
+        await usersApi.assignSubjects(user.id, selectedSubjects);
+      }
       toast.success('Assignments saved!');
       onClose();
     } catch {
@@ -65,6 +79,19 @@ export default function AssignModal({ user, classes, onClose }) {
                 <label key={c.id} className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" checked={selectedHomeroomClasses.includes(c.id)} onChange={() => toggle(setSelectedHomeroomClasses, c.id)} className="rounded border-gray-300 text-primary-600" />
                   <span className="text-sm text-gray-700">{c.name}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
+        {isTeacher && (
+          <div>
+            <p className="label mb-2">Subjects (מקצועות)</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {subjects.map((s) => (
+                <label key={s.id} className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" checked={selectedSubjects.includes(s.id)} onChange={() => toggle(setSelectedSubjects, s.id)} className="rounded border-gray-300 text-primary-600" />
+                  <span className="text-sm text-gray-700">{s.name}</span>
                 </label>
               ))}
             </div>
