@@ -18,7 +18,7 @@ export default function AdminDashboard() {
     async function loadData() {
       try {
         const [teachRes, secRes, allUsersRes] = await Promise.all([
-          usersApi.getAll({ role: 'teacher', limit: 1 }),
+          usersApi.getAll({ role: 'all_teachers', limit: 1 }),
           usersApi.getAll({ role: 'secretary', limit: 1 }),
           usersApi.getAll({ limit: 1 }),
         ]);
@@ -56,7 +56,7 @@ export default function AdminDashboard() {
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
         <StatCard label="Total Users" value={stats.totalUsers} icon="👥" color="bg-blue-100" to="/admin/users" />
-        <StatCard label="Teachers" value={stats.teachers} icon="👩🏫" color="bg-teal-100" to="/admin/users?role=teacher" />
+        <StatCard label="Teachers" value={stats.teachers} icon="👩🏫" color="bg-teal-100" to="/admin/users?role=all_teachers" />
         <StatCard label="Secretaries" value={stats.secretaries} icon="💼" color="bg-pink-100" to="/admin/users?role=secretary" />
       </div>
 

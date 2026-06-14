@@ -34,8 +34,11 @@ TRUNCATE TABLE roles;
 TRUNCATE TABLE quotes;
 SET FOREIGN_KEY_CHECKS = 1;
 
+-- Ensure existing quotes table can store the full role name values.
+ALTER TABLE quotes MODIFY role VARCHAR(50) NOT NULL;
+
 -- ── Lookup tables ─────────────────────────────────────────────
-INSERT INTO roles (name) VALUES ('admin'), ('secretary'), ('teacher'), ('educator');
+INSERT INTO roles (name) VALUES ('admin'), ('secretary'), ('teacher'), ('Educator');
 
 INSERT INTO grade_levels (code, label) VALUES
   ('9','9th Grade'), ('10','10th Grade'),
@@ -53,22 +56,26 @@ INSERT INTO exam_types (code, label) VALUES
   ('midterm','Midterm Exam'), ('final','Final Exam'), ('homework','Homework');
 
 -- ── Quotes ────────────────────────────────────────────────────
-INSERT INTO quotes (role_id, text) VALUES
-  (1,'Leadership is not about rank or title — it is about influence, impact, and the inspiration you spark in others.'),
-  (1,'Education is not the filling of a vessel, but the kindling of a flame.'),
-  (1,'A great principal builds people, not just systems.'),
-  (1,'Vision without action is merely a dream. Vision combined with action can change reality.'),
-  (1,'Organizational culture is rebuilt every day through respect, listening, and personal example.'),
-  (3,'Every child needs at least one adult who believes in them unconditionally.'),
-  (3,'A mediocre teacher tells. A good teacher explains. An exceptional teacher inspires.'),
-  (3,'The influence of a great teacher echoes forever — you can never know where it ends.'),
-  (3,'Teaching is not my profession — teaching is my purpose.'),
-  (3,'The words you say to a student today become the inner voice they carry tomorrow.'),
-  (3,'Patience is the root of all pedagogical success; the seeds you plant today may bloom years from now.'),
-  (2,'A smile and a kind word are the keys that open every door in a school.'),
-  (2,'Order and organisation are the foundation on which great educational work grows.'),
-  (2,'The small details are the ones that create the big, successful picture.'),
-  (2,'Where there is order, there is room to grow.');
+INSERT INTO quotes (role, text) VALUES
+  ('admin','Leadership is not about rank or title — it is about influence, impact, and the inspiration you spark in others.'),
+  ('admin','Education is not the filling of a vessel, but the kindling of a flame.'),
+  ('admin','A great principal builds people, not just systems.'),
+  ('admin','Vision without action is merely a dream. Vision combined with action can change reality.'),
+  ('admin','Organizational culture is rebuilt every day through respect, listening, and personal example.'),
+  ('teacher','Every child needs at least one adult who believes in them unconditionally.'),
+  ('teacher','A mediocre teacher tells. A good teacher explains. An exceptional teacher inspires.'),
+  ('teacher','The influence of a great teacher echoes forever — you can never know where it ends.'),
+  ('teacher','Teaching is not my profession — teaching is my purpose.'),
+  ('teacher','The words you say to a student today become the inner voice they carry tomorrow.'),
+  ('teacher','Patience is the root of all pedagogical success; the seeds you plant today may bloom years from now.'),
+  ('Educator','A homeroom teacher is the steady heart of a classroom — the one who knows every student by name.'),
+  ('Educator','The best educators shape a community, not just a curriculum.'),
+  ('Educator','Homeroom care is where school becomes more than lessons — it becomes belonging.'),
+  ('Educator','Every student needs a consistent adult who sees their potential and holds them accountable.'),
+  ('secretary','A smile and a kind word are the keys that open every door in a school.'),
+  ('secretary','Order and organisation are the foundation on which great educational work grows.'),
+  ('secretary','The small details are the ones that create the big, successful picture.'),
+  ('secretary','Where there is order, there is room to grow.');
 
 -- ── Subjects (12) ─────────────────────────────────────────────
 INSERT INTO subjects (name, description) VALUES
@@ -101,10 +108,11 @@ INSERT INTO classes (name, student_count, grade_level_id, academic_year) VALUES
   ('12C',27,(SELECT id FROM grade_levels WHERE code='12'),'2025-2026');
 
 -- ── Helper variables ──────────────────────────────────────────
-SET @r_admin = (SELECT id FROM roles WHERE name='admin');
-SET @r_sec   = (SELECT id FROM roles WHERE name='secretary');
-SET @r_teach = (SELECT id FROM roles WHERE name='teacher');
-SET @pw      = '$2a$12$y8htSJCWQSWLXzd28DD1X.O7d68CWxGDPzbqr2WVviba8.lAa7coO';
+SET @r_admin    = (SELECT id FROM roles WHERE name='admin');
+SET @r_sec      = (SELECT id FROM roles WHERE name='secretary');
+SET @r_teach    = (SELECT id FROM roles WHERE name='teacher');
+SET @r_educator = (SELECT id FROM roles WHERE name='Educator');
+SET @pw         = '$2a$12$y8htSJCWQSWLXzd28DD1X.O7d68CWxGDPzbqr2WVviba8.lAa7coO';
 
 -- ── Users (18 total) ──────────────────────────────────────────
 INSERT INTO users (name, email, role_id, phone) VALUES
@@ -113,19 +121,19 @@ INSERT INTO users (name, email, role_id, phone) VALUES
   -- Secretaries
   ('Sarah Cohen',        'secretary1@gmail.com',       @r_sec,   '052-2000001'),
   ('Rivka Ben-David',    'secretary2@gmail.com',       @r_sec,   '052-2000002'),
-  -- Homeroom teachers (12)
-  ('Avi Cohen',          'avi.cohen@gmail.com',        @r_teach, '052-3000001'),
-  ('Maya Levi',          'maya.levi@gmail.com',        @r_teach, '052-3000002'),
-  ('David Mizrahi',      'david.mizrahi@gmail.com',    @r_teach, '052-3000003'),
-  ('Sarah Peretz',       'sarah.peretz@gmail.com',     @r_teach, '052-3000004'),
-  ('Roi Katz',           'roi.katz@gmail.com',         @r_teach, '052-3000005'),
-  ('Tamar Friedman',     'tamar.friedman@gmail.com',   @r_teach, '052-3000006'),
-  ('Yoni Shapiro',       'yoni.shapiro@gmail.com',     @r_teach, '052-3000007'),
-  ('Noa Rosenberg',      'noa.rosenberg@gmail.com',    @r_teach, '052-3000008'),
-  ('Eitan Klein',        'eitan.klein@gmail.com',      @r_teach, '052-3000009'),
-  ('Liron Goldstein',    'liron.goldstein@gmail.com',  @r_teach, '052-3000010'),
-  ('Gal Stern',          'gal.stern@gmail.com',        @r_teach, '052-3000011'),
-  ('Dana Schwartz',      'dana.schwartz@gmail.com',    @r_teach, '052-3000012'),
+  -- Homeroom educators (12)
+  ('Avi Cohen',          'avi.cohen@gmail.com',        @r_educator, '052-3000001'),
+  ('Maya Levi',          'maya.levi@gmail.com',        @r_educator, '052-3000002'),
+  ('David Mizrahi',      'david.mizrahi@gmail.com',    @r_educator, '052-3000003'),
+  ('Sarah Peretz',       'sarah.peretz@gmail.com',     @r_educator, '052-3000004'),
+  ('Roi Katz',           'roi.katz@gmail.com',         @r_educator, '052-3000005'),
+  ('Tamar Friedman',     'tamar.friedman@gmail.com',   @r_educator, '052-3000006'),
+  ('Yoni Shapiro',       'yoni.shapiro@gmail.com',     @r_educator, '052-3000007'),
+  ('Noa Rosenberg',      'noa.rosenberg@gmail.com',    @r_educator, '052-3000008'),
+  ('Eitan Klein',        'eitan.klein@gmail.com',      @r_educator, '052-3000009'),
+  ('Liron Goldstein',    'liron.goldstein@gmail.com',  @r_educator, '052-3000010'),
+  ('Gal Stern',          'gal.stern@gmail.com',        @r_educator, '052-3000011'),
+  ('Dana Schwartz',      'dana.schwartz@gmail.com',    @r_educator, '052-3000012'),
   -- Extra teachers (3)
   ('Ron Weiss',          'ron.weiss@gmail.com',        @r_teach, '052-3000013'),
   ('Hila Horowitz',      'hila.horowitz@gmail.com',    @r_teach, '052-3000014'),

@@ -273,11 +273,10 @@ CREATE TABLE IF NOT EXISTS notification_reads (
 
 CREATE TABLE IF NOT EXISTS quotes (
   id         INT PRIMARY KEY AUTO_INCREMENT,
-  role_id    INT NOT NULL,
+  role       VARCHAR(50) NOT NULL,
   text       TEXT NOT NULL,
   is_active  BOOLEAN DEFAULT TRUE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE RESTRICT
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- ── Idempotent index helper ───────────────────────────────────────────────────
