@@ -9,7 +9,6 @@ export default function CreateUserModal({ isOpen, onClose, classes, onCreated })
   const [submitting, setSubmitting] = useState(false);
   const { register, handleSubmit, reset, watch } = useForm();
   const selectedRole = watch('role', '');
-  const isHomeroom = watch('is_homeroom', false);
 
   const handleClose = () => { onClose(); reset(); };
 
@@ -17,15 +16,17 @@ export default function CreateUserModal({ isOpen, onClose, classes, onCreated })
     setSubmitting(true);
     try {
       const payload = {
-        ...data,
-        is_homeroom: data.is_homeroom === true || data.is_homeroom === 'true',
-        homeroom_class_ids: data.is_homeroom
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        role: data.role,
+        phone: data.phone || undefined,
+        homeroom_class_ids: data.role === 'Educator'
           ? (Array.isArray(data.homeroom_class_ids)
               ? data.homeroom_class_ids.map(Number)
               : data.homeroom_class_ids ? [Number(data.homeroom_class_ids)] : [])
           : [],
       };
-      delete payload.homeroom_class_id;
       await usersApi.create(payload);
       toast.success('User created!');
       handleClose();
@@ -56,30 +57,23 @@ export default function CreateUserModal({ isOpen, onClose, classes, onCreated })
           <label className="label">Role *</label>
           <select {...register('role', { required: true })} className="input">
             <option value="">Select role...</option>
-            <option value="teacher">Teacher</option>
+            <option value="teacher">Professional Teacher</option>
+            <option value="Educator">Educator</option>
             <option value="secretary">Secretary</option>
             <option value="admin">Admin</option>
           </select>
         </div>
-        {selectedRole === 'teacher' && (
+        {selectedRole === 'Educator' && (
           <div className="space-y-3 p-3 bg-gray-50 rounded-lg">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" {...register('is_homeroom')} className="rounded border-gray-300 text-primary-600" />
-              <span className="text-sm font-medium text-gray-700">EDUCATOR</span>
-            </label>
-            {isHomeroom && (
-              <div>
-                <label className="label">Homeroom Classes *</label>
-                <div className="grid grid-cols-2 gap-2 mt-1">
-                  {classes.map((c) => (
-                    <label key={c.id} className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" value={c.id} {...register('homeroom_class_ids')} className="rounded border-gray-300 text-primary-600" />
-                      <span className="text-sm text-gray-700">{c.name}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
+            <label className="label mb-1">Homeroom Classes</label>
+            <div className="grid grid-cols-2 gap-2">
+              {classes.map((c) => (
+                <label key={c.id} className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" value={c.id} {...register('homeroom_class_ids')} className="rounded border-gray-300 text-primary-600" />
+                  <span className="text-sm text-gray-700">{c.name}</span>
+                </label>
+              ))}
+            </div>
           </div>
         )}
         <div>

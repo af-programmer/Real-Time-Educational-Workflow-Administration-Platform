@@ -4,6 +4,8 @@ const teacherAssignmentsDAL = require('../dal/teacherAssignments.dal');
 const AppError = require('../utils/AppError');
 const { paginate, paginateResponse } = require('../utils/paginate');
 
+const TEACHER_ROLES = ['teacher', 'Educator'];
+
 async function getAllUsers({ role, search, page = 1, limit = 20 }) {
   const { offset, limit: lim, page: p } = paginate(null, page, limit);
   const { rows, total } = await usersDAL.findAll({ roleFilter: role, search, page: p, limit: lim, offset });
@@ -16,21 +18,21 @@ async function getUserById(id) {
   return user;
 }
 
-async function createUser({ name, email, password, role, phone, phone2, is_homeroom, homeroom_class_ids }) {
+async function createUser({ name, email, password, role, phone, phone2, homeroom_class_ids }) {
   const existing = await usersDAL.findByEmail(email);
   if (existing) throw new AppError('A user with this email already exists.', 409);
 
   const roleId = await usersDAL.getRoleId(role);
   if (!roleId) throw new AppError('Invalid role.', 400);
 
-  if (is_homeroom && role !== 'teacher')
-    throw new AppError('Only teachers can be homeroom teachers.', 400);
-
   const password_hash = await bcrypt.hash(password, 12);
-  const id = await usersDAL.create({ name, email, role_id: roleId, phone, phone2, is_homeroom: !!is_homeroom });
+  const id = await usersDAL.create({ name, email, role_id: roleId, phone, phone2 });
   await usersDAL.createCredential(id, password_hash);
-  if (is_homeroom && homeroom_class_ids?.length)
+
+  if (role === 'Educator' && homeroom_class_ids?.length) {
     await teacherAssignmentsDAL.assignHomeroomClasses(id, homeroom_class_ids);
+  }
+
   return usersDAL.findById(id);
 }
 
@@ -39,6 +41,10 @@ async function updateUser(id, fields) {
   if (!user) throw new AppError('User not found.', 404);
   await usersDAL.update(id, fields);
   return usersDAL.findById(id);
+}
+
+async function updateAvatar(userId, avatarUrl) {
+  await usersDAL.update(userId, { avatar_url: avatarUrl });
 }
 
 async function deleteUser(id) {
@@ -58,36 +64,43 @@ async function toggleSuspend(id, suspend) {
 async function assignClasses(teacherId, classIds) {
   const user = await usersDAL.findById(teacherId);
   if (!user) throw new AppError('User not found.', 404);
-  if (user.role !== 'teacher') throw new AppError('Only teachers can be assigned to classes.', 400);
+  if (!TEACHER_ROLES.includes(user.role)) throw new AppError('Only teachers can be assigned to classes.', 400);
   await teacherAssignmentsDAL.assignClasses(teacherId, classIds);
 }
 
 async function assignSubjects(teacherId, subjectIds) {
   const user = await usersDAL.findById(teacherId);
   if (!user) throw new AppError('User not found.', 404);
-  if (user.role !== 'teacher') throw new AppError('Only teachers can be assigned to subjects.', 400);
+  if (!TEACHER_ROLES.includes(user.role)) throw new AppError('Only teachers can be assigned to subjects.', 400);
   await teacherAssignmentsDAL.assignSubjects(teacherId, subjectIds);
 }
 
 async function getTeacherProfile(teacherId) {
   const user = await usersDAL.findById(teacherId);
   if (!user) throw new AppError('Teacher not found.', 404);
-  const classes  = await teacherAssignmentsDAL.getTeacherClasses(teacherId);
-  const subjects = await teacherAssignmentsDAL.getTeacherSubjects(teacherId);
+  const classes        = await teacherAssignmentsDAL.getTeacherClasses(teacherId);
+  const subjects       = await teacherAssignmentsDAL.getTeacherSubjects(teacherId);
   const homeroomClasses = await teacherAssignmentsDAL.getHomeroomClasses(teacherId);
   return { ...user, classes, subjects, homeroomClasses };
 }
 
+// Assigning homeroom classes also flips the user's role between teacher ↔ Educator
 async function assignHomeroomClasses(teacherId, classIds) {
   const user = await usersDAL.findById(teacherId);
   if (!user) throw new AppError('User not found.', 404);
-  if (user.role !== 'teacher') throw new AppError('Only teachers can be homeroom teachers.', 400);
+  if (!TEACHER_ROLES.includes(user.role)) throw new AppError('Only teachers can be Educators.', 400);
+
   await teacherAssignmentsDAL.assignHomeroomClasses(teacherId, classIds);
-  // update is_homeroom flag
-  await usersDAL.update(teacherId, { is_homeroom: classIds.length > 0 });
+
+  // Promote to Educator when classes are assigned, demote when cleared
+  const targetRole = classIds.length > 0 ? 'Educator' : 'teacher';
+  if (user.role !== targetRole) {
+    const newRoleId = await usersDAL.getRoleId(targetRole);
+    if (newRoleId) await usersDAL.update(teacherId, { role_id: newRoleId });
+  }
 }
 
 module.exports = {
-  getAllUsers, getUserById, createUser, updateUser, deleteUser,
+  getAllUsers, getUserById, createUser, updateUser, updateAvatar, deleteUser,
   toggleSuspend, assignClasses, assignSubjects, assignHomeroomClasses, getTeacherProfile,
 };

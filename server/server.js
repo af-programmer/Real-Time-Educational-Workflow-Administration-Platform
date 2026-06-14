@@ -20,13 +20,18 @@ const io = new Server(server, {
 const notifNS = io.of('/notifications');
 
 notifNS.on('connection', (socket) => {
-  const { userId, role, isHomeroom } = socket.handshake.auth;
+  const { userId, role } = socket.handshake.auth;
 
   if (userId) {
     socket.join(`user:${userId}`);
     socket.join(`role:${role}`);
+    // Both teacher types join the shared "all teachers" room for broadcasts
     if (role === 'teacher') {
-      socket.join(isHomeroom ? 'role:homeroom_teacher' : 'role:professional_teacher');
+      socket.join('role:teacher');
+      socket.join('role:professional_teacher');
+    } else if (role === 'Educator') {
+      socket.join('role:teacher');
+      socket.join('role:Educator');
     }
   }
 

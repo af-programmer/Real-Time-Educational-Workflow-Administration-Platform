@@ -9,13 +9,13 @@ const { updateStatusSchema } = require('../validators/printRequest.validator');
 
 router.use(authMiddleware);
 
-router.get('/mine',    requireRoles('teacher'),                     printRequestsController.getMine);
-router.post('/',       requireRoles('teacher'), handleUpload('files', 5), printRequestsController.create);
-router.get('/history', requireRoles('secretary', 'admin'),          printRequestsController.getHistory);
-router.get('/',        requireRoles('secretary', 'admin'),          printRequestsController.getAll);
-router.get('/:id',     requireRoles('teacher', 'secretary', 'admin'), printRequestsController.getById);
-router.patch('/:id/status', requireRoles('secretary', 'admin'), validate(updateStatusSchema), printRequestsController.updateStatus);
-router.get('/:id/cover',    requireRoles('secretary', 'admin'),     printRequestsController.getCover);
-router.delete('/:id',       requireRoles('secretary', 'admin'),     printRequestsController.remove);
+router.get('/mine',    requireRoles('teacher', 'Educator'),                             printRequestsController.getMine);
+router.post('/',       requireRoles('teacher', 'Educator'), handleUpload('files', 5),  printRequestsController.create);
+router.get('/history', requireRoles('secretary', 'admin'),                                      printRequestsController.getHistory);
+router.get('/',        requireRoles('secretary', 'admin'),                                      printRequestsController.getAll);
+router.get('/:id',     requireRoles('teacher', 'Educator', 'secretary', 'admin'),       printRequestsController.getById);
+router.patch('/:id/status', requireRoles('secretary', 'admin'), validate(updateStatusSchema),  printRequestsController.updateStatus);
+router.get('/:id/cover',    requireRoles('secretary', 'admin'),                                 printRequestsController.getCover);
+router.delete('/:id',       requireRoles('secretary', 'admin'),                                 printRequestsController.remove);
 
 module.exports = router;

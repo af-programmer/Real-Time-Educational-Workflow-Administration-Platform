@@ -69,7 +69,7 @@ export function NotificationProvider({ children }) {
     // Connect Socket.io
     const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
     socketRef.current = io(`${apiBase}/notifications`, {
-      auth: { userId: user.id, role: user.role, isHomeroom: user.is_homeroom },
+      auth: { userId: user.id, role: user.role },
       transports: ['websocket', 'polling'],
     });
 

@@ -10,18 +10,21 @@ async function create({ user_id, role_target, type, title, content, data }) {
   return result.insertId;
 }
 
-function buildRoleTargets(role, isHomeroom) {
+// Returns all role_target values that apply to this user's role
+function buildRoleTargets(role) {
+  if (role === 'Educator') {
+    return ['all', 'all_teachers', 'Educator'];
+  }
   if (role === 'teacher') {
-    const subtype = isHomeroom ? 'homeroom_teacher' : 'professional_teacher';
-    return ['all', 'all_teachers', 'teacher', subtype];
+    return ['all', 'all_teachers', 'teacher', 'professional_teacher'];
   }
   if (role === 'secretary') return ['all', 'all_secretaries', 'secretary'];
   if (role === 'admin')     return ['all', 'admin'];
   return ['all', role];
 }
 
-async function findByUser(userId, role, isHomeroom, { limit = 10, offset = 0 } = {}) {
-  const targets = buildRoleTargets(role, isHomeroom);
+async function findByUser(userId, role, { limit = 10, offset = 0 } = {}) {
+  const targets = buildRoleTargets(role);
   const placeholders = targets.map(() => '?').join(', ');
   const [rows] = await pool.query(
     `SELECT n.*,
@@ -38,16 +41,18 @@ async function findByUser(userId, role, isHomeroom, { limit = 10, offset = 0 } =
 }
 
 async function countByUser(userId, role) {
+  const targets = buildRoleTargets(role);
+  const placeholders = targets.map(() => '?').join(', ');
   const [[{ total }]] = await pool.query(
     `SELECT COUNT(*) AS total FROM notifications
-     WHERE user_id = ? OR role_target = 'all' OR role_target = ?`,
-    [userId, role]
+     WHERE user_id = ? OR role_target IN (${placeholders})`,
+    [userId, ...targets]
   );
   return total;
 }
 
-async function markAllRead(userId, role, isHomeroom) {
-  const targets = buildRoleTargets(role, isHomeroom);
+async function markAllRead(userId, role) {
+  const targets = buildRoleTargets(role);
   const placeholders = targets.map(() => '?').join(', ');
   const [rows] = await pool.query(
     `SELECT id FROM notifications
@@ -66,8 +71,8 @@ async function markOneRead(notificationId, userId) {
   );
 }
 
-async function getUnreadCount(userId, role, isHomeroom) {
-  const targets = buildRoleTargets(role, isHomeroom);
+async function getUnreadCount(userId, role) {
+  const targets = buildRoleTargets(role);
   const placeholders = targets.map(() => '?').join(', ');
   const [[{ count }]] = await pool.query(
     `SELECT COUNT(*) AS count FROM notifications n

@@ -1,19 +1,24 @@
 const { pool } = require('../config/db');
 
-async function create({ sender_id, recipient_id, recipient_role, subject, body, is_broadcast, attachment_path, attachment_name }) {
+const TEACHER_ROLES = ['teacher', 'Educator'];
+
+async function create({ sender_id, recipient_id, recipient_role, subject, body, attachment_path, attachment_name }) {
   const [result] = await pool.query(
-    `INSERT INTO messages (sender_id, recipient_id, recipient_role, subject, body, is_broadcast, attachment_path, attachment_name)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    [sender_id, recipient_id || null, recipient_role || null, subject || null, body, is_broadcast ? 1 : 0, attachment_path || null, attachment_name || null]
+    `INSERT INTO messages (sender_id, recipient_id, recipient_role, subject, body, attachment_path, attachment_name)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [sender_id, recipient_id || null, recipient_role || null, subject || null, body,
+     attachment_path || null, attachment_name || null]
   );
   return result.insertId;
 }
 
 async function findInbox(userId, role) {
+  const isTeacher = TEACHER_ROLES.includes(role) ? 1 : 0;
+  const isSecretary = role === 'secretary' ? 1 : 0;
   const [rows] = await pool.query(
     `SELECT
        m.id, m.sender_id, m.recipient_id, m.recipient_role,
-       m.subject, m.body, m.is_broadcast,
+       m.subject, m.body,
        m.attachment_path, m.attachment_name, m.created_at,
        sender_u.name  AS sender_name,
        sender_u.email AS sender_email,
@@ -29,10 +34,10 @@ async function findInbox(userId, role) {
        AND (m.recipient_id = ?
         OR m.recipient_role = 'all'
         OR m.recipient_role = ?
-        OR (m.recipient_role = 'all_teachers'    AND ? = 'teacher')
-        OR (m.recipient_role = 'all_secretaries' AND ? = 'secretary'))
+        OR (m.recipient_role = 'all_teachers'    AND ? = 1)
+        OR (m.recipient_role = 'all_secretaries' AND ? = 1))
      ORDER BY m.created_at DESC`,
-    [userId, userId, userId, userId, role, role, role]
+    [userId, userId, userId, userId, role, isTeacher, isSecretary]
   );
   return rows;
 }
@@ -64,6 +69,8 @@ async function deleteForUser(messageId, userId) {
 }
 
 async function getUnreadCount(userId, role) {
+  const isTeacher = TEACHER_ROLES.includes(role) ? 1 : 0;
+  const isSecretary = role === 'secretary' ? 1 : 0;
   const [[{ count }]] = await pool.query(
     `SELECT COUNT(*) AS count FROM messages m
      LEFT JOIN message_reads mr ON mr.message_id = m.id AND mr.user_id = ?
@@ -74,9 +81,9 @@ async function getUnreadCount(userId, role) {
        AND (m.recipient_id = ?
         OR m.recipient_role = 'all'
         OR m.recipient_role = ?
-        OR (m.recipient_role = 'all_teachers' AND ? = 'teacher')
-        OR (m.recipient_role = 'all_secretaries' AND ? = 'secretary'))`,
-    [userId, userId, userId, userId, role, role, role]
+        OR (m.recipient_role = 'all_teachers'    AND ? = 1)
+        OR (m.recipient_role = 'all_secretaries' AND ? = 1))`,
+    [userId, userId, userId, userId, role, isTeacher, isSecretary]
   );
   return count;
 }

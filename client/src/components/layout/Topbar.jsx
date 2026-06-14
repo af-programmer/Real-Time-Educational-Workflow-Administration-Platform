@@ -3,6 +3,7 @@ import useAuthStore from '../../store/authStore';
 
 export default function Topbar({ onMenuClick, title }) {
   const { user } = useAuthStore();
+  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
   return (
     <header className="sticky top-0 z-30 bg-white border-b border-gray-200 px-4 sm:px-6 h-16 flex items-center gap-4">
@@ -20,9 +21,17 @@ export default function Topbar({ onMenuClick, title }) {
       <div className="flex items-center gap-2">
         {user?.role !== 'admin' && <NotificationBell />}
         <div className="hidden sm:flex items-center gap-2 pl-2 border-l border-gray-200">
-          <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-semibold text-sm">
-            {user?.name?.[0]?.toUpperCase()}
-          </div>
+          {user?.avatar_url ? (
+            <img
+              src={`${apiBase}${user.avatar_url}`}
+              alt={user.name}
+              className="h-8 w-8 rounded-full object-cover"
+            />
+          ) : (
+            <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-semibold text-sm">
+              {user?.name?.[0]?.toUpperCase()}
+            </div>
+          )}
           <span className="text-sm font-medium text-gray-700 max-w-[120px] truncate">
             {user?.name}
           </span>

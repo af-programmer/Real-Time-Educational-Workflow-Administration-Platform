@@ -4,6 +4,8 @@ import Modal from '../common/Modal';
 import Button from '../common/Button';
 import toast from 'react-hot-toast';
 
+const TEACHER_ROLES = ['teacher', 'Educator'];
+
 export default function AssignModal({ user, classes, subjects, onClose }) {
   const [selectedClasses, setSelectedClasses] = useState([]);
   const [selectedSubjects, setSelectedSubjects] = useState([]);
@@ -27,8 +29,9 @@ export default function AssignModal({ user, classes, subjects, onClose }) {
     if (!user) return;
     setSubmitting(true);
     try {
-      if (selectedClasses.length) await usersApi.assignClasses(user.id, selectedClasses);
-      if (selectedSubjects.length) await usersApi.assignSubjects(user.id, selectedSubjects);
+      // Always call even when empty — allows clearing all assignments
+      await usersApi.assignClasses(user.id, selectedClasses);
+      await usersApi.assignSubjects(user.id, selectedSubjects);
       await usersApi.assignHomeroomClasses(user.id, selectedHomeroomClasses);
       toast.success('Assignments saved!');
       onClose();
@@ -42,6 +45,8 @@ export default function AssignModal({ user, classes, subjects, onClose }) {
   const toggle = (setter, id) => setter((prev) =>
     prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
   );
+
+  const isTeacher = TEACHER_ROLES.includes(user?.role);
 
   return (
     <Modal isOpen={!!user} onClose={onClose} title={`Assign to ${user?.name}`} size="lg">
@@ -68,7 +73,7 @@ export default function AssignModal({ user, classes, subjects, onClose }) {
             ))}
           </div>
         </div>
-        {user?.role === 'teacher' && (
+        {isTeacher && (
           <div>
             <p className="label mb-2">Homeroom Classes (כיתות חינוך)</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">

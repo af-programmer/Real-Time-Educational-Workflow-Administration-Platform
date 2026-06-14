@@ -14,8 +14,8 @@ export default function TeacherProfileCard({ profile }) {
             {profile.phone && <p className="text-gray-500 text-sm">{profile.phone}</p>}
           </div>
           <div className="flex flex-col gap-2">
-            {profile.is_homeroom
-              ? <Badge label="EDUCATOR" variant="homeroom_teacher" />
+            {profile.role === 'Educator'
+              ? <Badge label="EDUCATOR" variant="Educator" />
               : <Badge label="Professional Teacher" variant="professional_teacher" />}
             {profile.is_blocked && <Badge label="Blocked" variant="urgent" />}
             {!profile.is_active && <Badge label="Inactive" variant="pending" />}

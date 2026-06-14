@@ -53,4 +53,11 @@ const assignHomeroomClasses = asyncWrapper(async (req, res) => {
   res.json({ success: true, message: 'Homeroom classes assigned successfully.' });
 });
 
-module.exports = { getAll, getById, getProfile, create, update, remove, suspend, assignClasses, assignSubjects, assignHomeroomClasses };
+const uploadAvatar = asyncWrapper(async (req, res) => {
+  if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded.' });
+  const avatarUrl = `/uploads/${req.file.filename}`;
+  await usersService.updateAvatar(req.user.id, avatarUrl);
+  res.json({ success: true, data: { avatar_url: avatarUrl } });
+});
+
+module.exports = { getAll, getById, getProfile, create, update, remove, suspend, assignClasses, assignSubjects, assignHomeroomClasses, uploadAvatar };

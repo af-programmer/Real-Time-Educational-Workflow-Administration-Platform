@@ -11,11 +11,11 @@ export default function UserFilters({ filters, setFilters, onCreateClick }) {
           className="input"
         >
           <option value="">All Roles</option>
-          <option value="teacher">All Teachers</option>
-          <option value="teacher__professional">Professional Teacher</option>
-          <option value="teacher__educator">EDUCATOR</option>
-          <option value="secretary">Secretary</option>
-          <option value="admin">Admin</option>
+          <option value="all_teachers">All Teachers</option>
+          <option value="teacher">Professional Teachers</option>
+          <option value="Educator">Educators</option>
+          <option value="secretary">Secretaries</option>
+          <option value="admin">Admins</option>
         </select>
       </div>
       <div>

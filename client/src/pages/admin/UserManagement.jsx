@@ -11,6 +11,8 @@ import UserFilters from '../../components/users/UserFilters';
 import CreateUserModal from '../../components/users/CreateUserModal';
 import AssignModal from '../../components/users/AssignModal';
 
+const TEACHER_ROLES = ['teacher', 'Educator'];
+
 export default function UserManagement() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [users, setUsers] = useState([]);
@@ -46,12 +48,9 @@ export default function UserManagement() {
 
   const load = useCallback(() => {
     setLoading(true);
-    const apiRole = role.startsWith('teacher__') ? 'teacher' : role;
-    usersApi.getAll({ role: apiRole, search, page })
+    usersApi.getAll({ role: role || undefined, search, page })
       .then((r) => {
-        let data = Array.isArray(r.data?.data) ? r.data.data : [];
-        if (role === 'teacher__professional') data = data.filter((u) => !u.is_homeroom);
-        if (role === 'teacher__educator')     data = data.filter((u) => !!u.is_homeroom);
+        const data = Array.isArray(r.data?.data) ? r.data.data : [];
         setUsers(data);
         setPagination(r.data?.pagination || null);
       })
@@ -88,12 +87,9 @@ export default function UserManagement() {
     { key: 'email', header: 'Email' },
     {
       key: 'role', header: 'Role',
-      render: (role, row) => {
-        if (role === 'teacher') {
-          return row.is_homeroom
-            ? <Badge label="EDUCATOR" variant="homeroom_teacher" />
-            : <Badge label="Professional Teacher" variant="professional_teacher" />;
-        }
+      render: (role) => {
+        if (role === 'Educator') return <Badge label="EDUCATOR" variant="Educator" />;
+        if (role === 'teacher') return <Badge label="Professional Teacher" variant="professional_teacher" />;
         return <Badge label={role.charAt(0).toUpperCase() + role.slice(1)} variant={role} />;
       },
     },
@@ -111,7 +107,7 @@ export default function UserManagement() {
       key: 'actions', header: 'Actions',
       render: (_, row) => (
         <div className="flex items-center gap-2">
-          {row.role === 'teacher' && (
+          {TEACHER_ROLES.includes(row.role) && (
             <button onClick={() => setShowAssignModal(row)} className="text-xs text-blue-600 hover:text-blue-700 font-medium">Assign</button>
           )}
           <button onClick={() => toggleSuspend(row)} className={clsx('text-xs font-medium', row.is_suspended ? 'text-green-600' : 'text-yellow-600')}>

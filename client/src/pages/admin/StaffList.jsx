@@ -44,12 +44,10 @@ export default function StaffList() {
 
   const load = useCallback(() => {
     setLoading(true);
-    const apiRole = roleFilter?.startsWith('teacher__') ? 'teacher' : (roleFilter || undefined);
-    usersApi.getAll({ search, role: apiRole, page, limit: 20 })
+    usersApi.getAll({ search, role: roleFilter || undefined, page, limit: 20 })
       .then((r) => {
-        let data = (r.data.data || []).filter((u) => u.role !== 'admin');
-        if (roleFilter === 'teacher__professional') data = data.filter((u) => !u.is_homeroom);
-        if (roleFilter === 'teacher__educator')     data = data.filter((u) => !!u.is_homeroom);
+        // Exclude admins from staff list display
+        const data = (r.data.data || []).filter((u) => u.role !== 'admin');
         setUsers(data);
         setPagination(r.data.pagination);
       })
@@ -75,9 +73,9 @@ export default function StaffList() {
           className="input w-auto"
         >
           <option value="">All Staff</option>
-          <option value="teacher">All Teachers</option>
-          <option value="teacher__professional">Professional Teacher</option>
-          <option value="teacher__educator">EDUCATOR</option>
+          <option value="all_teachers">All Teachers</option>
+          <option value="teacher">Professional Teachers</option>
+          <option value="Educator">Edocators</option>
           <option value="secretary">Secretaries</option>
         </select>
       </div>
@@ -92,18 +90,21 @@ export default function StaffList() {
                 className="card p-5 hover:shadow-md transition-shadow group"
               >
                 <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-100 text-primary-700 font-bold text-xl flex-shrink-0">
-                    {u.name?.[0]?.toUpperCase()}
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-100 text-primary-700 font-bold text-xl flex-shrink-0 overflow-hidden">
+                    {u.avatar_url
+                      ? <img src={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${u.avatar_url}`} alt={u.name} className="h-full w-full object-cover" />
+                      : u.name?.[0]?.toUpperCase()
+                    }
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">{u.name}</p>
                     <p className="text-sm text-gray-500 truncate">{u.email}</p>
                     <div className="mt-2 flex flex-wrap gap-1">
-                      {u.role === 'teacher'
-                        ? (u.is_homeroom
-                            ? <Badge label="EDUCATOR" variant="homeroom_teacher" />
-                            : <Badge label="Professional Teacher" variant="professional_teacher" />)
-                        : <Badge label={u.role.charAt(0).toUpperCase() + u.role.slice(1)} variant={u.role} />}
+                      {u.role === 'Educator'
+                        ? <Badge label="EDUCATOR" variant="Educator" />
+                        : u.role === 'teacher'
+                          ? <Badge label="Professional Teacher" variant="professional_teacher" />
+                          : <Badge label={u.role.charAt(0).toUpperCase() + u.role.slice(1)} variant={u.role} />}
                       {u.is_blocked  && <Badge label="Blocked"   variant="urgent"  />}
                       {!u.is_active  && <Badge label="Inactive"  variant="pending" />}
                     </div>

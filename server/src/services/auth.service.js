@@ -14,7 +14,6 @@ async function login(email, password) {
 
   const token = signToken({
     id: user.id, email: user.email, role: user.role, name: user.name,
-    is_homeroom: user.is_homeroom || false,
   });
 
   return {
@@ -24,8 +23,7 @@ async function login(email, password) {
       name: user.name,
       email: user.email,
       role: user.role,
-      avatar_url: user.avatar_url,
-      is_homeroom: user.is_homeroom || false,
+      avatar_url: user.avatar_url || null,
     },
   };
 }

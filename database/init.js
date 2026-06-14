@@ -52,9 +52,9 @@ async function initDatabase() {
   await conn.end();
 
   console.log('\n🎉 Database ready! Demo accounts:');
-  console.log('   admin@eduflow.com      | Password123!');
-  console.log('   secretary@eduflow.com  | Password123!');
-  console.log('   teacher1@eduflow.com   | Password123!');
+  console.log('   admin@gmail.com      | Password123!');
+  console.log('   secretary@gmail.com  | Password123!');
+  console.log('   teacher1@gmail.com   | Password123!');
   console.log('\nRun: npm run dev\n');
 }
 

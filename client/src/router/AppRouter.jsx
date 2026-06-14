@@ -30,7 +30,7 @@ import StaffProfile from '../pages/admin/StaffProfile';
 function RootRedirect() {
   const { isAuthenticated, user } = useAuthStore();
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  const roleHome = { admin: '/admin', secretary: '/secretary', teacher: '/teacher' };
+  const roleHome = { admin: '/admin', secretary: '/secretary', teacher: '/teacher', Educator: '/teacher' };
   return <Navigate to={roleHome[user?.role] || '/login'} replace />;
 }
 
@@ -40,7 +40,7 @@ export default function AppRouter() {
       <Route path="/login" element={<Login />} />
       <Route path="/" element={<RootRedirect />} />
 
-      <Route element={<ProtectedRoute allowedRoles={['teacher']} />}>
+      <Route element={<ProtectedRoute allowedRoles={['teacher', 'Educator']} />}>
         <Route element={<DashboardLayout />}>
           <Route path="/teacher" element={<TeacherDashboard />} />
           <Route path="/teacher/print-requests" element={<MyPrintRequests />} />

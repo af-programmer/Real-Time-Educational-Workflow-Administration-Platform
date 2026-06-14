@@ -11,11 +11,13 @@ export default function MyMessages() {
   const [recipients, setRecipients] = useState([]);
   const [inboxKey, setInboxKey] = useState(0);
 
+  const isHomeroom = user?.role === 'Educator';
+
   useEffect(() => {
     const requests = [
       teachersApi.getSecretaries().then((r) => (r.data.data || []).map((u) => ({ ...u, _group: 'Secretary' }))),
     ];
-    if (user?.is_homeroom) {
+    if (isHomeroom) {
       requests.push(
         teachersApi.getMyHomeroomTeachers().then((r) => (r.data.data || []).map((u) => ({ ...u, _group: 'Teacher (my class)' })))
       );
@@ -23,7 +25,7 @@ export default function MyMessages() {
     Promise.all(requests)
       .then((groups) => setRecipients(groups.flat()))
       .catch(() => {});
-  }, [user?.is_homeroom]);
+  }, [isHomeroom]);
 
   return (
     <div className="space-y-4">

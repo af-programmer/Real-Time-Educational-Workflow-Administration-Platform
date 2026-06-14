@@ -5,6 +5,7 @@ const usersService = require('../services/users.service');
 const authMiddleware = require('../middleware/auth.middleware');
 const { requireRoles } = require('../middleware/roles.middleware');
 const { validate } = require('../middleware/validate.middleware');
+const { handleUpload } = require('../middleware/upload.middleware');
 const asyncWrapper = require('../utils/asyncWrapper');
 const { createUserSchema, updateUserSchema, assignClassesSchema, assignSubjectsSchema } = require('../validators/user.validator');
 
@@ -14,6 +15,9 @@ router.use(authMiddleware);
 // Admin-only: list and create users
 router.get('/', requireRoles('admin'), usersController.getAll);
 router.post('/', requireRoles('admin'), validate(createUserSchema), usersController.create);
+
+// Self: upload avatar photo
+router.post('/me/avatar', handleUpload('avatar', 1), usersController.uploadAvatar);
 
 // Self: update own profile (name, phone, phone2) — avoids URL-param id mismatch
 router.put('/me', validate(updateUserSchema), asyncWrapper(async (req, res) => {

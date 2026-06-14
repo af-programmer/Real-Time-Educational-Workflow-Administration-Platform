@@ -34,7 +34,7 @@ async function sendMessage(senderId, { recipient_id, subject, body }, app, file)
   const sender = await usersDAL.findById(senderId);
 
   const messageId = await messagesDAL.create({
-    sender_id: senderId, recipient_id, recipient_role: null, subject, body, is_broadcast: false,
+    sender_id: senderId, recipient_id, recipient_role: null, subject, body,
     attachment_path: file?.filename || null,
     attachment_name: file?.originalname || null,
   });

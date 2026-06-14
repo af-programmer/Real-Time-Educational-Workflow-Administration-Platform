@@ -22,7 +22,7 @@ export default function TeacherDashboard() {
   const [rosterStudents, setRosterStudents] = useState(null);
   const [rosterLoading, setRosterLoading] = useState(false);
 
-  const isHomeroom = !!user?.is_homeroom;
+  const isHomeroom = user?.role === 'Educator';
 
   useEffect(() => {
     Promise.all([

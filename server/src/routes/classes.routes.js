@@ -6,6 +6,8 @@ const { requireRoles } = require('../middleware/roles.middleware');
 const teacherAssignmentsDAL = require('../dal/teacherAssignments.dal');
 const asyncWrapper = require('../utils/asyncWrapper');
 
+const TEACHER_ROLES = ['teacher', 'Educator'];
+
 router.use(authMiddleware);
 
 router.get('/', classesController.getAll);
@@ -15,7 +17,7 @@ router.get('/:id', classesController.getById);
 router.get('/:id/students', asyncWrapper(async (req, res, next) => {
   const { role, id: userId } = req.user;
   if (role === 'secretary' || role === 'admin') return next();
-  if (role === 'teacher') {
+  if (TEACHER_ROLES.includes(role)) {
     const classId = parseInt(req.params.id);
     const [homeroom, teaching] = await Promise.all([
       teacherAssignmentsDAL.getHomeroomClasses(userId),

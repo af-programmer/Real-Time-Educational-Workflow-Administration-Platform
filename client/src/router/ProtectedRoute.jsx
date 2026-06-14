@@ -9,7 +9,7 @@ export default function ProtectedRoute({ allowedRoles }) {
   }
 
   if (allowedRoles && !allowedRoles.includes(user?.role)) {
-    const roleHome = { admin: '/admin', secretary: '/secretary', teacher: '/teacher' };
+    const roleHome = { admin: '/admin', secretary: '/secretary', teacher: '/teacher', Educator: '/teacher' };
     return <Navigate to={roleHome[user?.role] || '/login'} replace />;
   }
 

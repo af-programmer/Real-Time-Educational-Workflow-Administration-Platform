@@ -6,13 +6,13 @@ const teachersController = require('../controllers/teachers.controller');
 
 router.use(authMiddleware);
 
-router.get('/',                    requireRoles('secretary', 'admin'), teachersController.getAll);
-router.get('/secretaries',         requireRoles('teacher'),            teachersController.getSecretaries);
-router.get('/my-homeroom-teachers',requireRoles('teacher'),            teachersController.getMyHomeroomTeachers);
-router.get('/admins',              requireRoles('secretary'),          teachersController.getAdmins);
-router.get('/me',                  requireRoles('teacher'),            teachersController.getMe);
-router.get('/me/classes',          requireRoles('teacher'),            teachersController.getMyClasses);
-router.get('/me/subjects',         requireRoles('teacher'),            teachersController.getMySubjects);
-router.get('/:id/profile',         requireRoles('secretary', 'admin'), teachersController.getProfile);
+router.get('/',                     requireRoles('secretary', 'admin'),                    teachersController.getAll);
+router.get('/secretaries',          requireRoles('teacher', 'Educator'),           teachersController.getSecretaries);
+router.get('/my-homeroom-teachers', requireRoles('teacher', 'Educator'),           teachersController.getMyHomeroomTeachers);
+router.get('/admins',               requireRoles('secretary'),                             teachersController.getAdmins);
+router.get('/me',                   requireRoles('teacher', 'Educator'),           teachersController.getMe);
+router.get('/me/classes',           requireRoles('teacher', 'Educator'),           teachersController.getMyClasses);
+router.get('/me/subjects',          requireRoles('teacher', 'Educator'),           teachersController.getMySubjects);
+router.get('/:id/profile',          requireRoles('secretary', 'admin'),                   teachersController.getProfile);
 
 module.exports = router;

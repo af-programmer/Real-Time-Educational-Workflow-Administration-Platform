@@ -3,7 +3,7 @@ const teacherAssignmentsDAL = require('../dal/teacherAssignments.dal');
 const asyncWrapper = require('../utils/asyncWrapper');
 
 const getAll = asyncWrapper(async (req, res) => {
-  const result = await usersService.getAllUsers({ role: 'teacher', ...req.query });
+  const result = await usersService.getAllUsers({ role: 'all_teachers', ...req.query });
   res.json({ success: true, ...result });
 });
 
@@ -13,8 +13,8 @@ const getSecretaries = asyncWrapper(async (req, res) => {
 });
 
 const getMyHomeroomTeachers = asyncWrapper(async (req, res) => {
-  if (!req.user.is_homeroom)
-    return res.status(403).json({ success: false, message: 'Not a homeroom teacher.' });
+  if (req.user.role !== 'Educator')
+    return res.status(403).json({ success: false, message: 'Not a Educator.' });
   const homeroomClasses = await teacherAssignmentsDAL.getHomeroomClasses(req.user.id);
   if (!homeroomClasses.length)
     return res.json({ success: true, data: [] });

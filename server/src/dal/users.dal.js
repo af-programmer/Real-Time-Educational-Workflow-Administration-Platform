@@ -16,8 +16,7 @@ async function findByEmail(email) {
 async function findById(id) {
   const [rows] = await pool.query(
     `SELECT u.id, u.name, u.email, u.role_id, u.is_active, u.is_suspended,
-            u.phone, u.phone2, u.is_homeroom,
-            u.avatar_url, u.created_at, u.updated_at, r.name AS role
+            u.phone, u.phone2, u.avatar_url, u.created_at, u.updated_at, r.name AS role
      FROM users u JOIN roles r ON u.role_id = r.id
      WHERE u.id = ? LIMIT 1`,
     [id]
@@ -29,7 +28,13 @@ async function findAll({ roleFilter, search, page, limit, offset }) {
   let where = 'WHERE 1=1';
   const params = [];
 
-  if (roleFilter) { where += ' AND r.name = ?'; params.push(roleFilter); }
+  if (roleFilter === 'all_teachers') {
+    where += " AND r.name IN ('teacher', 'Educator')";
+  } else if (roleFilter) {
+    where += ' AND r.name = ?';
+    params.push(roleFilter);
+  }
+
   if (search) {
     where += ' AND (u.name LIKE ? OR u.email LIKE ?)';
     params.push(`%${search}%`, `%${search}%`);
@@ -42,7 +47,7 @@ async function findAll({ roleFilter, search, page, limit, offset }) {
 
   const [rows] = await pool.query(
     `SELECT u.id, u.name, u.email, u.is_active, u.is_suspended,
-            u.phone, u.phone2, u.is_homeroom, u.created_at, r.name AS role
+            u.phone, u.phone2, u.avatar_url, u.created_at, r.name AS role
      FROM users u JOIN roles r ON u.role_id = r.id
      ${where}
      ORDER BY u.created_at DESC LIMIT ? OFFSET ?`,
@@ -52,10 +57,10 @@ async function findAll({ roleFilter, search, page, limit, offset }) {
   return { rows, total };
 }
 
-async function create({ name, email, role_id, phone, phone2, is_homeroom }) {
+async function create({ name, email, role_id, phone, phone2 }) {
   const [result] = await pool.query(
-    `INSERT INTO users (name, email, role_id, phone, phone2, is_homeroom) VALUES (?, ?, ?, ?, ?, ?)`,
-    [name, email, role_id, phone || null, phone2 || null, is_homeroom ? 1 : 0]
+    `INSERT INTO users (name, email, role_id, phone, phone2) VALUES (?, ?, ?, ?, ?)`,
+    [name, email, role_id, phone || null, phone2 || null]
   );
   return result.insertId;
 }
@@ -70,7 +75,7 @@ async function createCredential(userId, password_hash) {
 
 async function update(id, fields) {
   const { clause, values, hasFields } = buildUpdateClause(
-    fields, ['name', 'email', 'phone', 'phone2', 'is_active', 'avatar_url', 'is_homeroom']
+    fields, ['name', 'email', 'phone', 'phone2', 'is_active', 'avatar_url', 'role_id']
   );
   if (!hasFields) return false;
   await pool.query(`UPDATE users SET ${clause} WHERE id = ?`, [...values, id]);

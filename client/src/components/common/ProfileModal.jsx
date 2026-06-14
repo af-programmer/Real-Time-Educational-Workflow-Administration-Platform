@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import Modal from './Modal';
 import Button from './Button';
 import Badge from './Badge';
 import useAuthStore from '../../store/authStore';
 import apiFetch from '../../api/apiFetch';
+import { usersApi } from '../../api/usersApi';
 import toast from 'react-hot-toast';
 
 const TABS = ['Profile', 'Edit', 'Change Password'];
@@ -15,6 +16,12 @@ export default function ProfileModal({ isOpen, onClose }) {
   const [pwStep, setPwStep] = useState(1);
   const [currentPw, setCurrentPw] = useState('');
   const [saving, setSaving] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState(null);
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
   const { register: regEdit, handleSubmit: hsEdit } = useForm({
     values: { name: user?.name || '', phone: user?.phone || '', phone2: user?.phone2 || '' },
@@ -34,6 +41,31 @@ export default function ProfileModal({ isOpen, onClose }) {
       toast.error(err.message || 'Failed to update profile.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setAvatarFile(file);
+    setAvatarPreview(URL.createObjectURL(file));
+  };
+
+  const handleAvatarUpload = async () => {
+    if (!avatarFile) return;
+    setUploadingAvatar(true);
+    try {
+      const formData = new FormData();
+      formData.append('avatar', avatarFile);
+      const res = await usersApi.uploadAvatar(formData);
+      updateUser({ avatar_url: res.data.data.avatar_url });
+      setAvatarPreview(null);
+      setAvatarFile(null);
+      toast.success('Profile photo updated!');
+    } catch (err) {
+      toast.error(err.message || 'Failed to upload photo.');
+    } finally {
+      setUploadingAvatar(false);
     }
   };
 
@@ -88,17 +120,26 @@ export default function ProfileModal({ isOpen, onClose }) {
     setPwStep(1);
     setCurrentPw('');
     setTab(0);
+    setAvatarPreview(null);
+    setAvatarFile(null);
     resetPw1();
     resetPw2();
     onClose();
   };
 
-  const roleLabel = user?.role === 'teacher'
-    ? (user?.is_homeroom ? 'EDUCATOR' : 'Professional Teacher')
-    : (user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : '');
-  const roleVariant = user?.role === 'teacher'
-    ? (user?.is_homeroom ? 'homeroom_teacher' : 'professional_teacher')
-    : (user?.role || 'default');
+  const roleLabel = user?.role === 'Educator'
+    ? 'EDUCATOR'
+    : user?.role === 'teacher'
+      ? 'Professional Teacher'
+      : (user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : '');
+
+  const roleVariant = user?.role === 'Educator'
+    ? 'Educator'
+    : user?.role === 'teacher'
+      ? 'professional_teacher'
+      : (user?.role || 'default');
+
+  const currentAvatar = avatarPreview || (user?.avatar_url ? `${apiBase}${user.avatar_url}` : null);
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title="My Profile">
@@ -121,9 +162,17 @@ export default function ProfileModal({ isOpen, onClose }) {
       {tab === 0 && (
         <div className="space-y-4">
           <div className="flex items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary-100 text-primary-700 text-2xl font-bold flex-shrink-0">
-              {user?.name?.[0]?.toUpperCase()}
-            </div>
+            {currentAvatar ? (
+              <img
+                src={currentAvatar}
+                alt={user?.name}
+                className="h-16 w-16 rounded-2xl object-cover flex-shrink-0"
+              />
+            ) : (
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary-100 text-primary-700 text-2xl font-bold flex-shrink-0">
+                {user?.name?.[0]?.toUpperCase()}
+              </div>
+            )}
             <div>
               <h3 className="text-lg font-semibold text-gray-900">{user?.name}</h3>
               <p className="text-sm text-gray-500">{user?.email}</p>
@@ -152,6 +201,37 @@ export default function ProfileModal({ isOpen, onClose }) {
 
       {tab === 1 && (
         <form onSubmit={hsEdit(handleSaveProfile)} className="space-y-4">
+          {/* Avatar upload */}
+          <div>
+            <label className="label">Profile Photo</label>
+            <div className="flex items-center gap-4 mt-1">
+              {currentAvatar ? (
+                <img src={currentAvatar} alt="avatar" className="h-16 w-16 rounded-xl object-cover" />
+              ) : (
+                <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-primary-100 text-primary-700 text-2xl font-bold">
+                  {user?.name?.[0]?.toUpperCase()}
+                </div>
+              )}
+              <div className="flex flex-col gap-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleAvatarChange}
+                />
+                <Button type="button" variant="secondary" size="sm" onClick={() => fileInputRef.current?.click()}>
+                  Choose Photo
+                </Button>
+                {avatarFile && (
+                  <Button type="button" size="sm" loading={uploadingAvatar} onClick={handleAvatarUpload}>
+                    Upload
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+
           <div>
             <label className="label">Full Name</label>
             <input {...regEdit('name', { required: true, minLength: 2 })} className="input" />

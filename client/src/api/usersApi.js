@@ -11,6 +11,9 @@ export const usersApi = {
   assignClasses: (id, classIds) => apiFetch.post(`/users/${id}/assign-classes`, { classIds }),
   assignSubjects: (id, subjectIds) => apiFetch.post(`/users/${id}/assign-subjects`, { subjectIds }),
   assignHomeroomClasses: (id, classIds) => apiFetch.post(`/users/${id}/assign-homeroom-classes`, { classIds }),
+  uploadAvatar: (formData) => apiFetch.post('/users/me/avatar', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
 };
 
 export const teachersApi = {

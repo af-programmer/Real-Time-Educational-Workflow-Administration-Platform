@@ -8,7 +8,7 @@ const asyncWrapper = require('../utils/asyncWrapper');
 const path = require('path');
 const { UPLOAD_DIR } = require('../config/multer');
 
-router.use(authMiddleware, requireRoles('teacher'));
+router.use(authMiddleware, requireRoles('teacher', 'Educator'));
 
 router.get('/', asyncWrapper(async (req, res) => {
   const result = await libraryService.getLibrary(req.user.id);

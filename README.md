@@ -40,10 +40,10 @@ Open http://localhost:5173
 ## Demo Accounts (Password: `Password123!`)
 | Role      | Email                    |
 |-----------|--------------------------|
-| Admin     | admin@eduflow.com        |
-| Secretary | secretary@eduflow.com    |
-| Teacher   | teacher1@eduflow.com     |
-| Teacher   | teacher2@eduflow.com     |
+| Admin     | admin@gmail.com        |
+| Secretary | secretary@gmail.com    |
+| Teacher   | teacher1@gmail.com     |
+| Teacher   | teacher2@gmail.com     |
 
 ## Architecture
 
