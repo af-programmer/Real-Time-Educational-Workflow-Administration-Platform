@@ -16,7 +16,6 @@ const io = new Server(server, {
   },
 });
 
-// Socket.io namespace for real-time notifications
 const notifNS = io.of('/notifications');
 
 notifNS.on('connection', (socket) => {
@@ -25,7 +24,6 @@ notifNS.on('connection', (socket) => {
   if (userId) {
     socket.join(`user:${userId}`);
     socket.join(`role:${role}`);
-    // Both teacher types join the shared "all teachers" room for broadcasts
     if (role === 'teacher') {
       socket.join('role:teacher');
       socket.join('role:professional_teacher');
@@ -38,7 +36,6 @@ notifNS.on('connection', (socket) => {
   socket.on('disconnect', () => {});
 });
 
-// Make io accessible in controllers via app.locals
 app.locals.io = io;
 app.locals.notifNS = notifNS;
 
