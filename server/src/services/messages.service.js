@@ -25,10 +25,48 @@ async function getInbox(userId, role) {
   return messagesDAL.findInbox(userId, role);
 }
 
-async function sendMessage(senderId, { recipient_ids, subject, body }, app, file) {
-  if (!recipient_ids?.length) throw new AppError('At least one recipient is required.', 400);
+async function sendMessage(senderId, { recipient_ids, recipient_role, subject, body }, app, file) {
+  // Support sending to explicit recipient IDs or to a recipient role (e.g. 'all_teachers')
+  if ((!recipient_ids || !recipient_ids.length) && !recipient_role) throw new AppError('At least one recipient is required.', 400);
 
   const messageIds = [];
+
+  // Case A: broadcast to a role/target (single message stored with recipient_role)
+  if (recipient_role) {
+    const messageId = await messagesDAL.create({
+      sender_id: senderId,
+      recipient_id: null,
+      recipient_role,
+      subject,
+      body,
+      attachment_path: file?.filename || null,
+      attachment_name: file?.originalname || null,
+    });
+
+    const payload = buildNotificationPayload(messageId, subject, body);
+    // create a role-targeted notification (notifications.dal will handle role_target semantics)
+    await notificationsDAL.create({ role_target: recipient_role, type: payload.type, title: payload.title, content: payload.content, data: payload.data });
+
+    // Emit to socket rooms that correspond to the targeted users
+    const rooms = [];
+    if (recipient_role === 'all_teachers') {
+      rooms.push('role:teacher', 'role:Educator');
+    } else if (recipient_role === 'all_secretaries') {
+      rooms.push('role:secretary');
+    } else if (recipient_role === 'all') {
+      // broadcast to all role rooms (best-effort)
+      rooms.push('role:admin', 'role:secretary', 'role:teacher', 'role:Educator');
+    } else {
+      // direct role name (e.g. 'Educator' or 'teacher') → emit to that role room
+      rooms.push(`role:${recipient_role}`);
+    }
+
+    emitNotification(app, rooms, payload);
+    messageIds.push(messageId);
+    return messageIds;
+  }
+
+  // Case B: explicit recipient IDs
   for (const recipient_id of recipient_ids) {
     const recipient = await usersDAL.findById(recipient_id);
     if (!recipient) continue;
