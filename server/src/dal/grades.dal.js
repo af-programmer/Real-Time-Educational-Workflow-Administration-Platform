@@ -84,4 +84,12 @@ async function getExamTypes() {
   return rows;
 }
 
-module.exports = { create, update, findById, findByTeacher, findByStudent, verifyTeacherOwnership, getExamTypes };
+async function findStudentInClasses(studentId, classIds) {
+  const [rows] = await pool.query(
+    'SELECT id, class_id FROM students WHERE id = ? AND class_id IN (?) AND is_active = TRUE',
+    [studentId, classIds.length ? classIds : [0]]
+  );
+  return rows;
+}
+
+module.exports = { create, update, findById, findByTeacher, findByStudent, verifyTeacherOwnership, getExamTypes, findStudentInClasses };

@@ -1,17 +1,12 @@
-const { pool } = require('../config/db');
 const gradesDAL = require('../dal/grades.dal');
 const teacherAssignmentsDAL = require('../dal/teacherAssignments.dal');
 const classesDAL = require('../dal/classes.dal');
 const AppError = require('../utils/AppError');
 
-// Shared guard: verify a student belongs to one of the teacher's classes
 async function assertStudentInTeacherClasses(teacherId, studentId) {
   const classes = await teacherAssignmentsDAL.getTeacherClasses(teacherId);
   const classIds = classes.map((c) => c.id);
-  const [rows] = await pool.query(
-    'SELECT id FROM students WHERE id = ? AND class_id IN (?) AND is_active = TRUE',
-    [studentId, classIds.length ? classIds : [0]]
-  );
+  const rows = await gradesDAL.findStudentInClasses(studentId, classIds);
   if (!rows.length) throw new AppError('Student not found in your classes.', 403);
   return classIds;
 }
@@ -60,18 +55,13 @@ async function getGradesByTeacher(teacherId, filters) {
 
 async function getStudentGrades(studentId, requestingUser) {
   if (requestingUser.role === 'Educator') {
-    // Educators see all grades for students in their homeroom classes
     const homeroomClasses = await teacherAssignmentsDAL.getHomeroomClasses(requestingUser.id);
     const classIds = homeroomClasses.map((c) => c.id);
-    const [rows] = await pool.query(
-      'SELECT class_id FROM students WHERE id = ? AND class_id IN (?) AND is_active = TRUE',
-      [studentId, classIds.length ? classIds : [0]]
-    );
+    const rows = await gradesDAL.findStudentInClasses(studentId, classIds);
     if (!rows.length) throw new AppError('Student not found in your classes.', 403);
     return gradesDAL.findByStudent(studentId);
   }
   if (requestingUser.role === 'teacher') {
-    // Professional teachers only see grades for their own subjects, in their own classes
     await assertStudentInTeacherClasses(requestingUser.id, studentId);
     const subjects = await teacherAssignmentsDAL.getTeacherSubjects(requestingUser.id);
     return gradesDAL.findByStudent(studentId, subjects.map((s) => s.id));

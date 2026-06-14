@@ -46,4 +46,11 @@ async function deleteFile(teacherId, fileId) {
   await libraryDAL.remove(fileId);
 }
 
-module.exports = { getLibrary, addFile, updateFile, deleteFile };
+async function getFileForDownload(teacherId, fileId) {
+  const file = await libraryDAL.findById(fileId);
+  if (!file) throw new AppError('File not found.', 404);
+  if (file.teacher_id !== teacherId) throw new AppError('Access denied.', 403);
+  return { filePath: path.join(UPLOAD_DIR, file.stored_name), original_name: file.original_name };
+}
+
+module.exports = { getLibrary, addFile, updateFile, deleteFile, getFileForDownload };

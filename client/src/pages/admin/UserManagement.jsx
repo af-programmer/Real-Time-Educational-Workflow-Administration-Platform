@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { usersApi, classesApi, subjectsApi } from '../../api/usersApi';
+import { usersApi, classesApi } from '../../api/usersApi';
 import Table from '../../components/common/Table';
 import Badge from '../../components/common/Badge';
 import Pagination from '../../components/common/Pagination';
@@ -21,7 +21,6 @@ export default function UserManagement() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(null);
   const [classes, setClasses] = useState([]);
-  const [subjects, setSubjects] = useState([]);
 
   // Derive all filter values from URL — single source of truth
   const role   = searchParams.get('role')   || '';
@@ -62,7 +61,6 @@ export default function UserManagement() {
 
   useEffect(() => {
     classesApi.getAll().then((r) => setClasses(r.data.data || [])).catch(() => {});
-    subjectsApi.getAll().then((r) => setSubjects(r.data.data || [])).catch(() => {});
   }, []);
 
   const toggleSuspend = async (user) => {
@@ -127,7 +125,7 @@ export default function UserManagement() {
       </div>
       <Pagination pagination={pagination} onPageChange={(p) => setFilters((f) => ({ ...f, page: p }))} />
       <CreateUserModal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} classes={classes} onCreated={load} />
-      <AssignModal user={showAssignModal} classes={classes} subjects={subjects} onClose={() => setShowAssignModal(null)} />
+      <AssignModal user={showAssignModal} classes={classes} onClose={() => setShowAssignModal(null)} />
     </div>
   );
 }

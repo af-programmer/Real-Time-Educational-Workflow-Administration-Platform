@@ -23,32 +23,16 @@ export default function StaffProfileCard({ profile }) {
             {!profile.is_active && <Badge label="Inactive" variant="pending" />}
           </div>
         </div>
-        {(profile.classes?.length > 0 || profile.subjects?.length > 0) && (
-          <div className="mt-4 grid sm:grid-cols-2 gap-3">
-            {profile.classes?.length > 0 && (
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Classes</p>
-                <div className="flex flex-wrap gap-1">
-                  {profile.classes.map((c) => (
-                    <span key={c.id} className="text-xs bg-blue-100 text-blue-700 rounded-full px-2 py-0.5">
-                      {c.name} ({c.student_count})
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-            {profile.subjects?.length > 0 && (
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Subjects</p>
-                <div className="flex flex-wrap gap-1">
-                  {profile.subjects.map((s) => (
-                    <span key={s.id} className="text-xs bg-green-100 text-green-700 rounded-full px-2 py-0.5">
-                      {s.name}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
+        {profile.classes?.length > 0 && (
+          <div className="mt-4">
+            <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Classes</p>
+            <div className="flex flex-wrap gap-1">
+              {profile.classes.map((c) => (
+                <span key={c.id} className="text-xs bg-blue-100 text-blue-700 rounded-full px-2 py-0.5">
+                  {c.name} ({c.student_count})
+                </span>
+              ))}
+            </div>
           </div>
         )}
       </div>

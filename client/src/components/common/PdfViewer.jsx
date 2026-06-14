@@ -1,12 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
-/**
- * Unified PDF viewer modal.
- * Accepts either a `url` (string) or a `blobData` (ArrayBuffer/Blob) — not both.
- * The caller is responsible for revoking the blob URL when the modal closes
- * (pass onClose handler to clean up if needed).
- */
 export default function PdfViewer({ url, blobData, title = 'Document', onClose }) {
   const [objectUrl, setObjectUrl] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -35,7 +29,6 @@ export default function PdfViewer({ url, blobData, title = 'Document', onClose }
 
   return createPortal(
     <div className="fixed inset-0 z-[60] flex flex-col bg-black/80 backdrop-blur-sm">
-      {/* Header bar */}
       <div className="flex items-center justify-between px-5 py-3 bg-gray-900 text-white flex-shrink-0">
         <div className="flex items-center gap-3 min-w-0">
           <span className="text-lg">📄</span>
@@ -62,8 +55,6 @@ export default function PdfViewer({ url, blobData, title = 'Document', onClose }
           </button>
         </div>
       </div>
-
-      {/* Viewer body */}
       <div className="flex-1 relative overflow-hidden">
         {loading && !error && (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-100 text-gray-500 text-sm gap-3">

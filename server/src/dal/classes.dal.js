@@ -134,6 +134,7 @@ async function createStudent({ name, id_number, class_id, date_of_birth, parent_
     [name, id_number || null, class_id, student_number, date_of_birth || null, parent_email || null,
      phone_father || null, phone_mother || null, phone_home || null]
   );
+  await pool.query('UPDATE classes SET student_count = student_count + 1 WHERE id = ?', [class_id]);
   return result.insertId;
 }
 
@@ -142,6 +143,19 @@ async function updateStudent(id, fields) {
                    'parent_email', 'phone_father', 'phone_mother', 'phone_home'];
   const keys = Object.keys(fields).filter((k) => allowed.includes(k));
   if (!keys.length) return false;
+
+  if (fields.class_id !== undefined) {
+    const [[existing]] = await pool.query('SELECT class_id FROM students WHERE id = ?', [id]);
+    const oldClassId = existing?.class_id;
+    const newClassId = Number(fields.class_id);
+    if (oldClassId && oldClassId !== newClassId) {
+      await Promise.all([
+        pool.query('UPDATE classes SET student_count = GREATEST(student_count - 1, 0) WHERE id = ?', [oldClassId]),
+        pool.query('UPDATE classes SET student_count = student_count + 1 WHERE id = ?', [newClassId]),
+      ]);
+    }
+  }
+
   const clause = keys.map((k) => `${k} = ?`).join(', ');
   const values = keys.map((k) => (fields[k] === '' ? null : fields[k]));
   await pool.query(`UPDATE students SET ${clause} WHERE id = ?`, [...values, id]);
@@ -149,7 +163,11 @@ async function updateStudent(id, fields) {
 }
 
 async function deleteStudent(id) {
+  const [[row]] = await pool.query('SELECT class_id FROM students WHERE id = ?', [id]);
   await pool.query('DELETE FROM students WHERE id = ?', [id]);
+  if (row?.class_id) {
+    await pool.query('UPDATE classes SET student_count = GREATEST(student_count - 1, 0) WHERE id = ?', [row.class_id]);
+  }
   return true;
 }
 

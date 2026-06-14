@@ -8,20 +8,23 @@ import toast from 'react-hot-toast';
 export default function ComposeMessageModal({ isOpen, onClose, recipients, getOptionLabel, onSent }) {
   const [sending, setSending] = useState(false);
   const [attachment, setAttachment] = useState(null);
+  const [selectedIds, setSelectedIds] = useState([]);
   const { register, handleSubmit, reset } = useForm();
 
   const defaultLabel = (r) => `${r.name}${r.role ? ` (${r.role})` : ''}`;
   const labelFn = getOptionLabel || defaultLabel;
 
-  const close = () => { onClose(); reset(); setAttachment(null); };
+  const close = () => { onClose(); reset(); setAttachment(null); setSelectedIds([]); };
+
+  function toggleRecipient(id) {
+    setSelectedIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+  }
 
   const send = async (data) => {
+    if (!selectedIds.length) { toast.error('Please select at least one recipient.'); return; }
     setSending(true);
     try {
-      await messagesApi.send(
-        { recipient_id: parseInt(data.recipient_id), subject: data.subject, body: data.body },
-        attachment
-      );
+      await messagesApi.send({ recipient_ids: selectedIds, subject: data.subject, body: data.body }, attachment);
       toast.success('Message sent!');
       close();
       onSent?.();
@@ -36,13 +39,25 @@ export default function ComposeMessageModal({ isOpen, onClose, recipients, getOp
     <Modal isOpen={isOpen} onClose={close} title="New Message">
       <form onSubmit={handleSubmit(send)} className="space-y-4">
         <div>
-          <label className="label">Send To *</label>
-          <select {...register('recipient_id', { required: true })} className="input">
-            <option value="">Select recipient...</option>
+          <label className="label">
+            Send To *
+            {selectedIds.length > 0 && (
+              <span className="ml-2 text-xs text-gray-400">({selectedIds.length} selected)</span>
+            )}
+          </label>
+          <div className="border border-gray-300 rounded-lg max-h-36 overflow-y-auto divide-y divide-gray-100">
             {recipients.map((r) => (
-              <option key={r.id} value={r.id}>{labelFn(r)}</option>
+              <label key={r.id} className="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={selectedIds.includes(r.id)}
+                  onChange={() => toggleRecipient(r.id)}
+                  className="rounded"
+                />
+                <span className="text-sm">{labelFn(r)}</span>
+              </label>
             ))}
-          </select>
+          </div>
         </div>
         <div>
           <label className="label">Subject</label>

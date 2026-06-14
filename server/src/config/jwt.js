@@ -8,7 +8,11 @@ function signToken(payload) {
 }
 
 function verifyToken(token) {
-  return jwt.verify(token, JWT_SECRET);
+  try {
+    return jwt.verify(token, JWT_SECRET);
+  } catch (err) {
+    return null;
+  }
 }
 
 function decodeToken(token) {

@@ -1,14 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const authMiddleware = require('../middleware/auth.middleware');
-const { pool } = require('../config/db');
-const asyncWrapper = require('../utils/asyncWrapper');
+const { requireRoles } = require('../middleware/roles.middleware');
+const subjectsController = require('../controllers/subjects.controller');
 
 router.use(authMiddleware);
 
-router.get('/', asyncWrapper(async (req, res) => {
-  const [rows] = await pool.query('SELECT * FROM subjects WHERE is_active = TRUE ORDER BY name ASC');
-  res.json({ success: true, data: rows });
-}));
+router.get('/', subjectsController.getAllActive);
+router.get('/all', requireRoles('admin'), subjectsController.getAll);
+router.post('/', requireRoles('admin'), subjectsController.create);
+router.patch('/:id/suspend', requireRoles('admin'), subjectsController.toggleActive);
 
 module.exports = router;

@@ -25,32 +25,31 @@ async function getInbox(userId, role) {
   return messagesDAL.findInbox(userId, role);
 }
 
-async function sendMessage(senderId, { recipient_id, subject, body }, app, file) {
-  if (!recipient_id) throw new AppError('recipient_id is required.', 400);
+async function sendMessage(senderId, { recipient_ids, subject, body }, app, file) {
+  if (!recipient_ids?.length) throw new AppError('At least one recipient is required.', 400);
 
-  const recipient = await usersDAL.findById(recipient_id);
-  if (!recipient) throw new AppError('Recipient not found.', 404);
+  const messageIds = [];
+  for (const recipient_id of recipient_ids) {
+    const recipient = await usersDAL.findById(recipient_id);
+    if (!recipient) continue;
 
-  const sender = await usersDAL.findById(senderId);
+    const messageId = await messagesDAL.create({
+      sender_id: senderId, recipient_id, recipient_role: null, subject, body,
+      attachment_path: file?.filename || null,
+      attachment_name: file?.originalname || null,
+    });
 
-  const messageId = await messagesDAL.create({
-    sender_id: senderId, recipient_id, recipient_role: null, subject, body,
-    attachment_path: file?.filename || null,
-    attachment_name: file?.originalname || null,
-  });
+    const payload = buildNotificationPayload(messageId, subject, body);
+    await notificationsDAL.create({
+      user_id: recipient_id, type: payload.type, title: payload.title,
+      content: payload.content, data: payload.data,
+    });
+    emitNotification(app, [`user:${recipient_id}`], payload);
+    messageIds.push(messageId);
+  }
 
-  const payload = buildNotificationPayload(messageId, subject, body);
-
-  await notificationsDAL.create({
-    user_id: recipient_id,
-    type: payload.type,
-    title: payload.title,
-    content: payload.content,
-    data: payload.data,
-  });
-
-  emitNotification(app, [`user:${recipient_id}`], payload);
-  return messageId;
+  if (!messageIds.length) throw new AppError('No valid recipients found.', 400);
+  return messageIds;
 }
 
 async function markRead(messageId, userId) {

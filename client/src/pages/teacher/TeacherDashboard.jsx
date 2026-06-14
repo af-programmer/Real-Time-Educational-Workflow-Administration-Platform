@@ -58,7 +58,7 @@ export default function TeacherDashboard() {
         <h2 className="text-2xl font-bold">Good day, {user?.name}! 👋</h2>
         <p className="mt-1 text-white/80">
           {isHomeroom
-            ? `You educate ${profile?.classes?.length || 0} classes and teach ${profile?.subjects?.length || 0} subjects.`
+            ? `You educate ${profile?.homeroomClasses?.length || 0} classes and teach ${profile?.subjects?.length || 0} subjects.`
             : `You teach ${profile?.subjects?.length || 0} subject${(profile?.subjects?.length || 0) !== 1 ? 's' : ''} across ${profile?.classes?.length || 0} class${(profile?.classes?.length || 0) !== 1 ? 'es' : ''}.`
           }
         </p>
@@ -84,7 +84,7 @@ export default function TeacherDashboard() {
       {/* Stat cards — homeroom sees Classes link; professional sees Subjects count */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {isHomeroom ? (
-          <StatCard label="My Classes" value={profile?.classes?.length || 0} icon="🏫" color="bg-blue-100" to="/teacher/classes" />
+          <StatCard label="My Classes" value={profile?.homeroomClasses?.length || 0} icon="🏫" color="bg-blue-100" to="/teacher/classes" />
         ) : (
           <StatCard label="My Subjects" value={profile?.subjects?.length || 0} icon="📖" color="bg-blue-100" />
         )}

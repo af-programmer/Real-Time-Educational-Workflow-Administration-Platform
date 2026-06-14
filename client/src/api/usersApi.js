@@ -37,9 +37,11 @@ export const classesApi = {
 
 export const subjectsApi = {
   getAll: () => apiFetch.get('/subjects'),
+  getAllAdmin: () => apiFetch.get('/subjects/all'),
+  create: (data) => apiFetch.post('/subjects', data),
+  toggleActive: (id, is_active) => apiFetch.patch(`/subjects/${id}/suspend`, { is_active }),
 };
 
-// Student / class-level operations (moved from printRequestsApi.js)
 export const classesStudentsApi = {
   getStudents: (classId) => apiFetch.get(`/classes/${classId}/students`),
   getAllClasses: () => apiFetch.get('/classes'),

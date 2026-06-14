@@ -40,6 +40,7 @@ export default function Sidebar({ mobileOpen, onClose }) {
     { to: '/teacher/grades', label: 'My Grades', icon: '📊' },
     { to: '/teacher/messages', label: 'Messages', icon: '✉️' },
   ];
+
   const teacherItems = isHomeroom
     ? [...baseTeacherItems.slice(0, 4), { to: '/teacher/classes', label: 'My Classes', icon: '🏫' }, ...baseTeacherItems.slice(4)]
     : baseTeacherItems;

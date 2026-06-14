@@ -6,21 +6,18 @@ import toast from 'react-hot-toast';
 
 const TEACHER_ROLES = ['teacher', 'Educator'];
 
-export default function AssignModal({ user, classes, subjects, onClose }) {
+export default function AssignModal({ user, classes, onClose }) {
   const [selectedClasses, setSelectedClasses] = useState([]);
-  const [selectedSubjects, setSelectedSubjects] = useState([]);
   const [selectedHomeroomClasses, setSelectedHomeroomClasses] = useState([]);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (!user) return;
     setSelectedClasses([]);
-    setSelectedSubjects([]);
     setSelectedHomeroomClasses([]);
     usersApi.getProfile(user.id).then((r) => {
       const profile = r.data.data;
       setSelectedClasses((profile.classes || []).map((c) => c.id));
-      setSelectedSubjects((profile.subjects || []).map((s) => s.id));
       setSelectedHomeroomClasses((profile.homeroomClasses || []).map((c) => c.id));
     }).catch(() => {});
   }, [user?.id]);
@@ -29,9 +26,7 @@ export default function AssignModal({ user, classes, subjects, onClose }) {
     if (!user) return;
     setSubmitting(true);
     try {
-      // Always call even when empty — allows clearing all assignments
       await usersApi.assignClasses(user.id, selectedClasses);
-      await usersApi.assignSubjects(user.id, selectedSubjects);
       await usersApi.assignHomeroomClasses(user.id, selectedHomeroomClasses);
       toast.success('Assignments saved!');
       onClose();
@@ -58,17 +53,6 @@ export default function AssignModal({ user, classes, subjects, onClose }) {
               <label key={c.id} className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" checked={selectedClasses.includes(c.id)} onChange={() => toggle(setSelectedClasses, c.id)} className="rounded border-gray-300 text-primary-600" />
                 <span className="text-sm text-gray-700">{c.name} ({c.student_count})</span>
-              </label>
-            ))}
-          </div>
-        </div>
-        <div>
-          <p className="label mb-2">Subjects</p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {subjects.map((s) => (
-              <label key={s.id} className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={selectedSubjects.includes(s.id)} onChange={() => toggle(setSelectedSubjects, s.id)} className="rounded border-gray-300 text-primary-600" />
-                <span className="text-sm text-gray-700">{s.name}</span>
               </label>
             ))}
           </div>

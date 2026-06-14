@@ -13,7 +13,6 @@ export default function StudentGradesModal({ student, onClose }) {
       .finally(() => setLoading(false));
   }, [student.id]);
 
-  // Group by subject
   const bySubject = grades.reduce((acc, g) => {
     if (!acc[g.subject_name]) acc[g.subject_name] = [];
     acc[g.subject_name].push(g);

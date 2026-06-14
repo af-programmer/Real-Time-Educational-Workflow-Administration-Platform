@@ -1,5 +1,5 @@
 const usersService = require('../services/users.service');
-const teacherAssignmentsDAL = require('../dal/teacherAssignments.dal');
+const teachersService = require('../services/teachers.service');
 const asyncWrapper = require('../utils/asyncWrapper');
 
 const getAll = asyncWrapper(async (req, res) => {
@@ -15,14 +15,7 @@ const getSecretaries = asyncWrapper(async (req, res) => {
 const getMyHomeroomTeachers = asyncWrapper(async (req, res) => {
   if (req.user.role !== 'Educator')
     return res.status(403).json({ success: false, message: 'Not a Educator.' });
-  const homeroomClasses = await teacherAssignmentsDAL.getHomeroomClasses(req.user.id);
-  if (!homeroomClasses.length)
-    return res.json({ success: true, data: [] });
-  const teacherSets = await Promise.all(
-    homeroomClasses.map((c) => teacherAssignmentsDAL.getTeachersByClass(c.id))
-  );
-  const seen = new Set([req.user.id]);
-  const teachers = teacherSets.flat().filter((t) => !seen.has(t.id) && seen.add(t.id));
+  const teachers = await teachersService.getHomeroomTeachersForEducator(req.user.id);
   res.json({ success: true, data: teachers });
 });
 
@@ -37,12 +30,12 @@ const getMe = asyncWrapper(async (req, res) => {
 });
 
 const getMyClasses = asyncWrapper(async (req, res) => {
-  const classes = await teacherAssignmentsDAL.getTeacherClasses(req.user.id);
+  const classes = await teachersService.getTeacherClasses(req.user.id);
   res.json({ success: true, data: classes });
 });
 
 const getMySubjects = asyncWrapper(async (req, res) => {
-  const subjects = await teacherAssignmentsDAL.getTeacherSubjects(req.user.id);
+  const subjects = await teachersService.getTeacherSubjects(req.user.id);
   res.json({ success: true, data: subjects });
 });
 

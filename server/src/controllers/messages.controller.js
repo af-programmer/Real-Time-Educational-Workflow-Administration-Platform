@@ -7,8 +7,10 @@ const getInbox = asyncWrapper(async (req, res) => {
 });
 
 const send = asyncWrapper(async (req, res) => {
-  const messageId = await messagesService.sendMessage(req.user.id, req.body, req.app, req.file);
-  res.status(201).json({ success: true, data: { id: messageId } });
+  const body = { ...req.body };
+  if (typeof body.recipient_ids === 'string') body.recipient_ids = JSON.parse(body.recipient_ids);
+  const ids = await messagesService.sendMessage(req.user.id, body, req.app, req.file);
+  res.status(201).json({ success: true, data: { ids } });
 });
 
 const markRead = asyncWrapper(async (req, res) => {

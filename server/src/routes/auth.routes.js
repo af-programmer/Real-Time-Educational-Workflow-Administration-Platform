@@ -10,7 +10,7 @@ const { loginSchema, resetPasswordSchema, changePasswordSchema, verifyPasswordSc
 router.post('/login', authLimiter, validate(loginSchema), authController.login);
 router.post('/logout', authMiddleware, authController.logout);
 router.post('/reset-password', authMiddleware, requireRoles('admin'), validate(resetPasswordSchema), authController.resetPassword);
-router.post('/change-password', authMiddleware, validate(changePasswordSchema), authController.changePassword);
+router.put('/change-password', authMiddleware, validate(changePasswordSchema), authController.changePassword);
 router.post('/verify-password', authMiddleware, validate(verifyPasswordSchema), authController.verifyPassword);
 router.get('/me', authMiddleware, authController.me);
 

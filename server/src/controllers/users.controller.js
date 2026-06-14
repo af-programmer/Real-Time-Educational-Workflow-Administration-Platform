@@ -22,8 +22,21 @@ const create = asyncWrapper(async (req, res) => {
   res.status(201).json({ success: true, data: user });
 });
 
+const requireSelfOrAdmin = (req, res, next) => {
+  if (req.user.role === 'admin' || Number(req.user.id) === parseInt(req.params.id, 10)) return next();
+  return res.status(403).json({ success: false, message: 'Forbidden.' });
+};
+
+const updateSelf = asyncWrapper(async (req, res) => {
+  const { name, phone, phone2 } = req.body;
+  const user = await usersService.updateUser(req.user.id, { name, phone, phone2 });
+  res.json({ success: true, data: user });
+});
+
 const update = asyncWrapper(async (req, res) => {
-  const user = await usersService.updateUser(req.params.id, req.body);
+  const { name, phone, phone2 } = req.body;
+  const fields = req.user.role === 'admin' ? req.body : { name, phone, phone2 };
+  const user = await usersService.updateUser(req.params.id, fields);
   res.json({ success: true, data: user });
 });
 
@@ -60,4 +73,4 @@ const uploadAvatar = asyncWrapper(async (req, res) => {
   res.json({ success: true, data: { avatar_url: avatarUrl } });
 });
 
-module.exports = { getAll, getById, getProfile, create, update, remove, suspend, assignClasses, assignSubjects, assignHomeroomClasses, uploadAvatar };
+module.exports = { getAll, getById, getProfile, create, requireSelfOrAdmin, updateSelf, update, remove, suspend, assignClasses, assignSubjects, assignHomeroomClasses, uploadAvatar };
