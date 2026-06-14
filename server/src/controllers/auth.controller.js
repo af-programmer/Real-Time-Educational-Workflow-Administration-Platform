@@ -8,7 +8,6 @@ const login = asyncWrapper(async (req, res) => {
 });
 
 const logout = asyncWrapper(async (req, res) => {
-  // JWT is stateless; client should discard the token
   res.json({ success: true, message: 'Logged out successfully.' });
 });
 

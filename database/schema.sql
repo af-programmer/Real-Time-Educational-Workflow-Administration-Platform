@@ -1,7 +1,6 @@
 CREATE DATABASE IF NOT EXISTS eduflow CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE eduflow;
 
--- ── Lookup / reference tables ─────────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS roles (
   id         INT PRIMARY KEY AUTO_INCREMENT,
@@ -35,8 +34,6 @@ CREATE TABLE IF NOT EXISTS exam_types (
   label VARCHAR(50) NOT NULL
 );
 
--- ── Core user tables ──────────────────────────────────────────────────────────
-
 CREATE TABLE IF NOT EXISTS users (
   id           INT PRIMARY KEY AUTO_INCREMENT,
   name         VARCHAR(100) NOT NULL,
@@ -58,8 +55,6 @@ CREATE TABLE IF NOT EXISTS user_credentials (
   updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
-
--- ── Academic structure ────────────────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS subjects (
   id          INT PRIMARY KEY AUTO_INCREMENT,
@@ -102,7 +97,6 @@ CREATE TABLE IF NOT EXISTS students (
   )
 );
 
--- ── Teacher assignment tables ─────────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS teacher_classes (
   teacher_id  INT NOT NULL,
@@ -122,7 +116,6 @@ CREATE TABLE IF NOT EXISTS teacher_subjects (
   FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE
 );
 
--- Homeroom (educator) class assignments — separate from professional teaching
 CREATE TABLE IF NOT EXISTS teacher_homeroom_classes (
   teacher_id INT NOT NULL,
   class_id   INT NOT NULL,
@@ -130,8 +123,6 @@ CREATE TABLE IF NOT EXISTS teacher_homeroom_classes (
   FOREIGN KEY (teacher_id) REFERENCES users(id)   ON DELETE CASCADE,
   FOREIGN KEY (class_id)   REFERENCES classes(id) ON DELETE CASCADE
 );
-
--- ── Teacher personal file library ─────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS teacher_library (
   id            INT PRIMARY KEY AUTO_INCREMENT,
@@ -147,8 +138,6 @@ CREATE TABLE IF NOT EXISTS teacher_library (
   FOREIGN KEY (teacher_id) REFERENCES users(id)    ON DELETE CASCADE,
   FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE RESTRICT
 );
-
--- ── Print request workflow ────────────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS print_requests (
   id           INT PRIMARY KEY AUTO_INCREMENT,
@@ -189,8 +178,6 @@ CREATE TABLE IF NOT EXISTS print_files (
   FOREIGN KEY (print_request_id) REFERENCES print_requests(id) ON DELETE CASCADE
 );
 
--- ── Grades ────────────────────────────────────────────────────────────────────
-
 CREATE TABLE IF NOT EXISTS grades (
   id           INT PRIMARY KEY AUTO_INCREMENT,
   student_id   INT NOT NULL,
@@ -208,8 +195,6 @@ CREATE TABLE IF NOT EXISTS grades (
   FOREIGN KEY (teacher_id)   REFERENCES users(id)      ON DELETE SET NULL,
   FOREIGN KEY (exam_type_id) REFERENCES exam_types(id) ON DELETE RESTRICT
 );
-
--- ── Messaging ─────────────────────────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS messages (
   id                INT PRIMARY KEY AUTO_INCREMENT,
@@ -245,8 +230,6 @@ CREATE TABLE IF NOT EXISTS message_deletes (
   FOREIGN KEY (message_id) REFERENCES messages(id) ON DELETE CASCADE
 );
 
--- ── Notifications ─────────────────────────────────────────────────────────────
-
 CREATE TABLE IF NOT EXISTS notifications (
   id          INT PRIMARY KEY AUTO_INCREMENT,
   user_id     INT NULL,
@@ -269,8 +252,6 @@ CREATE TABLE IF NOT EXISTS notification_reads (
   FOREIGN KEY (notification_id) REFERENCES notifications(id) ON DELETE CASCADE
 );
 
--- ── Motivational quotes (role stored as ENUM, not FK) ────────────────────────
-
 CREATE TABLE IF NOT EXISTS quotes (
   id         INT PRIMARY KEY AUTO_INCREMENT,
   role       VARCHAR(50) NOT NULL,
@@ -278,8 +259,6 @@ CREATE TABLE IF NOT EXISTS quotes (
   is_active  BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
--- ── Idempotent index helper ───────────────────────────────────────────────────
 
 DROP PROCEDURE IF EXISTS _ci;
 DELIMITER $$
