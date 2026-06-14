@@ -35,7 +35,7 @@ TRUNCATE TABLE quotes;
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ── Lookup tables ─────────────────────────────────────────────
-INSERT INTO roles (name) VALUES ('admin'), ('secretary'), ('teacher');
+INSERT INTO roles (name) VALUES ('admin'), ('secretary'), ('teacher'), ('educator');
 
 INSERT INTO grade_levels (code, label) VALUES
   ('9','9th Grade'), ('10','10th Grade'),
@@ -53,22 +53,22 @@ INSERT INTO exam_types (code, label) VALUES
   ('midterm','Midterm Exam'), ('final','Final Exam'), ('homework','Homework');
 
 -- ── Quotes ────────────────────────────────────────────────────
-INSERT INTO quotes (role, text) VALUES
-  ('admin','Leadership is not about rank or title — it is about influence, impact, and the inspiration you spark in others.'),
-  ('admin','Education is not the filling of a vessel, but the kindling of a flame.'),
-  ('admin','A great principal builds people, not just systems.'),
-  ('admin','Vision without action is merely a dream. Vision combined with action can change reality.'),
-  ('admin','Organizational culture is rebuilt every day through respect, listening, and personal example.'),
-  ('teacher','Every child needs at least one adult who believes in them unconditionally.'),
-  ('teacher','A mediocre teacher tells. A good teacher explains. An exceptional teacher inspires.'),
-  ('teacher','The influence of a great teacher echoes forever — you can never know where it ends.'),
-  ('teacher','Teaching is not my profession — teaching is my purpose.'),
-  ('teacher','The words you say to a student today become the inner voice they carry tomorrow.'),
-  ('teacher','Patience is the root of all pedagogical success; the seeds you plant today may bloom years from now.'),
-  ('secretary','A smile and a kind word are the keys that open every door in a school.'),
-  ('secretary','Order and organisation are the foundation on which great educational work grows.'),
-  ('secretary','The small details are the ones that create the big, successful picture.'),
-  ('secretary','Where there is order, there is room to grow.');
+INSERT INTO quotes (role_id, text) VALUES
+  (1,'Leadership is not about rank or title — it is about influence, impact, and the inspiration you spark in others.'),
+  (1,'Education is not the filling of a vessel, but the kindling of a flame.'),
+  (1,'A great principal builds people, not just systems.'),
+  (1,'Vision without action is merely a dream. Vision combined with action can change reality.'),
+  (1,'Organizational culture is rebuilt every day through respect, listening, and personal example.'),
+  (3,'Every child needs at least one adult who believes in them unconditionally.'),
+  (3,'A mediocre teacher tells. A good teacher explains. An exceptional teacher inspires.'),
+  (3,'The influence of a great teacher echoes forever — you can never know where it ends.'),
+  (3,'Teaching is not my profession — teaching is my purpose.'),
+  (3,'The words you say to a student today become the inner voice they carry tomorrow.'),
+  (3,'Patience is the root of all pedagogical success; the seeds you plant today may bloom years from now.'),
+  (2,'A smile and a kind word are the keys that open every door in a school.'),
+  (2,'Order and organisation are the foundation on which great educational work grows.'),
+  (2,'The small details are the ones that create the big, successful picture.'),
+  (2,'Where there is order, there is room to grow.');
 
 -- ── Subjects (12) ─────────────────────────────────────────────
 INSERT INTO subjects (name, description) VALUES
@@ -107,29 +107,29 @@ SET @r_teach = (SELECT id FROM roles WHERE name='teacher');
 SET @pw      = '$2a$12$y8htSJCWQSWLXzd28DD1X.O7d68CWxGDPzbqr2WVviba8.lAa7coO';
 
 -- ── Users (18 total) ──────────────────────────────────────────
-INSERT INTO users (name, email, role_id, phone, is_homeroom) VALUES
+INSERT INTO users (name, email, role_id, phone) VALUES
   -- Admin
-  ('Moshe Katz',         'admin@gmail.com',            @r_admin, '052-1000000', FALSE),
+  ('Moshe Katz',         'admin@gmail.com',            @r_admin, '052-1000000'),
   -- Secretaries
-  ('Sarah Cohen',        'secretary1@gmail.com',       @r_sec,   '052-2000001', FALSE),
-  ('Rivka Ben-David',    'secretary2@gmail.com',       @r_sec,   '052-2000002', FALSE),
+  ('Sarah Cohen',        'secretary1@gmail.com',       @r_sec,   '052-2000001'),
+  ('Rivka Ben-David',    'secretary2@gmail.com',       @r_sec,   '052-2000002'),
   -- Homeroom teachers (12)
-  ('Avi Cohen',          'avi.cohen@gmail.com',        @r_teach, '052-3000001', TRUE),
-  ('Maya Levi',          'maya.levi@gmail.com',        @r_teach, '052-3000002', TRUE),
-  ('David Mizrahi',      'david.mizrahi@gmail.com',    @r_teach, '052-3000003', TRUE),
-  ('Sarah Peretz',       'sarah.peretz@gmail.com',     @r_teach, '052-3000004', TRUE),
-  ('Roi Katz',           'roi.katz@gmail.com',         @r_teach, '052-3000005', TRUE),
-  ('Tamar Friedman',     'tamar.friedman@gmail.com',   @r_teach, '052-3000006', TRUE),
-  ('Yoni Shapiro',       'yoni.shapiro@gmail.com',     @r_teach, '052-3000007', TRUE),
-  ('Noa Rosenberg',      'noa.rosenberg@gmail.com',    @r_teach, '052-3000008', TRUE),
-  ('Eitan Klein',        'eitan.klein@gmail.com',      @r_teach, '052-3000009', TRUE),
-  ('Liron Goldstein',    'liron.goldstein@gmail.com',  @r_teach, '052-3000010', TRUE),
-  ('Gal Stern',          'gal.stern@gmail.com',        @r_teach, '052-3000011', TRUE),
-  ('Dana Schwartz',      'dana.schwartz@gmail.com',    @r_teach, '052-3000012', TRUE),
+  ('Avi Cohen',          'avi.cohen@gmail.com',        @r_teach, '052-3000001'),
+  ('Maya Levi',          'maya.levi@gmail.com',        @r_teach, '052-3000002'),
+  ('David Mizrahi',      'david.mizrahi@gmail.com',    @r_teach, '052-3000003'),
+  ('Sarah Peretz',       'sarah.peretz@gmail.com',     @r_teach, '052-3000004'),
+  ('Roi Katz',           'roi.katz@gmail.com',         @r_teach, '052-3000005'),
+  ('Tamar Friedman',     'tamar.friedman@gmail.com',   @r_teach, '052-3000006'),
+  ('Yoni Shapiro',       'yoni.shapiro@gmail.com',     @r_teach, '052-3000007'),
+  ('Noa Rosenberg',      'noa.rosenberg@gmail.com',    @r_teach, '052-3000008'),
+  ('Eitan Klein',        'eitan.klein@gmail.com',      @r_teach, '052-3000009'),
+  ('Liron Goldstein',    'liron.goldstein@gmail.com',  @r_teach, '052-3000010'),
+  ('Gal Stern',          'gal.stern@gmail.com',        @r_teach, '052-3000011'),
+  ('Dana Schwartz',      'dana.schwartz@gmail.com',    @r_teach, '052-3000012'),
   -- Extra teachers (3)
-  ('Ron Weiss',          'ron.weiss@gmail.com',        @r_teach, '052-3000013', FALSE),
-  ('Hila Horowitz',      'hila.horowitz@gmail.com',    @r_teach, '052-3000014', FALSE),
-  ('Tal Becker',         'tal.becker@gmail.com',       @r_teach, '052-3000015', FALSE);
+  ('Ron Weiss',          'ron.weiss@gmail.com',        @r_teach, '052-3000013'),
+  ('Hila Horowitz',      'hila.horowitz@gmail.com',    @r_teach, '052-3000014'),
+  ('Tal Becker',         'tal.becker@gmail.com',       @r_teach, '052-3000015');
 
 -- ── Credentials ───────────────────────────────────────────────
 INSERT INTO user_credentials (user_id, password_hash)
@@ -625,78 +625,78 @@ SET @u_sec1  = (SELECT id FROM users WHERE email='secretary1@gmail.com');
 SET @u_sec2  = (SELECT id FROM users WHERE email='secretary2@gmail.com');
 
 -- Broadcast from admin
-INSERT INTO messages (sender_id, recipient_id, recipient_role, subject, body, is_broadcast, created_at) VALUES
+INSERT INTO messages (sender_id, recipient_id, recipient_role, subject, body, created_at) VALUES
 (@u_admin, NULL, 'all', 'Welcome to EduFlow 2025-2026',
  'Dear staff,\n\nWelcome to the new academic year! The EduFlow system is now live. Please update your profile and verify your class assignments.\n\nBest regards,\nPrincipal Katz',
- TRUE, '2025-09-01 08:00:00'),
+ '2025-09-01 08:00:00'),
 
 (@u_admin, NULL, 'all', 'Staff Meeting — Monday June 15',
  'A mandatory staff meeting will be held on Monday June 15 at 3:30pm in the main hall. Attendance is required.',
- TRUE, '2026-06-10 09:00:00'),
+ '2026-06-10 09:00:00'),
 
 (@u_admin, NULL, 'all_teachers', 'Grade Submission Reminder',
  'All end-of-year grades must be submitted by June 25. Please make sure all exams are graded and entered into the system.',
- TRUE, '2026-06-05 10:00:00'),
+ '2026-06-05 10:00:00'),
 
 (@u_admin, NULL, 'all_secretaries', 'Year-End Administrative Tasks',
  'Please prepare the class report templates for year-end archiving. All documents should be ready by June 28.',
- TRUE, '2026-06-08 11:00:00');
+ '2026-06-08 11:00:00');
 
 -- Secretary to admin
-INSERT INTO messages (sender_id, recipient_id, recipient_role, subject, body, is_broadcast, created_at) VALUES
+INSERT INTO messages (sender_id, recipient_id, recipient_role, subject, body, created_at) VALUES
 (@u_sec1, @u_admin, NULL, 'Print Budget Question',
  'Good morning,\n\nWe have received 15 print requests this week and the paper supply is running low. Can we approve an emergency purchase?\n\nThank you,\nSarah',
- FALSE, '2026-06-09 08:30:00'),
+ '2026-06-09 08:30:00'),
 
 (@u_sec2, @u_admin, NULL, 'New Student Registration',
  'Hi,\n\nWe have 3 new student registration requests pending approval. Please review at your earliest convenience.\n\nRivka',
- FALSE, '2026-06-07 14:00:00');
+ '2026-06-07 14:00:00');
 
 -- Teachers to secretary
-INSERT INTO messages (sender_id, recipient_id, recipient_role, subject, body, is_broadcast, created_at) VALUES
+INSERT INTO messages (sender_id, recipient_id, recipient_role, subject, body, created_at) VALUES
 (@t_avi, @u_sec1, NULL, 'Print Request Follow-up',
  'Hi Sarah,\n\nJust checking on the math quiz print request I submitted yesterday. The test is tomorrow morning and I need 81 copies.\n\nThanks,\nAvi',
- FALSE, '2026-06-09 16:00:00'),
+ '2026-06-09 16:00:00'),
 
 (@t_yoni, @u_sec1, NULL, 'Urgent: Calculus Midterm Copies',
  'Hi,\n\nI need the calculus midterm printed urgently for tomorrow (June 12). 79 copies for 11th grade. Please prioritize.\n\nYoni Shapiro',
- FALSE, '2026-06-10 07:45:00'),
+ '2026-06-10 07:45:00'),
 
 (@t_noa, @u_sec2, NULL, 'Biology Worksheet',
  'Hi Rivka,\n\nCould you please make 79 copies of the biology worksheet I uploaded? Needed for Monday June 13.\n\nThank you,\nNoa',
- FALSE, '2026-06-10 09:00:00'),
+ '2026-06-10 09:00:00'),
 
 (@t_liron, @u_sec1, NULL, 'Class List Update',
  'Hi Sarah,\n\nStudent Zohar Cohen in 12A has transferred to another school. Please update the records accordingly.\n\nLiron Goldstein',
- FALSE, '2026-06-08 13:00:00'),
+ '2026-06-08 13:00:00'),
 
 (@t_gal, @u_sec1, NULL, 'Computer Lab Booking',
  'Hi,\n\nI need to book the computer lab for the data structures final on June 10 from 1-3pm for 78 students (12A, 12B, 12C combined). Is this possible?\n\nGal Stern',
- FALSE, '2026-06-06 11:00:00');
+ '2026-06-06 11:00:00');
 
 -- Secretary reply to teacher
-INSERT INTO messages (sender_id, recipient_id, recipient_role, subject, body, is_broadcast, created_at) VALUES
+INSERT INTO messages (sender_id, recipient_id, recipient_role, subject, body, created_at) VALUES
 (@u_sec1, @t_avi, NULL, 'RE: Print Request Follow-up',
  'Hi Avi,\n\nYour print request is in progress and will be ready by 7:30am tomorrow. You can collect it from the print room.\n\nSarah',
- FALSE, '2026-06-09 16:30:00'),
+ '2026-06-09 16:30:00'),
 
 (@u_sec1, @t_yoni, NULL, 'RE: Urgent: Calculus Midterm Copies',
  'Hi Yoni,\n\nUnderstood — I will handle this first thing tomorrow morning. The copies will be on your desk by 8am.\n\nSarah',
- FALSE, '2026-06-10 08:00:00'),
+ '2026-06-10 08:00:00'),
 
 (@u_sec1, @t_gal, NULL, 'RE: Computer Lab Booking',
  'Hi Gal,\n\nThe computer lab is available on June 10 from 1-3pm. I have reserved it for you. You will need to split the 3 classes into two sessions or use both rooms A and B.\n\nSarah',
- FALSE, '2026-06-06 12:00:00');
+ '2026-06-06 12:00:00');
 
 -- Teacher to teacher
-INSERT INTO messages (sender_id, recipient_id, recipient_role, subject, body, is_broadcast, created_at) VALUES
+INSERT INTO messages (sender_id, recipient_id, recipient_role, subject, body, created_at) VALUES
 (@t_avi, @t_yoni, NULL, 'Math Curriculum Alignment',
  'Hi Yoni,\n\nCan we meet this week to align the 11th grade math curriculum with the Bagrut requirements? I think there are some topics we should coordinate on.\n\nAvi',
- FALSE, '2026-06-05 14:00:00'),
+ '2026-06-05 14:00:00'),
 
 (@t_sarah, @t_noa, NULL, 'Shared Lab Resources',
  'Hi Noa,\n\nI have some great lab resources for the genetics unit that I think you could also use for 11th grade. Want to share materials?\n\nSarah Peretz',
- FALSE, '2026-06-04 10:30:00');
+ '2026-06-04 10:30:00');
 
 -- ── Mark some messages as read ────────────────────────────────
 INSERT INTO message_reads (user_id, message_id)
