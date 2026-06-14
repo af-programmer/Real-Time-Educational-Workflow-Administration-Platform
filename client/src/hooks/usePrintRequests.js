@@ -24,7 +24,6 @@ export function useMyPrintRequests(params = {}) {
 
   useEffect(() => { fetch(); }, [fetch]);
 
-  // Real-time: refresh when teacher's request is completed
   const { socket } = useNotifications();
   useEffect(() => {
     const s = socket?.current;
@@ -56,7 +55,6 @@ export function useAllPrintRequests(filters = {}) {
 
   useEffect(() => { fetch(); }, [fetch]);
 
-  // Real-time: refresh when new print request arrives
   const { socket } = useNotifications();
   useEffect(() => {
     const s = socket?.current;

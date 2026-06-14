@@ -22,7 +22,7 @@ export function useGradeActions() {
   const submitGrade = useCallback(async (payload, onSuccess) => {
     setSubmitting(true);
     try {
-      const { class_id, ...data } = payload; // class_id is UI-only
+      const { class_id, ...data } = payload;
       await gradesApi.create(data);
       toast.success('Grade saved.');
       onSuccess?.();

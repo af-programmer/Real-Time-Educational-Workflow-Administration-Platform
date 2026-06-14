@@ -22,13 +22,11 @@ export default function UserManagement() {
   const [showAssignModal, setShowAssignModal] = useState(null);
   const [classes, setClasses] = useState([]);
 
-  // Derive all filter values from URL — single source of truth
   const role   = searchParams.get('role')   || '';
   const search = searchParams.get('search') || '';
   const page   = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
   const filters = { role, search, page };
 
-  // URL-synced setFilters — compatible with functional updater form used by UserFilters
   const setFilters = useCallback((updater) => {
     setSearchParams((prev) => {
       const current = {

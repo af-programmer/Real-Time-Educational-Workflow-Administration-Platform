@@ -5,7 +5,6 @@ import useNotificationStore from '../store/notificationStore';
 import toast from 'react-hot-toast';
 import { notificationsApi } from '../api/notificationsApi';
 
-// Single shared AudioContext — created once, resumed on every user interaction
 let audioCtx = null;
 function getAudioCtx() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -60,13 +59,11 @@ export function NotificationProvider({ children }) {
   useEffect(() => {
     if (!isAuthenticated || !user) return;
 
-    // Load initial 10 notifications
     notificationsApi.getAll({ limit: 10, offset: 0 }).then(({ data }) => {
       const list = data?.data;
       setNotifications(Array.isArray(list) ? list : [], data?.unreadCount || 0, data?.hasMore || false);
     }).catch(() => {});
 
-    // Connect Socket.io
     const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
     socketRef.current = io(`${apiBase}/notifications`, {
       auth: { userId: user.id, role: user.role },

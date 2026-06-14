@@ -4,7 +4,6 @@ export const messagesApi = {
   getInbox: () => apiFetch.get('/messages'),
   send: (data, file) => {
     const form = new FormData();
-    // Accept either `recipient_ids` (array), `recipient_id` (single), or `recipient_role` (string)
     const { recipient_ids, recipient_id, recipient_role, ...rest } = data || {};
     if (recipient_ids && Array.isArray(recipient_ids)) {
       form.append('recipient_ids', JSON.stringify(recipient_ids));
